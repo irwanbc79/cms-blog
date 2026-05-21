@@ -63,10 +63,10 @@
     <meta name="twitter:site" content="{{ '@' . str_replace(['.', ' '], '_', $site->slug) }}">
 
     {{-- RSS Feed --}}
-    <link rel="alternate" type="application/rss+xml" title="{{ $site->name }} Blog RSS Feed" href="{{ url('/feed.xml') }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ $site->name }} Blog RSS Feed" href="{{ url($blogAssetPrefix . '/feed.xml') }}">
 
     {{-- Sitemap --}}
-    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url('/sitemap.xml') }}">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url($blogAssetPrefix . '/sitemap.xml') }}">
 
     {{-- Preconnect to external origins --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,8 +78,26 @@
     {{-- Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    {{-- Asset prefix for subdirectory blog mode (e.g. morabangun.com/blog/) --}}
+    @php
+        $blogAssetPrefix = (defined('BLOG_SUBDIRECTORY_MODE') && BLOG_SUBDIRECTORY_MODE) ? '/blog' : '';
+    @endphp
+
     {{-- Styles --}}
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @if ($blogAssetPrefix)
+        @php
+            $manifestPath = public_path('build/manifest.json');
+            if (file_exists($manifestPath)) {
+                $manifest = json_decode(file_get_contents($manifestPath), true);
+                $entry = $manifest['resources/js/app.js'] ?? [];
+                $cssFiles = $entry['css'] ?? [];
+                $jsFile = $entry['file'] ?? '';
+            }
+        @endphp
+        @foreach($cssFiles ?? [] as $css)
+        <link rel="stylesheet" href="{{ $blogAssetPrefix }}/build/{{ $css }}">
+        @endforeach
+    @elseif (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css'])
     @else
         <style>
@@ -222,7 +240,11 @@
     @stack('schema')
 
     {{-- Vite JS --}}
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @if ($blogAssetPrefix)
+        @isset($jsFile)
+        <script type="module" src="{{ $blogAssetPrefix }}/build/{{ $jsFile }}"></script>
+        @endisset
+    @elseif (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/js/app.js'])
     @endif
 </body>

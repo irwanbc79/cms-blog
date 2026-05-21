@@ -22,10 +22,13 @@ use App\Http\Controllers\FeedController;
 
 Route::prefix('blog')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('blog.index');
+    // These mirror routes for subdirectory blog mode (e.g. morabangun.com/blog/sitemap.xml)
+    Route::get('/sitemap.xml', [SitemapController::class, 'index']);
+    Route::get('/feed.xml', [FeedController::class, 'index']);
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
 });
 
-// Sitemap & RSS Feed
+// Sitemap & RSS Feed (root level for CMS)
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/feed.xml', [FeedController::class, 'index'])->name('feed');
 
