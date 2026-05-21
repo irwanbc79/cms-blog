@@ -36,7 +36,7 @@ class ArticlesByPillarChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Articles',
+                    'label' => 'All Sites',
                     'data' => array_values($data),
                     'backgroundColor' => array_map(fn($k) => $colors[$k] ?? '#6b7280', $keys),
                     'borderColor' => '#1f2937',

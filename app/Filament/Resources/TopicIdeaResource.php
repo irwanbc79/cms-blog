@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TopicIdeaResource\Pages;
 use App\Models\TopicIdea;
+use App\Models\Site;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,16 +21,31 @@ class TopicIdeaResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Select::make('site_id')
+                ->label('Site')
+                ->relationship('site', 'name')
+                ->required()
+                ->default(fn () => Site::where('is_active', true)->first()?->id)
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    $site = Site::find($state);
+                    if ($site) {
+                        $pillars = $site->getPillarOptions();
+                        $set('pillar', array_key_first($pillars) ?: 'regulasi');
+                    }
+                }),
             Forms\Components\TextInput::make('topic')
                 ->required()
                 ->maxLength(255)
                 ->columnSpanFull(),
             Forms\Components\Select::make('pillar')
-                ->options(['regulasi' => 'Regulasi', 'umkm' => 'UMKM Ekspor', 'news' => 'News', 'logistik' => 'Logistik'])
+                ->options(fn (callable $get) => Site::find($get('site_id'))?->getPillarOptions()
+                    ?? ['regulasi' => 'Regulasi', 'umkm' => 'UMKM Ekspor', 'news' => 'News', 'logistik' => 'Logistik'])
                 ->required()
                 ->default('regulasi'),
             Forms\Components\Select::make('language')
-                ->options(['id' => 'Indonesia', 'en' => 'English'])
+                ->options(fn (callable $get) => Site::find($get('site_id'))?->getLanguageOptions()
+                    ?? ['id' => '🇮🇩 Indonesia', 'en' => '🇬🇧 English'])
                 ->required()
                 ->default('id'),
             Forms\Components\KeyValue::make('generated_titles')
@@ -45,6 +61,11 @@ class TopicIdeaResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('site.name')
+                    ->label('Site')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('topic')
                     ->searchable()
                     ->limit(60),
@@ -66,6 +87,9 @@ class TopicIdeaResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('site_id')
+                    ->label('Site')
+                    ->relationship('site', 'name'),
                 Tables\Filters\SelectFilter::make('pillar')
                     ->options(['regulasi' => 'Regulasi', 'umkm' => 'UMKM Ekspor', 'news' => 'News', 'logistik' => 'Logistik']),
                 Tables\Filters\SelectFilter::make('language')

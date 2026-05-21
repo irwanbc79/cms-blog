@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TopicIdea extends Model
 {
     protected $fillable = [
-        'topic', 'pillar', 'language', 'generated_titles',
+        'site_id', 'topic', 'pillar', 'language', 'generated_titles',
         'selected_title', 'is_used', 'used_at', 'article_id',
     ];
 
@@ -21,5 +21,10 @@ class TopicIdea extends Model
     public function article(): BelongsTo
     {
         return $this->belongsTo(Article::class);
+    }
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
     }
 }

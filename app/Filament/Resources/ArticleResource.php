@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
+use App\Models\Site;
 use App\Services\WordPressService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -24,19 +25,31 @@ class ArticleResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            Forms\Components\Section::make('Publishing')
+        return $form->schema([                    Forms\Components\Section::make('Publishing')
                 ->schema([
+                    Forms\Components\Select::make('site_id')
+                        ->label('Site')
+                        ->relationship('site', 'name')
+                        ->required()
+                        ->default(fn () => Site::where('is_active', true)->first()?->id)
+                        ->live()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            $site = Site::find($state);
+                            if ($site) {
+                                $pillars = $site->getPillarOptions();
+                                $set('pillar', array_key_first($pillars) ?: 'regulasi');
+                            }
+                        }),
                     Forms\Components\Select::make('status')
                         ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'published' => 'Published'])
                         ->required()
                         ->default('draft'),
                     Forms\Components\Select::make('pillar')
-                        ->options(['regulasi' => 'Regulasi', 'umkm' => 'UMKM Ekspor', 'news' => 'News', 'logistik' => 'Logistik'])
+                        ->options(fn (callable $get) => Site::find($get('site_id'))?->getPillarOptions() ?? [])
                         ->required()
                         ->default('regulasi'),
                     Forms\Components\Select::make('language')
-                        ->options(['id' => 'Indonesia', 'en' => 'English'])
+                        ->options(fn (callable $get) => Site::find($get('site_id'))?->getLanguageOptions() ?? ['id' => 'Indonesia', 'en' => 'English'])
                         ->required()
                         ->default('id'),
                     Forms\Components\Select::make('user_id')
@@ -75,6 +88,11 @@ class ArticleResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('site.name')
+                    ->label('Site')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('title')->searchable()->limit(50),
                 Tables\Columns\BadgeColumn::make('pillar')
                     ->colors(['warning' => 'regulasi', 'success' => 'umkm', 'info' => 'news', 'primary' => 'logistik']),
@@ -99,6 +117,9 @@ class ArticleResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('site_id')
+                    ->label('Site')
+                    ->relationship('site', 'name'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'published' => 'Published']),
                 Tables\Filters\SelectFilter::make('pillar')
@@ -114,7 +135,7 @@ class ArticleResource extends Resource
                     ->requiresConfirmation()
                     ->action(function (Article $record) {
                         try {
-                            $wp = new WordPressService();
+                            $wp = new WordPressService($record->site);
                             $result = $wp->publishArticle($record);
                             $record->update([
                                 'wp_post_id'   => $result['id'],
@@ -143,7 +164,8 @@ class ArticleResource extends Resource
                             $errors = [];
                             foreach ($records as $record) {
                                 try {
-                                    $wp = new WordPressService();
+                                    $record->load('site');
+                                    $wp = new WordPressService($record->site);
                                     $result = $wp->publishArticle($record);
                                     $record->update([
                                         'wp_post_id'   => $result['id'],

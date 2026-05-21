@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Article extends Model
 {
     protected $fillable = [
-        'title', 'slug', 'focus_keyword', 'meta_description', 'excerpt',
+        'site_id', 'title', 'slug', 'focus_keyword', 'meta_description', 'excerpt',
         'content_html', 'og_title', 'og_description', 'tags', 'hashtags',
         'image_alt_texts', 'schema_faq', 'language', 'pillar', 'status',
         'word_count', 'estimated_read_time', 'featured_image_url',
@@ -30,6 +30,11 @@ class Article extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function site(): BelongsTo
+    {
+        return $this->belongsTo(Site::class);
     }
 
     public function topicIdeas(): HasMany

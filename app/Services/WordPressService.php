@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Article;
 use App\Models\Setting;
+use App\Models\Site;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
 
@@ -12,14 +13,24 @@ class WordPressService
     private string $wpUrl;
     private string $authHeader;
 
-    public function __construct()
+    /**
+     * Accept an optional Site model for per-site credentials.
+     * Falls back to global Settings if no Site is provided.
+     */
+    public function __construct(?Site $site = null)
     {
-        $wpUrl    = Setting::get('wp_url', 'https://m2b.co.id');
-        $username = Setting::get('wp_username');
-        $password = Setting::get('wp_app_password');
+        if ($site && $site->wp_url && $site->wp_username && $site->wp_app_password) {
+            $wpUrl    = $site->wp_url;
+            $username = $site->wp_username;
+            $password = $site->wp_app_password;
+        } else {
+            $wpUrl    = Setting::get('wp_url', 'https://m2b.co.id');
+            $username = Setting::get('wp_username');
+            $password = Setting::get('wp_app_password');
 
-        if (! $username || ! $password) {
-            throw new \RuntimeException('WordPress credentials not configured in Settings.');
+            if (! $username || ! $password) {
+                throw new \RuntimeException('WordPress credentials not configured. Add them in Site settings or global Settings.');
+            }
         }
 
         $this->wpUrl      = rtrim($wpUrl, '/');

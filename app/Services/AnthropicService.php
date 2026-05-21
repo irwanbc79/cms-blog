@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Setting;
+use App\Models\Site;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
 
@@ -11,22 +12,65 @@ class AnthropicService
     private string $apiKey;
     private string $model;
     private string $baseUrl = 'https://api.anthropic.com/v1';
+    private ?Site $site;
 
-    public function __construct(?string $model = null)
+    /**
+     * Accept an optional Site model for per-site credentials, model, and prompt context.
+     * Falls back to global Settings if no Site is provided.
+     */
+    public function __construct(?Site $site = null, ?string $model = null)
     {
-        $key = Setting::get('anthropic_api_key');
-        if (! $key) {
-            throw new \RuntimeException('Anthropic API key not configured in Settings.');
+        $this->site = $site;
+
+        if ($site && $site->anthropic_api_key) {
+            $key   = $site->anthropic_api_key;
+            $model = $model ?: $site->anthropic_model;
+        } else {
+            $key = Setting::get('anthropic_api_key');
+            $model = $model ?: Setting::get('anthropic_model', 'claude-sonnet-4-20250514');
         }
+
+        if (! $key) {
+            throw new \RuntimeException('Anthropic API key not configured. Add it in Site settings or global Settings.');
+        }
+
         $this->apiKey = trim($key);
-        $this->model = $model ?: Setting::get('anthropic_model', 'claude-sonnet-4-20250514');
+        $this->model  = $model ?: 'claude-sonnet-4-20250514';
+    }
+
+    /**
+     * Get the site context string for AI prompts.
+     */
+    private function getContextString(): string
+    {
+        if ($this->site && $this->site->ai_prompt_context) {
+            return $this->site->ai_prompt_context;
+        }
+
+        // Default context for M2B
+        return "M2B is a licensed freight forwarding & PPJK company in Indonesia.\nPorts: Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, Balikpapan.\nTarget audience: B2B exporters/importers and UMKM exporters.";
+    }
+
+    /**
+     * Get WhatsApp number from site or default.
+     */
+    private function getWhatsApp(): string
+    {
+        return $this->site?->whatsapp_number ?: '+6281263027818';
+    }
+
+    /**
+     * Get company name for prompts.
+     */
+    private function getCompanyName(): string
+    {
+        return $this->site?->name ?: 'M2B';
     }
 
     // ─── Public Methods ────────────────────────────────────────────────────────
 
     /**
      * Generate 10 title options with CTR score and hook type.
-     * Returns: [['title', 'ctr_score' (low|med|high), 'hook_type'], ...]
      */
     public function generateTitleOptions(string $topic, string $pillar, string $language): array
     {
@@ -39,8 +83,6 @@ class AnthropicService
 
     /**
      * Generate full article. Two API calls: metadata then content.
-     * Returns: [seo_title, slug, meta_description, focus_keyword, content_html,
-     *           word_count, hashtags, tags, schema_faq, image_alt_texts]
      */
     public function generateArticle(string $title, string $pillar, string $language): array
     {
@@ -51,7 +93,7 @@ class AnthropicService
         $metaRaw    = $this->callApi($metaPrompt, 1024);
         $meta       = $this->parseMetaJson($metaRaw);
 
-        // Call 2: full HTML content (plain text, no JSON)
+        // Call 2: full HTML content
         $contentPrompt = $this->buildContentPrompt($title, $pillar, $lang, $meta['focus_keyword'] ?? '');
         $contentHtml   = $this->callApi($contentPrompt, 8000);
         $wordCount     = str_word_count(strip_tags($contentHtml));
@@ -66,8 +108,12 @@ class AnthropicService
 
     private function buildTitlePrompt(string $topic, string $pillar, string $lang): string
     {
+        $context   = $this->getContextString();
+        $company   = $this->getCompanyName();
+
         return <<<PROMPT
-You are an SEO content strategist for M2B, a freight forwarding & PPJK company in Indonesia.
+You are an SEO content strategist for {$company}.
+{$context}
 Content pillar: {$pillar}. Write in {$lang}.
 
 Generate exactly 10 compelling blog article titles for this topic: "{$topic}"
@@ -75,7 +121,7 @@ Generate exactly 10 compelling blog article titles for this topic: "{$topic}"
 Rules:
 - Each title must be unique with a different hook angle
 - Optimize for CTR (click-through rate)
-- Titles must resonate with Indonesian B2B exporters/importers
+- Titles must resonate with the target audience
 
 Return ONLY valid JSON array, no markdown, no explanation:
 [
@@ -87,8 +133,12 @@ PROMPT;
 
     private function buildMetaPrompt(string $title, string $pillar, string $lang): string
     {
+        $context = $this->getContextString();
+        $company = $this->getCompanyName();
+
         return <<<PROMPT
-You are an SEO expert for M2B freight forwarding blog. Write in {$lang}.
+You are an SEO expert for {$company} blog. Write in {$lang}.
+{$context}
 Article title: "{$title}"
 Content pillar: {$pillar}
 
@@ -112,11 +162,13 @@ PROMPT;
 
     private function buildContentPrompt(string $title, string $pillar, string $lang, string $keyword): string
     {
-        $whatsapp = '+6281263027818';
+        $context  = $this->getContextString();
+        $company  = $this->getCompanyName();
+        $whatsapp = $this->getWhatsApp();
+
         return <<<PROMPT
-You are a professional content writer for M2B, a licensed freight forwarding & PPJK company in Indonesia.
-Ports: Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, Balikpapan.
-Target audience: B2B exporters/importers and UMKM exporters.
+You are a professional content writer for {$company}.
+{$context}
 Content pillar: {$pillar}. Write in {$lang}.
 Focus keyword: "{$keyword}"
 
@@ -128,7 +180,7 @@ Requirements:
 - Include the focus keyword naturally in H1, first paragraph, and 2-3 H2 headings
 - Add relevant emoji at the start of each H2 heading (e.g. 📦 🚢 ✅ 📋 💡 🌏 🔑 📈)
 - Add 1 relevant emoji per paragraph opening where it fits naturally
-- CTA at the end: mention M2B WhatsApp {$whatsapp}
+- CTA at the end: mention company WhatsApp {$whatsapp}
 - Output: clean HTML only (h1, h2, h3, p, ul, ol, li, strong, em tags)
 - Do NOT include: DOCTYPE, html, head, body tags, CSS, or markdown
 PROMPT;
@@ -169,8 +221,7 @@ PROMPT;
 
     private function parseTitleJson(string $raw): array
     {
-        // Strip possible markdown code blocks
-        $clean = preg_replace('/```json?\s*/i', '', $raw);
+        $clean = preg_replace('/```json?\\s*/i', '', $raw);
         $clean = preg_replace('/```/', '', $clean);
         $clean = trim($clean);
 
@@ -185,7 +236,7 @@ PROMPT;
 
     private function parseMetaJson(string $raw): array
     {
-        $clean = preg_replace('/```json?\s*/i', '', $raw);
+        $clean = preg_replace('/```json?\\s*/i', '', $raw);
         $clean = preg_replace('/```/', '', $clean);
         $clean = trim($clean);
 

@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google Services (AdSense, Search Console, etc.)
+    |--------------------------------------------------------------------------
+    */
+    'google' => [
+        'adsense_publisher_id' => env('GOOGLE_ADSENSE_PUBLISHER_ID'),
+        'adsense_article_slot' => env('GOOGLE_ADSENSE_ARTICLE_SLOT'),
+        'site_verification' => env('GOOGLE_SITE_VERIFICATION'),
+        'analytics_id' => env('GOOGLE_ANALYTICS_ID'),
+        'tag_manager_id' => env('GOOGLE_TAG_MANAGER_ID'),
+    ],
+
 ];

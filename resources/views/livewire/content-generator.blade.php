@@ -1,13 +1,18 @@
 <div class="space-y-6">
 
     {{-- Step Indicator --}}
+    @if($step > 0)
     <div class="flex items-center px-2">
-        @foreach([1 => 'Topic', 2 => 'Title', 3 => 'Preview', 4 => 'Publish'] as $num => $label)
+        @foreach([0 => 'Site', 1 => 'Topic', 2 => 'Title', 3 => 'Preview', 4 => 'Publish'] as $num => $label)
             <div class="flex items-center {{ $num < 4 ? 'flex-1' : '' }}">
                 <div class="flex flex-col items-center">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold
                         {{ $step >= $num ? 'bg-primary-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500' }}">
-                        {{ $num }}
+                        @if($num === 0)
+                            🌐
+                        @else
+                            {{ $num }}
+                        @endif
                     </div>
                     <span class="text-xs mt-1 {{ $step >= $num ? 'text-primary-600' : 'text-gray-400' }}">{{ $label }}</span>
                 </div>
@@ -17,6 +22,7 @@
             </div>
         @endforeach
     </div>
+    @endif
 
     {{-- Error --}}
     @if($errorMessage)
@@ -26,29 +32,88 @@
     @endif
 
     {{-- ══════════════════════════════════════════════
+         STEP 0: Site Selection
+    ══════════════════════════════════════════════ --}}
+    @if($step === 0)
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">🌐 Select Site</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Choose which website you want to create content for.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            @foreach($sites as $site)
+                <button wire:click="selectSite({{ $site->id }})"
+                    class="relative flex flex-col p-5 rounded-xl border-2 transition-all text-left
+                        {{ $siteId === $site->id
+                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-primary-300 hover:shadow-sm bg-white dark:bg-gray-800' }}">
+                    <div class="flex items-center gap-3 mb-2">
+                        @if($site->logo_url)
+                            <img src="{{ $site->logo_url }}" alt="{{ $site->name }}" class="w-10 h-10 rounded-lg object-cover">
+                        @else
+                            <div class="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-lg">
+                                🌐
+                            </div>
+                        @endif
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">{{ $site->name }}</h3>
+                            @if($site->domain)
+                                <p class="text-xs text-gray-500">{{ $site->domain }}</p>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5 mt-1">
+                        @foreach($site->getPillarOptions() as $key => $label)
+                            <span class="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                                {{ $label }}
+                            </span>
+                        @endforeach
+                    </div>
+                </button>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════════════════════════════════════
          STEP 1: Topic
     ══════════════════════════════════════════════ --}}
     @if($step === 1)
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Step 1 — Choose Topic</h2>
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Step 1 — Choose Topic</h2>
+            <button wire:click="goBackToSites"
+                class="text-xs text-gray-500 hover:text-primary-600 underline">
+                Change Site →
+            </button>
+        </div>
+
+        @if($selectedSite)
+        <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm text-gray-600 dark:text-gray-300">
+            <span>🌐</span>
+            <span class="font-medium">{{ $selectedSite->name }}</span>
+            @if($selectedSite->domain)
+                <span class="text-gray-400">— {{ $selectedSite->domain }}</span>
+            @endif
+        </div>
+        @endif
 
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Language</label>
                 <select wire:model.live="language"
                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
-                    <option value="id">🇮🇩 Bahasa Indonesia</option>
-                    <option value="en">🇬🇧 English</option>
+                    @foreach($this->languageOptions as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content Pillar</label>
                 <select wire:model.live="pillar"
                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm">
-                    <option value="regulasi">📋 Regulasi</option>
-                    <option value="umkm">🏪 UMKM Ekspor</option>
-                    <option value="news">📰 News</option>
-                    <option value="logistik">🚢 Logistik</option>
+                    @foreach($this->pillarOptions as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>

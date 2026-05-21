@@ -16,7 +16,8 @@ class LatestArticlesTable extends BaseWidget
     {
         return $table
             ->query(
-                Article::where('status', 'published')
+                Article::with('site')
+                    ->where('status', 'published')
                     ->orWhere(function ($q) {
                         $q->whereNotNull('wp_post_id');
                     })
@@ -24,6 +25,10 @@ class LatestArticlesTable extends BaseWidget
                     ->limit(10)
             )
             ->columns([
+                Tables\Columns\TextColumn::make('site.name')
+                    ->label('Site')
+                    ->badge()
+                    ->color('gray'),
                 Tables\Columns\TextColumn::make('title')
                     ->limit(40)
                     ->searchable(),
