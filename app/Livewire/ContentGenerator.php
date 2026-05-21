@@ -103,6 +103,7 @@ class ContentGenerator extends Component
                 'pillar'           => $this->pillar,
                 'status'           => 'draft',
                 'word_count'       => $this->articleData['word_count'] ?? 0,
+                'estimated_read_time' => max(1, intval(($this->articleData['word_count'] ?? 0) / 200)),
                 'user_id'          => auth()->id(),
             ]);
 

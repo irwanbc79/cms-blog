@@ -9,16 +9,17 @@ use Illuminate\Http\Client\RequestException;
 class AnthropicService
 {
     private string $apiKey;
-    private string $model = 'claude-sonnet-4-5';
+    private string $model;
     private string $baseUrl = 'https://api.anthropic.com/v1';
 
-    public function __construct()
+    public function __construct(?string $model = null)
     {
         $key = Setting::get('anthropic_api_key');
         if (! $key) {
             throw new \RuntimeException('Anthropic API key not configured in Settings.');
         }
         $this->apiKey = trim($key);
+        $this->model = $model ?: Setting::get('anthropic_model', 'claude-sonnet-4-20250514');
     }
 
     // ─── Public Methods ────────────────────────────────────────────────────────
