@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
+    {{-- Asset prefix for subdirectory blog mode (e.g. morabangun.com/blog/) --}}
+    @php
+        $blogAssetPrefix = (defined('BLOG_SUBDIRECTORY_MODE') && BLOG_SUBDIRECTORY_MODE) ? '/blog' : '';
+    @endphp
+
     {{-- Primary Meta Tags --}}
     <title>@yield('title', $seo['title'] ?? ($site->name . ' - Blog'))</title>
     <meta name="description" content="@yield('description', $seo['description'] ?? '')">
@@ -77,11 +82,6 @@
 
     {{-- Fonts --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    {{-- Asset prefix for subdirectory blog mode (e.g. morabangun.com/blog/) --}}
-    @php
-        $blogAssetPrefix = (defined('BLOG_SUBDIRECTORY_MODE') && BLOG_SUBDIRECTORY_MODE) ? '/blog' : '';
-    @endphp
 
     {{-- Styles --}}
     @if ($blogAssetPrefix)
