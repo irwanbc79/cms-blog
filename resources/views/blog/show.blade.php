@@ -186,7 +186,7 @@
 
     {{-- Featured Image --}}
     @if($article->featured_image_url)
-    <div class="mb-8 rounded-2xl overflow-hidden bg-gray-50">
+    <div class="mb-8 rounded-2xl overflow-hidden bg-gray-50 shadow-sm">
         <img src="{{ $article->featured_image_url }}"
              alt="{{ $article->image_alt_texts[0] ?? $article->title }}"
              class="w-full h-auto object-cover"
@@ -219,7 +219,7 @@
 
         {{-- Article Content --}}
         <div class="flex-1 min-w-0">
-            {{-- Content CSS --}}
+            {{-- Content CSS with fixed blockquote --}}
             <div class="prose prose-lg prose-blue max-w-none
                         prose-headings:font-bold prose-headings:text-gray-900
                         prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:scroll-mt-24
@@ -227,7 +227,7 @@
                         prose-p:leading-relaxed prose-p:text-gray-700
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                         prose-img:rounded-xl prose-img:shadow-md
-                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:border-l-4 prose-blockquote:my-6
+                        prose-blockquote:border-l-4 prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50/50 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-gray-700 prose-blockquote:my-6
                         prose-ul:space-y-2 prose-li:text-gray-700
                         prose-strong:text-gray-900
                         prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded

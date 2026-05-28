@@ -6,8 +6,13 @@
 
 @section('content')
 {{-- Hero Section --}}
-<section class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+<section class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative overflow-hidden">
+    {{-- Decorative background pattern --}}
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-300 rounded-full blur-3xl"></div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative">
         <div class="max-w-3xl">
             <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
                 Blog {{ $site->name }}
@@ -27,13 +32,13 @@
             <div class="flex flex-wrap gap-2">
                 <a href="{{ url('/blog') }}"
                    class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
-                          {{ !$pillar ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                          {{ !$pillar ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
                     Semua
                 </a>
                 @foreach($pillarCounts as $key => $count)
                 <a href="{{ url('/blog?pillar=' . $key) }}"
                    class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
-                          {{ $pillar === $key ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                          {{ $pillar === $key ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
                     {{ ucfirst($key) }}
                     <span class="ml-1 text-xs opacity-60">({{ $count }})</span>
                 </a>

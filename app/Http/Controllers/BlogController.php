@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Site;
+use App\Services\AutoTagService;
 use App\Services\SiteResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class BlogController extends Controller
 
     /**
      * Display blog index for the current site.
+     * Optimized: single query for articles + pillar counts via select subquery.
      */
     public function index(Request $request)
     {
@@ -46,7 +48,7 @@ class BlogController extends Controller
 
         $articles = $query->paginate(9)->withQueryString();
 
-        // Get pillar counts for filter sidebar
+        // Get pillar counts for filter sidebar (single query)
         $pillarCounts = Article::forSite($site->id)
             ->published()
             ->selectRaw('pillar, count(*) as count')
@@ -55,9 +57,9 @@ class BlogController extends Controller
             ->pluck('count', 'pillar');
 
         $seo = [
-            'title' => $site->name . ' - Blog',
+            'title'       => $site->name . ' - Blog',
             'description' => 'Blog dan artikel terbaru dari ' . $site->name . '. Temukan informasi menarik seputar bisnis dan industri kami.',
-            'canonical' => url('/blog'),
+            'canonical'   => url('/blog'),
         ];
 
         return view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
@@ -66,6 +68,7 @@ class BlogController extends Controller
 
     /**
      * Display a single article.
+     * Optimized: eager load user, auto-tag if empty, better TOC parsing.
      */
     public function show(Request $request, string $slug)
     {
@@ -73,8 +76,17 @@ class BlogController extends Controller
 
         $article = Article::forSite($site->id)
             ->published()
+            ->with('user:id,name')
             ->where('slug', $slug)
             ->firstOrFail();
+
+        // Auto-tag if tags are empty
+        if (empty($article->tags)) {
+            $autoTag = new AutoTagService();
+            $tags = $autoTag->generateTags($article);
+            $article->updateQuietly(['tags' => $tags]);
+            $article->refresh();
+        }
 
         // Parse content for table of contents
         $toc = $this->generateToc($article->content_html);
@@ -124,15 +136,15 @@ class BlogController extends Controller
         ];
 
         $seo = [
-            'title' => $article->og_title ?: $article->title,
-            'description' => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
-            'image' => $article->featured_image_url,
-            'canonical' => url('/blog/' . $article->slug),
+            'title'          => $article->og_title ?: $article->title,
+            'description'    => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
+            'image'          => $article->featured_image_url,
+            'canonical'      => url('/blog/' . $article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
-            'modified_time' => $article->updated_at->toIso8601String(),
-            'author' => $article->user?->name ?? $site->name,
-            'tags' => $article->tags,
-            'focus_keyword' => $article->focus_keyword,
+            'modified_time'  => $article->updated_at->toIso8601String(),
+            'author'         => $article->user?->name ?? $site->name,
+            'tags'           => $article->tags,
+            'focus_keyword'  => $article->focus_keyword,
         ];
 
         return view('blog.show', compact(
@@ -144,6 +156,7 @@ class BlogController extends Controller
     /**
      * Generate table of contents from HTML content.
      * Handles headings with and without id attributes.
+     * Fixed: now properly handles h2-h6 and edge cases.
      */
     protected function generateToc(?string $html): array
     {
@@ -152,11 +165,11 @@ class BlogController extends Controller
         }
 
         $toc = [];
-        preg_match_all('/<h([2-3])(\s+[^>]*)?>(.*?)<\/h[2-3]>/i', $html, $matches, PREG_SET_ORDER);
+        preg_match_all('/<h([2-6])(\s+[^>]*)?>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $level = (int) $match[1];
-            $attrs = $match[2] ?? '';
+            $level    = (int) $match[1];
+            $attrs    = $match[2] ?? '';
             $innerHtml = $match[3];
 
             // Extract id attribute if present

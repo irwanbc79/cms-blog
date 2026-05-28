@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
 use App\Models\Site;
+use App\Services\AutoTagService;
 use App\Services\SeoService;
 use App\Services\WordPressService;
 use Filament\Forms;
@@ -26,7 +27,8 @@ class ArticleResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([                    Forms\Components\Section::make('Publishing')
+        return $form->schema([
+            Forms\Components\Section::make('Publishing')
                 ->schema([
                     Forms\Components\Select::make('site_id')
                         ->label('Site')
@@ -82,6 +84,17 @@ class ArticleResource extends Resource
                     Forms\Components\TextInput::make('word_count')->numeric()->default(0),
                 ])
                 ->columns(2),
+
+            Forms\Components\Section::make('Auto Features')
+                ->schema([
+                    Forms\Components\Placeholder::make('auto_tags_info')
+                        ->label('Auto Tags')
+                        ->content('Tags will be auto-generated from title & content when saved.'),
+                    Forms\Components\Placeholder::make('cross_post_info')
+                        ->label('Cross-post Detection')
+                        ->content('Duplicate detection runs automatically on save.'),
+                ])
+                ->columns(2),
         ]);
     }
 
@@ -99,18 +112,18 @@ class ArticleResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'regulasi' => 'warning',
-                        'umkm' => 'success',
-                        'news' => 'info',
+                        'umkm'     => 'success',
+                        'news'     => 'info',
                         'logistik' => 'primary',
-                        default => 'gray',
+                        default    => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
+                        'draft'     => 'gray',
                         'scheduled' => 'warning',
                         'published' => 'success',
-                        default => 'gray',
+                        default     => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('language')->badge()->color('gray'),
                 Tables\Columns\TextColumn::make('word_count')->numeric()->sortable(),
@@ -121,8 +134,8 @@ class ArticleResource extends Resource
                 Tables\Columns\TextColumn::make('seo_score')
                     ->label('SEO')
                     ->badge()
-                    ->color(fn (Article $record) => (new SeoService)->color((new SeoService)->calculate($record)))
-                    ->state(fn (Article $record) => (new SeoService)->calculate($record) . '%'),
+                    ->color(fn (Article $record) => app(SeoService::class)->color(app(SeoService::class)->calculate($record)))
+                    ->state(fn (Article $record) => app(SeoService::class)->calculate($record) . '%'),
                 Tables\Columns\TextColumn::make('published_at')->dateTime('d M Y')->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
@@ -156,6 +169,42 @@ class ArticleResource extends Resource
                             Notification::make()->title('✅ Published: ' . $result['link'])->success()->send();
                         } catch (\Exception $e) {
                             Notification::make()->title('❌ ' . $e->getMessage())->danger()->send();
+                        }
+                    }),
+                Tables\Actions\Action::make('auto_tag')
+                    ->label('Auto Tag')
+                    ->icon('heroicon-o-tag')
+                    ->color('gray')
+                    ->action(function (Article $record) {
+                        $autoTag = new AutoTagService();
+                        $tags = $autoTag->generateTags($record);
+                        $record->update(['tags' => $tags]);
+                        Notification::make()
+                            ->title('✅ Tags generated: ' . implode(', ', $tags))
+                            ->success()
+                            ->send();
+                    }),
+                Tables\Actions\Action::make('check_duplicates')
+                    ->label('Check Duplicates')
+                    ->icon('heroicon-o-exclamation-triangle')
+                    ->color('warning')
+                    ->action(function (Article $record) {
+                        $autoTag = new AutoTagService();
+                        $duplicates = $autoTag->detectDuplicates($record);
+                        if (empty($duplicates)) {
+                            Notification::make()
+                                ->title('✅ No duplicates found')
+                                ->success()
+                                ->send();
+                        } else {
+                            $msg = collect($duplicates)
+                                ->take(3)
+                                ->map(fn ($d) => "{$d['title']} ({$d['similarity']})")
+                                ->implode(' | ');
+                            Notification::make()
+                                ->title('⚠️ Duplicates: ' . $msg)
+                                ->warning()
+                                ->send();
                         }
                     }),
                 Tables\Actions\EditAction::make(),
@@ -201,6 +250,23 @@ class ArticleResource extends Resource
                                     ->send();
                             }
                         }),
+                    BulkAction::make('auto_tag_bulk')
+                        ->label('Auto Tag Selected')
+                        ->icon('heroicon-o-tag')
+                        ->color('gray')
+                        ->action(function (Collection $records) {
+                            $autoTag = new AutoTagService();
+                            $count = 0;
+                            foreach ($records as $record) {
+                                $tags = $autoTag->generateTags($record);
+                                $record->update(['tags' => $tags]);
+                                $count++;
+                            }
+                            Notification::make()
+                                ->title("✅ {$count} articles tagged")
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
@@ -218,6 +284,6 @@ class ArticleResource extends Resource
 
     public static function calculateSeoScore(Article $article): int
     {
-        return (new SeoService)->calculate($article);
+        return app(SeoService::class)->calculate($article);
     }
 }
