@@ -9,15 +9,15 @@
 @if($article->schema_faq && count($article->schema_faq) > 0)
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
+    "@@context": "https://schema.org",
+    "@@type": "FAQPage",
     "mainEntity": [
         @foreach($article->schema_faq as $index => $faq)
         {
-            "@type": "Question",
+            "@@type": "Question",
             "name": {{ json_encode($faq['question'] ?? $faq['q'] ?? '') }},
             "acceptedAnswer": {
-                "@type": "Answer",
+                "@@type": "Answer",
                 "text": {{ json_encode($faq['answer'] ?? $faq['a'] ?? '') }}
             }
         }{{ !$loop->last ? ',' : '' }}
@@ -32,25 +32,25 @@
 {{-- BreadcrumbList Schema --}}
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
+    "@@context": "https://schema.org",
+    "@@type": "BreadcrumbList",
     "itemListElement": [
         {
-            "@type": "ListItem",
+            "@@type": "ListItem",
             "position": 1,
             "name": "Blog",
             "item": "{{ url('/blog') }}"
         }
         @if($breadcrumbs[1]['url'])
         ,{
-            "@type": "ListItem",
+            "@@type": "ListItem",
             "position": 2,
             "name": "{{ $breadcrumbs[1]['label'] }}",
             "item": "{{ $breadcrumbs[1]['url'] }}"
         }
         @endif
         ,{
-            "@type": "ListItem",
+            "@@type": "ListItem",
             "position": {{ $breadcrumbs[1]['url'] ? 3 : 2 }},
             "name": "{{ $article->title }}",
             "item": "{{ url('/blog/' . $article->slug) }}"
@@ -62,23 +62,23 @@
 {{-- Article Schema --}}
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "Article",
+    "@@context": "https://schema.org",
+    "@@type": "Article",
     "headline": {{ json_encode($article->title) }},
     "description": {{ json_encode($seo['description']) }},
     @if($article->featured_image_url)
     "image": "{{ $article->featured_image_url }}",
     @endif
     "author": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": {{ json_encode($seo['author'] ?? $site->name) }}
     },
     "publisher": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": {{ json_encode($site->name) }}
         @if($site->logo_url)
         ,"logo": {
-            "@type": "ImageObject",
+            "@@type": "ImageObject",
             "url": "{{ $site->logo_url }}"
         }
         @endif
@@ -86,8 +86,8 @@
     "datePublished": "{{ $seo['published_time'] }}",
     "dateModified": "{{ $seo['modified_time'] }}",
     "mainEntityOfPage": {
-        "@type": "WebPage",
-        "@id": "{{ url('/blog/' . $article->slug) }}"
+        "@@type": "WebPage",
+        "@@id": "{{ url('/blog/' . $article->slug) }}"
     }
     @if(!empty($article->tags))
     ,"keywords": {{ json_encode(is_array($article->tags) ? implode(', ', $article->tags) : $article->tags) }}
@@ -122,6 +122,19 @@
         @endforeach
     </ol>
 </nav>
+
+{{-- Display Ad — Above Article --}}
+@if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="{{ $site->getAdsensePublisher() }}"
+         data-ad-slot="{{ $site->getAdSlot('display_top') }}"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+@endif
 
 {{-- Article Header --}}
 <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -179,7 +192,8 @@
              class="w-full h-auto object-cover"
              loading="eager"
              width="1200"
-             height="675">
+             height="675"
+             onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-64 bg-gray-100\'><svg class=\'w-16 h-16 text-gray-300\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z\'/></svg></div>'">
     </div>
     @endif
 
@@ -193,7 +207,7 @@
                 <nav class="space-y-1">
                     @foreach($toc as $item)
                     <a href="#{{ $item['id'] }}"
-                       class="block text-sm py-1.5 pl-{{ $item['level'] == 3 ? '4' : '0' }} border-l-2 border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors
+                       class="block text-sm py-1.5 {{ $item['level'] == 3 ? 'pl-4' : 'pl-0' }} border-l-2 border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors
                               {{ $loop->first ? 'font-medium text-gray-900 border-blue-500' : 'text-gray-600' }}">
                         {{ $item['title'] }}
                     </a>
@@ -213,7 +227,7 @@
                         prose-p:leading-relaxed prose-p:text-gray-700
                         prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
                         prose-img:rounded-xl prose-img:shadow-md
-                        prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg
+                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:border-l-4 prose-blockquote:my-6
                         prose-ul:space-y-2 prose-li:text-gray-700
                         prose-strong:text-gray-900
                         prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
@@ -222,15 +236,14 @@
             </div>
 
             {{-- In-Article Ad (after content) --}}
-            @if(config('services.google.adsense_publisher_id'))
+            @if($site->getAdsensePublisher() && $site->getAdSlot('in_article'))
             <div class="my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
-                {{-- Ad Unit --}}
                 <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="{{ config('services.google.adsense_publisher_id') }}"
-                     data-ad-slot="{{ config('services.google.adsense_article_slot') }}"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
+                     style="display:block; text-align:center;"
+                     data-ad-layout="in-article"
+                     data-ad-format="fluid"
+                     data-ad-client="{{ $site->getAdsensePublisher() }}"
+                     data-ad-slot="{{ $site->getAdSlot('in_article') }}"></ins>
                 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
             @endif
@@ -248,6 +261,18 @@
             @endif
         </div>
     </div>
+
+    {{-- Multiplex Ad — Before FAQ --}}
+    @if($site->getAdsensePublisher() && $site->getAdSlot('multiplex'))
+    <div class="mt-12 pt-8">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-format="autorelaxed"
+             data-ad-client="{{ $site->getAdsensePublisher() }}"
+             data-ad-slot="{{ $site->getAdSlot('multiplex') }}"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+    @endif
 
     {{-- FAQ Section --}}
     @if($article->schema_faq && count($article->schema_faq) > 0)
@@ -280,7 +305,7 @@
         </div>
     </section>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
     @endif
 
     {{-- Previous / Next Navigation --}}
@@ -310,26 +335,21 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Artikel Terkait</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            @foreach($relatedArticles as $related)
-            <article class="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                @if($related->featured_image_url)
-                <a href="{{ url('/blog/' . $related->slug) }}" class="block aspect-[16/9] overflow-hidden bg-gray-100">
-                    <img src="{{ $related->featured_image_url }}"
-                         alt="{{ $related->title }}"
-                         loading="lazy"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                </a>
-                @endif
-                <div class="p-4">
-                    @if($related->pillar)
-                    <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">{{ $related->pillar }}</span>
-                    @endif
-                    <h3 class="font-semibold text-gray-900 mt-1 group-hover:text-blue-600 transition-colors">
-                        <a href="{{ url('/blog/' . $related->slug) }}">{{ $related->title }}</a>
-                    </h3>
-                    <p class="text-sm text-gray-500 mt-2 line-clamp-2">{{ $related->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($related->content_html), 120) }}</p>
+            @foreach($relatedArticles as $index => $related)
+                <x-article-card :article="$related" />
+
+                {{-- In-Feed Ad after 2nd related article --}}
+                @if($index === 1 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed'))
+                <div class="flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-format="fluid"
+                         data-ad-layout-key="-6t+ed+2i-1n-4w"
+                         data-ad-client="{{ $site->getAdsensePublisher() }}"
+                         data-ad-slot="{{ $site->getAdSlot('in_feed') }}"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
-            </article>
+                @endif
             @endforeach
         </div>
     </div>

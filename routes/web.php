@@ -32,8 +32,15 @@ Route::prefix('blog')->group(function () {
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/feed.xml', [FeedController::class, 'index'])->name('feed');
 
-// Old routes
+// ads.txt for AdSense verification (auto-served per site)
+Route::get('/ads.txt', function () {
+    $site = app(\App\Services\SiteResolver::class)->resolve();
+    $content = $site?->ads_txt_content
+        ?: 'google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0';
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+});
+
+// Root redirect to admin panel
 Route::get('/', function () {
     return redirect('/portal/masuk');
 });
-Route::get('/hi', fn() => 'hello world');

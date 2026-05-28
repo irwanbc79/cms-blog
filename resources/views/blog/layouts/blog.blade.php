@@ -17,7 +17,7 @@
     {{-- Primary Meta Tags --}}
     <title>@yield('title', $seo['title'] ?? ($site->name . ' - Blog'))</title>
     <meta name="description" content="@yield('description', $seo['description'] ?? '')">
-    <meta name="keywords" content="{{ $seo['focus_keyword'] ?? '' }}, {{ $site->name }}, blog, artikel">
+    <meta name="keywords" content="{{ trim(($seo['focus_keyword'] ?? '') ? ($seo['focus_keyword'] . ', ') : '') }}{{ $site->name }}, blog, artikel">
     @if($seo['canonical'] ?? false)
     <link rel="canonical" href="{{ $seo['canonical'] }}">
     @endif
@@ -27,14 +27,34 @@
     <meta name="author" content="{{ $seo['author'] }}">
     @endif
 
-    {{-- Google AdSense Auto Ads --}}
-    @if($adsensePublisherId = config('services.google.adsense_publisher_id'))
+    {{-- Google AdSense Auto Ads (per-site or global fallback) --}}
+    @php
+        $adsensePublisherId = $site->getAdsensePublisher() ?? config('services.google.adsense_publisher_id');
+    @endphp
+    @if($adsensePublisherId)
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsensePublisherId }}"
             crossorigin="anonymous"></script>
     @endif
 
-    {{-- Google site verification --}}
-    @if($googleVerification = config('services.google.site_verification'))
+    {{-- Google Analytics 4 --}}
+    @php
+        $ga4Id = $site->google_analytics_id ?: config('services.google.analytics_id');
+    @endphp
+    @if($ga4Id)
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga4Id }}"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '{{ $ga4Id }}');
+    </script>
+    @endif
+
+    {{-- Google site verification (per-site or global) --}}
+    @php
+        $googleVerification = $site->google_site_verification ?: config('services.google.site_verification');
+    @endphp
+    @if($googleVerification)
     <meta name="google-site-verification" content="{{ $googleVerification }}">
     @endif
 
@@ -84,8 +104,10 @@
     <link rel="preconnect" href="https://pagead2.googlesyndication.com">
     @endif
 
-    {{-- Fonts --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {{-- Fonts (non-render-blocking) --}}
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 
     {{-- Styles --}}
     @if ($blogAssetPrefix)
@@ -114,16 +136,19 @@
     {{-- Additional head --}}
     @stack('head')
 
+    {{-- Alpine.js for interactive components --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+
     {{-- Schema.org Site Navigation --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "Blog",
+        "@@context": "https://schema.org",
+        "@@type": "Blog",
         "name": "{{ $site->name }} Blog",
         "description": "Blog dan artikel terbaru dari {{ $site->name }}",
         "url": "{{ url('/blog') }}",
         "publisher": {
-            "@type": "Organization",
+            "@@type": "Organization",
             "name": "{{ $site->name }}"
         }
     }
@@ -133,14 +158,14 @@
     {{-- Schema.org WebSite + Search --}}
     <script type="application/ld+json">
     {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
         "name": "{{ $site->name }}",
         "url": "{{ url('/') }}",
         "potentialAction": {
-            "@type": "SearchAction",
+            "@@type": "SearchAction",
             "target": {
-                "@type": "EntryPoint",
+                "@@type": "EntryPoint",
                 "urlTemplate": "{{ url('/blog') }}?q={search_term_string}"
             },
             "query-input": "required name=search_term_string"
@@ -155,7 +180,10 @@
                 {{-- Logo / Brand --}}
                 <a href="{{ url('/') }}" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
                     @if($site->logo_url)
-                    <img src="{{ $site->logo_url }}" alt="{{ $site->name }}" class="h-8 w-auto">
+                    <img src="{{ $site->logo_url }}"
+                         alt="{{ $site->name }}"
+                         class="h-8 w-auto"
+                         onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-blue-600 text-white px-2 py-0.5 rounded text-sm\'>{{ substr($site->name, 0, 2) }}</span>'">
                     @else
                     <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-sm">{{ substr($site->name, 0, 2) }}</span>
                     @endif
@@ -167,6 +195,29 @@
                     <a href="{{ url('/blog') }}" class="hover:text-blue-600 transition-colors {{ request()->is('blog') ? 'text-blue-600' : '' }}">Blog</a>
                     @if($site->domain)
                     <a href="{{ 'https://' . $site->domain }}" class="hover:text-blue-600 transition-colors" target="_blank" rel="noopener">Website</a>
+                    @endif
+                    {{-- Language Switcher --}}
+                    @if($site->languages && count($site->languages) > 1)
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="uppercase">{{ $site->languages[0] ?? 'id' }}</span>
+                        </button>
+                        <div x-show="open" @click.outside="open = false"
+                             class="absolute right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-[120px] z-50"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100">
+                            @foreach($site->languages as $lang)
+                            <a href="{{ url('/blog?lang=' . $lang) }}"
+                               class="block px-4 py-2 text-sm hover:bg-gray-50 transition-colors {{ $lang === ($site->languages[0] ?? 'id') ? 'font-semibold text-blue-600' : 'text-gray-700' }}">
+                                {{ strtoupper($lang) }} — {{ $lang === 'id' ? 'Indonesia' : ($lang === 'en' ? 'English' : strtoupper($lang)) }}
+                            </a>
+                            @endforeach
+                        </div>
+                    </div>
                     @endif
                     {{-- Search --}}
                     <button onclick="document.getElementById('search-modal').classList.toggle('hidden')"
@@ -181,16 +232,31 @@
     </header>
 
     {{-- Search Modal --}}
-    <div id="search-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-24 px-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onclick="event.stopPropagation()">
+    <div id="search-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-start justify-center pt-24 px-4"
+         x-data="{ open: false }"
+         x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click.self="open = false; document.getElementById('search-modal').classList.add('hidden')"
+         @search-modal-open.window="open = true; document.getElementById('search-modal').classList.remove('hidden'); setTimeout(() => document.getElementById('search-input').focus(), 100)"
+         @search-modal-close.window="open = false; document.getElementById('search-modal').classList.add('hidden')"
+         style="display: none;">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" @click.stop="">
             <form action="{{ url('/blog') }}" method="GET" class="p-4">
                 <div class="flex items-center gap-3">
                     <svg class="w-5 h-5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" name="q" placeholder="Cari artikel..." autofocus
+                    <input id="search-input" type="text" name="q" placeholder="Cari artikel..."
                            class="flex-1 outline-none text-lg placeholder-gray-400">
-                    <button type="button" onclick="document.getElementById('search-modal').classList.add('hidden')"
+                    <kbd class="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-xs font-mono text-gray-400 bg-gray-100 rounded-md border border-gray-200">
+                        <span class="text-[10px]">⌘</span>K
+                    </kbd>
+                    <button type="button" @click="$dispatch('search-modal-close')"
                             class="text-sm text-gray-500 hover:text-gray-700 font-medium">Tutup</button>
                 </div>
             </form>
@@ -198,14 +264,26 @@
     </div>
 
     <script>
-        // Close search modal on escape or backdrop click
+        // Search modal keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            const modal = document.getElementById('search-modal');
+            // Ctrl+K or Cmd+K to open search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                window.dispatchEvent(new CustomEvent('search-modal-open'));
+                return;
+            }
+            // Escape to close
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+                window.dispatchEvent(new CustomEvent('search-modal-close'));
+            }
+        });
+
+        // Close search modal on backdrop click
         document.addEventListener('click', function(e) {
             const modal = document.getElementById('search-modal');
-            if (e.target === modal) modal.classList.add('hidden');
-        });
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.getElementById('search-modal')?.classList.add('hidden');
+            if (e.target === modal && !modal.classList.contains('hidden')) {
+                window.dispatchEvent(new CustomEvent('search-modal-close'));
             }
         });
     </script>

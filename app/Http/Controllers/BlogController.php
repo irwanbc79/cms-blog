@@ -25,10 +25,10 @@ class BlogController extends Controller
         $site = $this->siteResolver->resolveOrFail();
 
         $pillar = $request->query('pillar');
-        $search = $request->query('q');
+        $search = $request->query('q') ? substr(trim($request->query('q')), 0, 100) : null;
 
-        $query = Article::where('site_id', $site->id)
-            ->where('status', 'published')
+        $query = Article::forSite($site->id)
+            ->published()
             ->latest('published_at');
 
         if ($pillar) {
@@ -36,18 +36,19 @@ class BlogController extends Controller
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%")
-                  ->orWhere('focus_keyword', 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('title', 'like', "%{$escaped}%")
+                  ->orWhere('excerpt', 'like', "%{$escaped}%")
+                  ->orWhere('focus_keyword', 'like', "%{$escaped}%");
             });
         }
 
         $articles = $query->paginate(9)->withQueryString();
 
         // Get pillar counts for filter sidebar
-        $pillarCounts = Article::where('site_id', $site->id)
-            ->where('status', 'published')
+        $pillarCounts = Article::forSite($site->id)
+            ->published()
             ->selectRaw('pillar, count(*) as count')
             ->whereNotNull('pillar')
             ->groupBy('pillar')
@@ -59,7 +60,8 @@ class BlogController extends Controller
             'canonical' => url('/blog'),
         ];
 
-        return view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'));
+        return view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
+            ->header('Cache-Control', 'public, max-age=300, s-maxage=600');
     }
 
     /**
@@ -69,51 +71,49 @@ class BlogController extends Controller
     {
         $site = $this->siteResolver->resolveOrFail();
 
-        $article = Article::where('site_id', $site->id)
+        $article = Article::forSite($site->id)
+            ->published()
             ->where('slug', $slug)
-            ->where('status', 'published')
             ->firstOrFail();
 
         // Parse content for table of contents
         $toc = $this->generateToc($article->content_html);
 
-        // Get related articles (same pillar, excluding current)
-        $relatedArticles = Article::where('site_id', $site->id)
+        // Get related articles with smart fallback (single query)
+        $relatedArticles = Article::forSite($site->id)
+            ->published()
             ->where('id', '!=', $article->id)
-            ->where('status', 'published')
-            ->where('pillar', $article->pillar)
+            ->orderByRaw("CASE WHEN pillar = ? THEN 0 ELSE 1 END", [$article->pillar])
             ->latest('published_at')
             ->take(3)
-            ->get();
+            ->get(['id', 'title', 'slug', 'excerpt', 'content_html', 'pillar', 'featured_image_url', 'published_at', 'estimated_read_time', 'image_alt_texts']);
 
-        // If not enough related articles from same pillar, get latest
-        if ($relatedArticles->count() < 3) {
-            $excludeIds = $relatedArticles->pluck('id')->push($article->id);
-            $moreArticles = Article::where('site_id', $site->id)
-                ->where('status', 'published')
-                ->whereNotIn('id', $excludeIds)
-                ->latest('published_at')
-                ->take(3 - $relatedArticles->count())
-                ->get();
-            $relatedArticles = $relatedArticles->concat($moreArticles);
-        }
-
-        // Previous / Next article
+        // Previous / Next article — single query with union for performance
         $prevArticle = null;
         $nextArticle = null;
 
         if ($article->published_at) {
-            $prevArticle = Article::where('site_id', $site->id)
-                ->where('status', 'published')
+            $navArticles = Article::forSite($site->id)
+                ->published()
                 ->where('published_at', '<', $article->published_at)
                 ->latest('published_at')
-                ->first();
+                ->take(1)
+                ->union(
+                    Article::forSite($site->id)
+                        ->published()
+                        ->where('published_at', '>', $article->published_at)
+                        ->oldest('published_at')
+                        ->take(1)
+                )
+                ->get(['id', 'title', 'slug', 'published_at']);
 
-            $nextArticle = Article::where('site_id', $site->id)
-                ->where('status', 'published')
-                ->where('published_at', '>', $article->published_at)
-                ->oldest('published_at')
-                ->first();
+            foreach ($navArticles as $nav) {
+                if ($nav->published_at?->lt($article->published_at)) {
+                    $prevArticle = $nav;
+                } elseif ($nav->published_at?->gt($article->published_at)) {
+                    $nextArticle = $nav;
+                }
+            }
         }
 
         // Build breadcrumbs
@@ -138,11 +138,12 @@ class BlogController extends Controller
         return view('blog.show', compact(
             'site', 'article', 'toc', 'relatedArticles',
             'prevArticle', 'nextArticle', 'breadcrumbs', 'seo'
-        ));
+        ))->header('Cache-Control', 'public, max-age=300, s-maxage=600');
     }
 
     /**
      * Generate table of contents from HTML content.
+     * Handles headings with and without id attributes.
      */
     protected function generateToc(?string $html): array
     {
@@ -151,13 +152,26 @@ class BlogController extends Controller
         }
 
         $toc = [];
-        preg_match_all('/<h([2-3])\s+[^>]*id=["\']([^"\']+)["\'][^>]*>(.*?)<\/h[2-3]>/i', $html, $matches, PREG_SET_ORDER);
+        preg_match_all('/<h([2-3])(\s+[^>]*)?>(.*?)<\/h[2-3]>/i', $html, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
+            $level = (int) $match[1];
+            $attrs = $match[2] ?? '';
+            $innerHtml = $match[3];
+
+            // Extract id attribute if present
+            $id = '';
+            if (preg_match('/\bid=["\']([^"\']+)["\']/i', $attrs, $idMatch)) {
+                $id = $idMatch[1];
+            } else {
+                // Generate id from heading text as fallback
+                $id = Str::slug(strip_tags($innerHtml));
+            }
+
             $toc[] = [
-                'level' => (int) $match[1],
-                'id' => $match[2],
-                'title' => strip_tags($match[3]),
+                'level' => $level,
+                'id'    => $id,
+                'title' => strip_tags($innerHtml),
             ];
         }
 

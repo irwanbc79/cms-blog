@@ -117,6 +117,38 @@ class SiteResource extends Resource
                         ])
                         ->default(['id', 'en']),
                 ]),
+
+            Forms\Components\Section::make('💰 AdSense & Analytics')
+                ->description('Per-site monetization and tracking configuration.')
+                ->schema([
+                    Forms\Components\TextInput::make('adsense_publisher_id')
+                        ->label('AdSense Publisher ID')
+                        ->placeholder('pub-5616961797801657')
+                        ->maxLength(50)
+                        ->columnSpan(1),
+                    Forms\Components\TextInput::make('google_analytics_id')
+                        ->label('GA4 Measurement ID')
+                        ->placeholder('G-XXXXXXXXXX')
+                        ->maxLength(50)
+                        ->columnSpan(1),
+                    Forms\Components\TextInput::make('google_site_verification')
+                        ->label('Google Site Verification')
+                        ->maxLength(100)
+                        ->columnSpanFull(),
+                    Forms\Components\KeyValue::make('adsense_ad_slots')
+                        ->label('Ad Unit Slot IDs')
+                        ->keyLabel('Placement')
+                        ->valueLabel('Slot ID')
+                        ->helperText('Placements: in_article, in_feed, display_top, display_bottom, multiplex')
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('ads_txt_content')
+                        ->label('ads.txt Content')
+                        ->helperText('This content is auto-served at /ads.txt for this domain. Include your AdSense publisher entry.')
+                        ->default('google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0')
+                        ->rows(3)
+                        ->columnSpanFull(),
+                ])
+                ->columns(2),
         ]);
     }
 

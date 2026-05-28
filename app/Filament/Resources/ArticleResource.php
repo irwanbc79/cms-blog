@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ArticleResource\Pages;
 use App\Models\Article;
 use App\Models\Site;
+use App\Services\SeoService;
 use App\Services\WordPressService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -94,10 +95,23 @@ class ArticleResource extends Resource
                     ->color('gray')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('title')->searchable()->limit(50),
-                Tables\Columns\BadgeColumn::make('pillar')
-                    ->colors(['warning' => 'regulasi', 'success' => 'umkm', 'info' => 'news', 'primary' => 'logistik']),
-                Tables\Columns\BadgeColumn::make('status')
-                    ->colors(['gray' => 'draft', 'warning' => 'scheduled', 'success' => 'published']),
+                Tables\Columns\TextColumn::make('pillar')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'regulasi' => 'warning',
+                        'umkm' => 'success',
+                        'news' => 'info',
+                        'logistik' => 'primary',
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'draft' => 'gray',
+                        'scheduled' => 'warning',
+                        'published' => 'success',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('language')->badge()->color('gray'),
                 Tables\Columns\TextColumn::make('word_count')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('estimated_read_time')
@@ -107,12 +121,8 @@ class ArticleResource extends Resource
                 Tables\Columns\TextColumn::make('seo_score')
                     ->label('SEO')
                     ->badge()
-                    ->color(fn (Article $record) => match (true) {
-                        static::calculateSeoScore($record) >= 80 => 'success',
-                        static::calculateSeoScore($record) >= 50 => 'warning',
-                        default => 'danger',
-                    })
-                    ->state(fn (Article $record) => static::calculateSeoScore($record) . '%'),
+                    ->color(fn (Article $record) => (new SeoService)->color((new SeoService)->calculate($record)))
+                    ->state(fn (Article $record) => (new SeoService)->calculate($record) . '%'),
                 Tables\Columns\TextColumn::make('published_at')->dateTime('d M Y')->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
@@ -208,60 +218,6 @@ class ArticleResource extends Resource
 
     public static function calculateSeoScore(Article $article): int
     {
-        $score = 0;
-
-        // Title presence & length
-        if (! empty($article->title)) {
-            $score += 10;
-            if (strlen($article->title) >= 30 && strlen($article->title) <= 60) {
-                $score += 5;
-            }
-        }
-
-        // Meta description
-        if (! empty($article->meta_description)) {
-            $score += 15;
-            if (strlen($article->meta_description) <= 160) {
-                $score += 5;
-            }
-        }
-
-        // Focus keyword
-        if (! empty($article->focus_keyword)) {
-            $score += 15;
-        }
-
-        // SEO title
-        if (! empty($article->og_title)) {
-            $score += 10;
-        }
-
-        // Content quality
-        if (! empty($article->content_html)) {
-            $score += 10;
-            if (($article->word_count ?? 0) >= 1000) {
-                $score += 10;
-            }
-            if (($article->word_count ?? 0) >= 1500) {
-                $score += 5;
-            }
-        }
-
-        // Tags
-        $tags = $article->tags ?? [];
-        if (count($tags) >= 3) {
-            $score += 5;
-        }
-        if (count($tags) >= 5) {
-            $score += 5;
-        }
-
-        // FAQ schema
-        $faq = $article->schema_faq ?? [];
-        if (count($faq) >= 3) {
-            $score += 5;
-        }
-
-        return min(100, $score);
+        return (new SeoService)->calculate($article);
     }
 }

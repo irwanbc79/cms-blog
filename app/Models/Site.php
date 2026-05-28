@@ -11,15 +11,18 @@ class Site extends Model
         'name', 'slug', 'domain', 'wp_url', 'wp_username', 'wp_app_password',
         'anthropic_api_key', 'anthropic_model', 'content_pillars', 'languages',
         'ai_prompt_context', 'whatsapp_number', 'logo_url', 'is_active',
+        'adsense_publisher_id', 'adsense_ad_slots', 'google_analytics_id',
+        'google_site_verification', 'ads_txt_content',
     ];
 
     protected $casts = [
-        'content_pillars' => 'array',
-        'languages'       => 'array',
-        'is_active'       => 'boolean',
-        'wp_username'     => 'encrypted',
-        'wp_app_password' => 'encrypted',
+        'content_pillars'   => 'array',
+        'languages'         => 'array',
+        'is_active'         => 'boolean',
+        'wp_username'       => 'encrypted',
+        'wp_app_password'   => 'encrypted',
         'anthropic_api_key' => 'encrypted',
+        'adsense_ad_slots'  => 'array',
     ];
 
     public function articles(): HasMany
@@ -69,5 +72,21 @@ class Site extends Model
         }
 
         return ['id' => 'Indonesia', 'en' => 'English'];
+    }
+
+    /**
+     * Get a specific AdSense ad slot ID.
+     */
+    public function getAdSlot(string $type): ?string
+    {
+        return $this->adsense_ad_slots[$type] ?? null;
+    }
+
+    /**
+     * Get the AdSense publisher ID (site-level or global fallback).
+     */
+    public function getAdsensePublisher(): ?string
+    {
+        return $this->adsense_publisher_id ?: config('services.google.adsense_publisher_id');
     }
 }

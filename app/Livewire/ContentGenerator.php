@@ -148,41 +148,23 @@ class ContentGenerator extends Component
         $selectedTitle      = $this->titleOptions[$this->selectedTitleIndex]['title'];
 
         try {
-            $site              = Site::findOrFail($this->siteId);
-            $service           = new AnthropicService($site);
-            $this->articleData = $service->generateArticle($selectedTitle, $this->pillar, $this->language);
-            $this->articleData['title'] = $selectedTitle;
+            $site    = Site::findOrFail($this->siteId);
+            $service = new AnthropicService($site);
 
-            $article = Article::create([
-                'site_id'            => $this->siteId,
-                'title'              => $selectedTitle,
-                'slug'               => $this->articleData['slug'] ?: Str::slug($selectedTitle),
-                'focus_keyword'      => $this->articleData['focus_keyword'] ?? '',
-                'meta_description'   => $this->articleData['meta_description'] ?? '',
-                'og_title'           => $this->articleData['seo_title'] ?? $selectedTitle,
-                'content_html'       => $this->articleData['content_html'],
-                'tags'               => $this->articleData['tags'] ?? [],
-                'hashtags'           => $this->articleData['hashtags'] ?? [],
-                'image_alt_texts'    => $this->articleData['image_alt_texts'] ?? [],
-                'schema_faq'         => $this->articleData['schema_faq'] ?? [],
-                'language'           => $this->language,
-                'pillar'             => $this->pillar,
-                'status'             => 'draft',
-                'word_count'         => $this->articleData['word_count'] ?? 0,
-                'estimated_read_time' => max(1, intval(($this->articleData['word_count'] ?? 0) / 200)),
-                'user_id'            => auth()->id(),
-            ]);
+            // Step A: Generate article content via AI
+            $this->articleData = $this->generateArticleContent($service, $selectedTitle);
 
-            $this->savedArticleId = $article->id;
+            // Step B: Inject internal links
+            $this->articleData['content_html'] = $this->injectInternalLinks(
+                $service,
+                $this->articleData['content_html']
+            );
 
-            if ($this->topicIdeaId) {
-                TopicIdea::where('id', $this->topicIdeaId)->update([
-                    'is_used'        => true,
-                    'used_at'        => now(),
-                    'article_id'     => $article->id,
-                    'selected_title' => $selectedTitle,
-                ]);
-            }
+            // Step C: Save to database
+            $this->savedArticleId = $this->saveArticle($selectedTitle);
+
+            // Step D: Mark topic idea as used
+            $this->markTopicIdeaUsed($selectedTitle);
 
             $this->step = 3;
         } catch (\Throwable $e) {
@@ -190,6 +172,101 @@ class ContentGenerator extends Component
         }
 
         $this->generating = false;
+    }
+
+    /**
+     * Call Anthropic API to generate article content.
+     */
+    private function generateArticleContent(AnthropicService $service, string $selectedTitle): array
+    {
+        $data = $service->generateArticle($selectedTitle, $this->pillar, $this->language);
+        $data['title'] = $selectedTitle;
+        return $data;
+    }
+
+    /**
+     * Auto-inject internal links into article content.
+     */
+    private function injectInternalLinks(AnthropicService $service, string $contentHtml): string
+    {
+        $existingArticles = Article::forSite($this->siteId)
+            ->published()
+            ->select('title', 'slug')
+            ->latest('published_at')
+            ->take(20)
+            ->get()
+            ->toArray();
+
+        if (count($existingArticles) >= 3) {
+            return $service->generateInternalLinks($contentHtml, $existingArticles);
+        }
+
+        return $contentHtml;
+    }
+
+    /**
+     * Save the generated article to the database.
+     */
+    private function saveArticle(string $selectedTitle): int
+    {
+        $slug = $this->ensureUniqueSlug(
+            $this->articleData['slug'] ?: Str::slug($selectedTitle)
+        );
+
+        $article = Article::create([
+            'site_id'             => $this->siteId,
+            'title'               => $selectedTitle,
+            'slug'                => $slug,
+            'focus_keyword'       => $this->articleData['focus_keyword'] ?? '',
+            'meta_description'    => $this->articleData['meta_description'] ?? '',
+            'excerpt'             => $this->articleData['excerpt']
+                                      ?? Str::limit(strip_tags($this->articleData['content_html']), 200),
+            'og_title'            => $this->articleData['seo_title'] ?? $selectedTitle,
+            'content_html'        => $this->articleData['content_html'],
+            'tags'                => $this->articleData['tags'] ?? [],
+            'hashtags'            => $this->articleData['hashtags'] ?? [],
+            'image_alt_texts'     => $this->articleData['image_alt_texts'] ?? [],
+            'schema_faq'          => $this->articleData['schema_faq'] ?? [],
+            'language'            => $this->language,
+            'pillar'              => $this->pillar,
+            'status'              => 'draft',
+            'word_count'          => $this->articleData['word_count'] ?? 0,
+            'estimated_read_time' => max(1, intval(($this->articleData['word_count'] ?? 0) / 238)),
+            'user_id'             => auth()->id(),
+        ]);
+
+        return $article->id;
+    }
+
+    /**
+     * Mark the selected TopicIdea as used.
+     */
+    private function markTopicIdeaUsed(string $selectedTitle): void
+    {
+        if ($this->topicIdeaId) {
+            TopicIdea::where('id', $this->topicIdeaId)->update([
+                'is_used'        => true,
+                'used_at'        => now(),
+                'article_id'     => $this->savedArticleId,
+                'selected_title' => $selectedTitle,
+            ]);
+        }
+    }
+
+    /**
+     * Ensure slug uniqueness across all articles.
+     */
+    private function ensureUniqueSlug(string $slug): string
+    {
+        $original = $slug;
+        $counter  = 1;
+
+        while (Article::where('slug', $slug)->exists()) {
+            $slug = "{$original}-{$counter}";
+            $counter++;
+        }
+
+        return $slug;
     }
 
     // ─── Step 3 → 4 ────────────────────────────────────────────────────────────
