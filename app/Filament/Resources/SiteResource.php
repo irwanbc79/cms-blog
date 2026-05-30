@@ -74,12 +74,13 @@ class SiteResource extends Resource
                     Forms\Components\Select::make('anthropic_model')
                         ->label('AI Model')
                         ->options([
-                            'claude-sonnet-4-20250514' => 'Claude Sonnet 4 (Recommended)',
-                            'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet',
-                            'claude-opus-4-20250514' => 'Claude Opus 4',
-                            'claude-3-5-haiku-20241022' => 'Claude 3.5 Haiku',
+                            'claude-sonnet-4-6'          => 'Claude Sonnet 4.6 (Recommended)',
+                            'claude-opus-4-7'            => 'Claude Opus 4.7 (Most capable)',
+                            'claude-haiku-4-5-20251001'  => 'Claude Haiku 4.5 (Fast)',
+                            'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet (Stable)',
+                            'claude-3-5-haiku-20241022'  => 'Claude 3.5 Haiku (Stable/Fast)',
                         ])
-                        ->default('claude-sonnet-4-20250514'),
+                        ->default('claude-sonnet-4-6'),
                     Forms\Components\Textarea::make('ai_prompt_context')
                         ->label('AI Prompt Context')
                         ->helperText('Additional context injected into AI prompts (company description, brand voice, etc.)')
