@@ -62,7 +62,7 @@ class BlogController extends Controller
             'canonical'   => url('/blog'),
         ];
 
-        return view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
+        return response()->view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
             ->header('Cache-Control', 'public, max-age=300, s-maxage=600');
     }
 
@@ -147,7 +147,7 @@ class BlogController extends Controller
             'focus_keyword'  => $article->focus_keyword,
         ];
 
-        return view('blog.show', compact(
+        return response()->view('blog.show', compact(
             'site', 'article', 'toc', 'relatedArticles',
             'prevArticle', 'nextArticle', 'breadcrumbs', 'seo'
         ))->header('Cache-Control', 'public, max-age=300, s-maxage=600');
