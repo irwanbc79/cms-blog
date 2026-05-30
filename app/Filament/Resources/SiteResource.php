@@ -38,9 +38,9 @@ class SiteResource extends Resource
                         ->columnSpan(1),
                     Forms\Components\TextInput::make('domain')
                         ->label('Domain')
-                        ->url()
                         ->maxLength(255)
-                        ->placeholder('e.g., m2b.co.id')
+                        ->placeholder('e.g., m2b.co.id (tanpa https://)')
+                        ->helperText('Hanya hostname, tanpa https:// — contoh: dira.co.id')
                         ->columnSpan(1),
                     Forms\Components\Toggle::make('is_active')
                         ->label('Active')
