@@ -11,8 +11,8 @@ class Article extends Model
 {
     protected $fillable = [
         'site_id', 'title', 'slug', 'focus_keyword', 'meta_description', 'excerpt',
-        'content_html', 'og_title', 'og_description', 'tags', 'hashtags',
-        'image_alt_texts', 'schema_faq', 'language', 'pillar', 'status',
+        'content_html', 'og_title', 'og_description', 'canonical_url', 'schema_type',
+        'tags', 'hashtags', 'image_alt_texts', 'schema_faq', 'language', 'pillar', 'status',
         'word_count', 'estimated_read_time', 'featured_image_url',
         'wp_post_id', 'wp_post_url', 'published_at', 'scheduled_at', 'user_id',
         'refresh_flagged_at',

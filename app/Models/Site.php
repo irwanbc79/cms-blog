@@ -13,6 +13,7 @@ class Site extends Model
         'ai_prompt_context', 'whatsapp_number', 'logo_url', 'is_active',
         'adsense_publisher_id', 'adsense_ad_slots', 'google_analytics_id',
         'google_site_verification', 'ads_txt_content',
+        'api_token', 'webhook_url',
     ];
 
     protected $casts = [
