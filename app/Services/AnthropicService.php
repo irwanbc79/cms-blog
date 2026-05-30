@@ -279,16 +279,17 @@ PROMPT;
 
     private function callApi(string $prompt, int $maxTokens): string
     {
-        set_time_limit(300);
+        set_time_limit(600);
 
         try {
             $response = Http::withHeaders([
                 'x-api-key'         => $this->apiKey,
                 'anthropic-version' => '2023-06-01',
                 'content-type'      => 'application/json',
-            ])->timeout(120)->retry(2, 1000, function (\Exception $exception) {
-                return $exception instanceof \Illuminate\Http\Client\ConnectionException
-                    || ($exception instanceof RequestException && $exception->response?->status() >= 500);
+            ])->timeout(300)->retry(2, 2000, function (\Exception $exception) {
+                // Only retry on 5xx server errors, NOT on connection timeout
+                return $exception instanceof RequestException
+                    && $exception->response?->status() >= 500;
             })->post("{$this->baseUrl}/messages", [
                 'model'      => $this->model,
                 'max_tokens' => $maxTokens,
