@@ -139,7 +139,7 @@ class BlogController extends Controller
             'title'          => $article->og_title ?: $article->title,
             'description'    => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
             'image'          => $article->featured_image_url,
-            'canonical'      => url('/blog/' . $article->slug),
+            'canonical'      => $article->canonical_url ?: url('/blog/' . $article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
             'modified_time'  => $article->updated_at->toIso8601String(),
             'author'         => $article->user?->name ?? $site->name,

@@ -22,9 +22,15 @@ use App\Http\Controllers\FeedController;
 
 Route::prefix('blog')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('blog.index');
-    // These mirror routes for subdirectory blog mode (e.g. morabangun.com/blog/sitemap.xml)
     Route::get('/sitemap.xml', [SitemapController::class, 'index']);
     Route::get('/feed.xml', [FeedController::class, 'index']);
+    // ads.txt mirror for subdirectory mode (e.g. dira.co.id/blog/ads.txt)
+    Route::get('/ads.txt', function () {
+        $site = app(\App\Services\SiteResolver::class)->resolve();
+        $content = $site?->ads_txt_content
+            ?: 'google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0';
+        return response($content, 200, ['Content-Type' => 'text/plain']);
+    });
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
 });
 
