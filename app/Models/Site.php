@@ -10,7 +10,7 @@ class Site extends Model
     protected $fillable = [
         'name', 'slug', 'domain', 'wp_url', 'wp_username', 'wp_app_password',
         'anthropic_api_key', 'anthropic_model', 'content_pillars', 'languages',
-        'ai_prompt_context', 'whatsapp_number', 'logo_url', 'is_active',
+        'ai_prompt_context', 'whatsapp_number', 'contact_email', 'logo_url', 'is_active',
         'adsense_publisher_id', 'adsense_ad_slots', 'google_analytics_id',
         'google_site_verification', 'ads_txt_content',
         'api_token', 'webhook_url',

@@ -61,6 +61,12 @@ class SiteResource extends Resource
                         ->maxLength(50)
                         ->placeholder('e.g., +6281263027818')
                         ->columnSpan(1),
+                    Forms\Components\TextInput::make('contact_email')
+                        ->label('Contact Email')
+                        ->email()
+                        ->maxLength(100)
+                        ->placeholder('e.g., sales@m2b.co.id')
+                        ->columnSpan(1),
                 ]),
 
             Forms\Components\Section::make('Anthropic AI')

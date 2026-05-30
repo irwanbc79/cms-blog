@@ -61,17 +61,24 @@ class AnthropicService
         return $this->site?->name ?: 'M2B';
     }
 
+    private function getEmail(): string
+    {
+        return $this->site?->contact_email ?: 'info@m2b.co.id';
+    }
+
     private function getCtaBlock(): string
     {
-        $company  = $this->getCompanyName();
-        $wa       = preg_replace('/[^0-9]/', '', $this->getWhatsApp());
-        $waUrl    = "https://wa.me/{$wa}";
+        $company = $this->getCompanyName();
+        $wa      = preg_replace('/[^0-9]/', '', $this->getWhatsApp());
+        $waUrl   = "https://wa.me/{$wa}";
+        $email   = $this->getEmail();
 
         return <<<CTA
 <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-left:4px solid #0ea5e9;padding:1.25rem 1.5rem;margin:2rem 0;border-radius:.75rem;">
 <p style="margin:0 0 .5rem;font-weight:700;font-size:1.05rem;">💬 Butuh Konsultasi atau Layanan Profesional?</p>
 <p style="margin:0 0 .75rem;color:#374151;">Tim ahli <strong>{$company}</strong> siap membantu Anda. Konsultasi gratis, respon cepat.</p>
-<a href="{$waUrl}" target="_blank" rel="noopener" style="display:inline-block;background:#25d366;color:#fff;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;text-decoration:none;">📲 Chat WhatsApp Sekarang →</a>
+<a href="{$waUrl}" target="_blank" rel="noopener" style="display:inline-block;background:#25d366;color:#fff;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;text-decoration:none;margin-right:.75rem;">📲 WhatsApp</a>
+<a href="mailto:{$email}" style="display:inline-block;background:#2563eb;color:#fff;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;text-decoration:none;">✉️ Email: {$email}</a>
 </div>
 CTA;
     }
