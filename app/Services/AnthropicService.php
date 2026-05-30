@@ -311,9 +311,22 @@ PROMPT;
 
     private function cleanJsonResponse(string $raw): string
     {
+        // Strip thinking tags (Claude 4.x extended thinking)
+        $raw = preg_replace('/<thinking>.*?<\/thinking>/s', '', $raw);
+
+        // Strip markdown code fences
         $clean = preg_replace('/```json?\s*/i', '', $raw);
         $clean = preg_replace('/```/', '', $clean);
-        return trim($clean);
+        $clean = trim($clean);
+
+        // If not valid JSON yet, extract first JSON object or array from text
+        if (json_decode($clean) === null) {
+            if (preg_match('/(\{[\s\S]*\}|\[[\s\S]*\])/s', $clean, $m)) {
+                $clean = $m[1];
+            }
+        }
+
+        return $clean;
     }
 
     // ─── Parsers ───────────────────────────────────────────────────────────────
