@@ -2,10 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use App\Jobs\GenerateArticleJob;
 use App\Models\Article;
 use App\Models\Site;
 use App\Models\TopicIdea;
-use App\Services\AnthropicService;
 use App\Services\WordPressService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -22,7 +22,6 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Str;
 
 class ContentStudio extends Page implements HasForms, HasTable
 {
@@ -81,99 +80,31 @@ class ContentStudio extends Page implements HasForms, HasTable
             'articleCount' => 'required|integer|min:1|max:30',
         ]);
 
-        $site = Site::findOrFail($this->siteId);
-        $service = new AnthropicService($site);
-
         $scheduleDate = $this->scheduleStart
             ? \Carbon\Carbon::parse($this->scheduleStart)
             : now()->addDay()->setHour(8)->setMinute(0);
 
-        $success = 0;
-        $failed  = 0;
+        $userId = auth()->id();
 
         for ($i = 0; $i < $this->articleCount; $i++) {
-            try {
-                // Generate titles
-                $titles = $service->generateTitleOptions($this->topic, $this->pillar, $this->language);
-
-                // Pick best title
-                $bestTitle = collect($titles)
-                    ->sortByDesc(fn (array $t) => match ($t['ctr_score'] ?? 'low') {
-                        'high' => 3,
-                        'med'  => 2,
-                        default => 1,
-                    })
-                    ->first();
-
-                $selectedTitle = $bestTitle['title'] ?? $this->topic;
-
-                // Generate article
-                $articleData = $service->generateArticle($selectedTitle, $this->pillar, $this->language);
-
-                // Create article
-                $slug = $this->ensureUniqueSlug(
-                    $articleData['slug'] ?: Str::slug($selectedTitle)
-                );
-
-                Article::create([
-                    'site_id'             => $this->siteId,
-                    'title'               => $selectedTitle,
-                    'slug'                => $slug,
-                    'focus_keyword'       => $articleData['focus_keyword'] ?? '',
-                    'meta_description'    => $articleData['meta_description'] ?? '',
-                    'excerpt'             => $articleData['excerpt']
-                                              ?? Str::limit(strip_tags($articleData['content_html'] ?? ''), 200),
-                    'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
-                    'content_html'        => $articleData['content_html'] ?? '',
-                    'tags'                => $articleData['tags'] ?? [],
-                    'hashtags'            => $articleData['hashtags'] ?? [],
-                    'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],
-                    'schema_faq'          => $articleData['schema_faq'] ?? [],
-                    'language'            => $this->language,
-                    'pillar'              => $this->pillar,
-                    'status'              => 'scheduled',
-                    'scheduled_at'        => $scheduleDate->copy(),
-                    'word_count'          => $articleData['word_count'] ?? 0,
-                    'estimated_read_time' => max(1, intval(($articleData['word_count'] ?? 0) / 238)),
-                    'user_id'             => auth()->id(),
-                ]);
-
-                $success++;
-                $scheduleDate->addDays($this->scheduleGap);
-
-                // Rate limit
-                if ($i < $this->articleCount - 1) {
-                    sleep(3);
-                }
-            } catch (\Throwable $e) {
-                $failed++;
-                Notification::make()
-                    ->title("❌ Article #{$i}: {$e->getMessage()}")
-                    ->danger()
-                    ->send();
-            }
+            GenerateArticleJob::dispatch(
+                $this->siteId,
+                $this->topic,
+                $this->pillar,
+                $this->language,
+                $scheduleDate->copy()->toDateTimeString(),
+                $userId,
+            );
+            $scheduleDate->addDays($this->scheduleGap);
         }
 
         Notification::make()
-            ->title("✅ {$success} articles created" . ($failed ? ", {$failed} failed" : ''))
+            ->title("🚀 {$this->articleCount} article(s) queued — generating in background")
+            ->body('Refresh halaman ini dalam 2-3 menit untuk melihat hasilnya.')
             ->success()
             ->send();
 
-        // Reset form
         $this->topic = '';
-    }
-
-    private function ensureUniqueSlug(string $slug): string
-    {
-        $original = $slug;
-        $counter  = 1;
-
-        while (Article::where('slug', $slug)->exists()) {
-            $slug = "{$original}-{$counter}";
-            $counter++;
-        }
-
-        return $slug;
     }
 
     // ─── Table: Queue Overview ──────────────────────────────────────────────────
