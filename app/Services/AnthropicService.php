@@ -27,7 +27,7 @@ class AnthropicService
             $model = $model ?: $site->anthropic_model;
         } else {
             $key = Setting::get('anthropic_api_key');
-            $model = $model ?: Setting::get('anthropic_model', 'claude-sonnet-4-20250514');
+            $model = $model ?: Setting::get('anthropic_model', 'claude-3-5-sonnet-20241022');
         }
 
         if (! $key) {
@@ -35,7 +35,7 @@ class AnthropicService
         }
 
         $this->apiKey = trim($key);
-        $this->model  = $model ?: 'claude-sonnet-4-20250514';
+        $this->model  = trim($model ?: 'claude-3-5-sonnet-20241022');
     }
 
     /**
