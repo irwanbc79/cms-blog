@@ -1,5 +1,41 @@
 # M2B Blog CMS — Project Context
 
+## Aturan Kerja Wajib (JANGAN DILANGGAR)
+
+1. **BACKUP dulu** sebelum modifikasi file/DB apa pun: `cp file file.bak.$(date +%F)`
+2. **Jangan ubah/rusak modul yang sudah berjalan normal.**
+3. **1 fitur = 1 branch**: `git checkout -b feature/nama-fitur`. Jangan commit ke `main` langsung.
+4. **Test lokal dulu** sebelum push ke production.
+5. **Gunakan `php artisan make:*`**, jangan buat file manual. Migration wajib ada `down()`.
+6. **Konvensi**: `snake_case` DB · `camelCase` JS · `PascalCase` Class. CRUD via Filament Resource.
+7. **JANGAN ubah `.env.production`** tanpa konfirmasi eksplisit. Jangan hapus migration yang sudah jalan.
+8. **Gaya jawab**: singkat, tepat, 1 rekomendasi. Hemat token.
+
+## Arsitektur: Content Hub & SEO 4 Domain
+
+`cms.m2b.co.id` = single source of truth. Distribusi ke 4 domain via WP REST API (domain ber-WP) dan REST API internal (dira/gma SPA).
+
+| Domain | Niche | Render | AdSense |
+|---|---|---|---|
+| m2b.co.id | Ekspor-impor, bea cukai, freight | SSR Laravel | Target utama |
+| dira.co.id | Komoditas (sawit/karet/kopi), trading | SPA → perlu SSR | Setelah SSR siap |
+| morabangun.com | ERP/CRM/AI bisnis | SSR | Sudah terpasang |
+| gma-world.id | Maritime, konstruksi | SPA → perlu SSR | Tunda (B2B) |
+
+AdSense pub-id: `ca-pub-5616961797801657`
+
+## Gap yang Belum Ada (roadmap Fase 1+)
+
+- `canonical_url` field di tabel `articles` — untuk `<link rel="canonical">` cross-domain
+- `schema_type` field di tabel `articles`
+- `routes/api.php` — REST API untuk distribusi ke dira/gma (non-WP)
+- Webhook on-publish → trigger cache revalidate di domain terkait
+- `IndexNow` / Google Indexing API ping saat publish
+- Pillar `enum` di DB harus diubah ke `VARCHAR` (saat ini hardcoded: regulasi/umkm/news/logistik)
+
+---
+
+
 ## Overview
 
 Multi-site blog CMS built with **Laravel 12** + **Filament 3.x** admin panel. Serves multiple branded blog sites from a single codebase with AI-powered content generation (Claude) and WordPress publishing.
