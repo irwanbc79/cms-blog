@@ -52,16 +52,20 @@ class GenerateArticleJob implements ShouldQueue
             $articleData['slug'] ?: Str::slug($selectedTitle)
         );
 
+        $keyword = $articleData['focus_keyword'] ?? $this->topic;
+        $imgSeed = Str::slug($keyword . '-' . substr($slug, 0, 20));
+
         Article::create([
             'site_id'             => $this->siteId,
             'title'               => $selectedTitle,
             'slug'                => $slug,
-            'focus_keyword'       => $articleData['focus_keyword'] ?? '',
+            'focus_keyword'       => $keyword,
             'meta_description'    => $articleData['meta_description'] ?? '',
             'excerpt'             => $articleData['excerpt']
                                        ?? Str::limit(strip_tags($articleData['content_html'] ?? ''), 200),
             'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
             'content_html'        => $articleData['content_html'] ?? '',
+            'featured_image_url'  => "https://picsum.photos/seed/{$imgSeed}/1200/630",
             'tags'                => $articleData['tags'] ?? [],
             'hashtags'            => $articleData['hashtags'] ?? [],
             'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],

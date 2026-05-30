@@ -51,20 +51,29 @@ class AnthropicService
         return "M2B is a licensed freight forwarding & PPJK company in Indonesia.\nPorts: Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, Balikpapan.\nTarget audience: B2B exporters/importers and UMKM exporters.";
     }
 
-    /**
-     * Get WhatsApp number from site or default.
-     */
     private function getWhatsApp(): string
     {
         return $this->site?->whatsapp_number ?: '+6281263027818';
     }
 
-    /**
-     * Get company name for prompts.
-     */
     private function getCompanyName(): string
     {
         return $this->site?->name ?: 'M2B';
+    }
+
+    private function getCtaBlock(): string
+    {
+        $company  = $this->getCompanyName();
+        $wa       = preg_replace('/[^0-9]/', '', $this->getWhatsApp());
+        $waUrl    = "https://wa.me/{$wa}";
+
+        return <<<CTA
+<div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-left:4px solid #0ea5e9;padding:1.25rem 1.5rem;margin:2rem 0;border-radius:.75rem;">
+<p style="margin:0 0 .5rem;font-weight:700;font-size:1.05rem;">💬 Butuh Konsultasi atau Layanan Profesional?</p>
+<p style="margin:0 0 .75rem;color:#374151;">Tim ahli <strong>{$company}</strong> siap membantu Anda. Konsultasi gratis, respon cepat.</p>
+<a href="{$waUrl}" target="_blank" rel="noopener" style="display:inline-block;background:#25d366;color:#fff;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;text-decoration:none;">📲 Chat WhatsApp Sekarang →</a>
+</div>
+CTA;
     }
 
     // ─── Public Methods ────────────────────────────────────────────────────────
@@ -220,6 +229,9 @@ PROMPT;
         $context  = $this->getContextString();
         $company  = $this->getCompanyName();
         $whatsapp = $this->getWhatsApp();
+        $waNum    = preg_replace('/[^0-9]/', '', $whatsapp);
+        $ctaBlock = $this->getCtaBlock();
+        $year     = date('Y');
 
         return <<<PROMPT
 You are an expert content writer and SEO specialist for {$company}.
@@ -229,49 +241,54 @@ Focus keyword: "{$keyword}"
 
 Write a comprehensive, authoritative blog article for: "{$title}"
 
-═══ CRITICAL QUALITY REQUIREMENTS (Google E-E-A-T) ═══
+═══ GOOGLE E-E-A-T REQUIREMENTS ═══
 
-1. EXPERIENCE: Include real-world examples, case studies, or scenarios that show firsthand knowledge
-2. EXPERTISE: Use industry-specific terminology correctly, cite regulations/standards where relevant
-3. AUTHORITY: Reference credible sources (government regulations, industry reports, expert opinions)
-4. TRUST: Be accurate, transparent about limitations, provide actionable advice
+1. EXPERIENCE: Real-world examples, case studies, practical scenarios from the industry
+2. EXPERTISE: Correct industry terminology, cite regulations, standards, and official sources
+3. AUTHORITY: Reference BPS, Kemendag, Bea Cukai, or relevant government/industry bodies for data
+4. TRUST: Include specific numbers, dates, and verifiable facts; mention {$year} updates
 
-═══ STRUCTURE REQUIREMENTS ═══
+═══ STRUCTURE (1800-2500 words minimum) ═══
 
-- Length: 1800-2500 words (MINIMUM 1800 — this is critical for Google quality)
-- Opening: Hook paragraph that addresses reader's pain point + preview of what they'll learn
-- Structure:
-  • H1: Article title (use focus keyword)
-  • Introduction (2-3 paragraphs, include keyword in first paragraph)
-  • 4-6 H2 sections, each with 2-3 H3 subsections
-  • Each H2 section must have 200+ words of substantive content
-  • Include at least ONE of: numbered steps, comparison table, checklist, or data points per section
-  • Conclusion with clear actionable takeaways
-  • CTA paragraph mentioning {$company} WhatsApp {$whatsapp}
+• H1: Article title with focus keyword
+• Introduction (2-3 paragraphs): hook → pain point → preview of value
+• 4-6 H2 sections with 2-3 H3 subsections each (200+ words per H2)
+• "📰 Update Terbaru {$year}" section: mention recent regulations, policy changes, or market data from {$year}
+• Comparison table OR numbered steps OR checklist in at least 2 sections
+• Conclusion: 3-5 actionable takeaways
+• End with this EXACT HTML CTA block:
+{$ctaBlock}
 
-═══ SEO REQUIREMENTS ═══
+═══ EMOJI RULES (MANDATORY) ═══
 
-- Focus keyword density: 1-2% naturally throughout
-- Include keyword in: H1, first paragraph, 2-3 H2 headings, last paragraph
-- Use LSI (related) keywords naturally throughout
-- Every H2 and H3 MUST have an id attribute for table of contents: <h2 id="slug-of-heading">
-- Add relevant emoji at start of each H2 (📦 🚢 ✅ 📋 💡 🌏 🔑 📈 ⚠️ 💰 🏗️ 📊)
+- Every H2: start with 1 relevant emoji (📦 🚢 ✅ 📋 💡 🌏 🔑 📈 ⚠️ 💰 🏗️ 📊 🎯 🔍 📌 🏆 ⚡ 🛡️ 🌿 🤝)
+- Every H3: start with 1 smaller emoji
+- Key insight paragraphs: add 1 emoji at start
+- Inside lists: add emoji to bullet items where natural
+- MAX 1 emoji per element — do not stack emojis
 
-═══ ADSENSE-FRIENDLY CONTENT RULES ═══
+═══ IMAGES (MANDATORY — include 2-3) ═══
 
-- Write ORIGINAL, high-value content — NOT generic/thin content
-- Include specific data, numbers, statistics (even estimated ones)
-- Add practical tips readers can act on immediately
-- Use <blockquote> for key insights or expert quotes
-- Use <table> for comparisons, pricing, or data
-- Include <ul> or <ol> lists with detailed items
-- Content must be USEFUL STANDALONE — reader should gain real knowledge
+Place images INSIDE the article content at natural positions using this EXACT format:
+<figure style="margin:2rem 0;">
+  <img src="https://picsum.photos/seed/UNIQUE_SEED/800/450" alt="DESCRIPTIVE ALT TEXT WITH KEYWORD" style="width:100%;border-radius:.75rem;object-fit:cover;" loading="lazy">
+  <figcaption style="text-align:center;color:#6b7280;font-size:.875rem;margin-top:.5rem;font-style:italic;">CAPTION TEXT</figcaption>
+</figure>
+Replace UNIQUE_SEED with a unique word related to the image topic (e.g. "ekspor-kopi-2", "pelabuhan-indonesia").
+
+═══ SEO & HIGH-VALUE ADSENSE KEYWORDS ═══
+
+- Focus keyword density: 1.5% naturally
+- Include keyword in H1, first paragraph, 2-3 H2s, last paragraph
+- Naturally use HIGH-CPM keywords: biaya, harga, tarif, asuransi, izin, sertifikat, jasa profesional, layanan terbaik, perbandingan, rekomendasi, terpercaya, legal, regulasi, keuntungan bisnis
+- Every H2 and H3 MUST have id attribute: <h2 id="keyword-slug">
+- Use <blockquote> for expert quotes and key statistics
+- Use <table> for price comparisons, data, or step comparisons
 
 ═══ OUTPUT FORMAT ═══
 
-- Clean HTML only: h1, h2, h3, p, ul, ol, li, strong, em, table, thead, tbody, tr, th, td, blockquote
-- Every H2/H3 must have id attribute
-- Do NOT include: DOCTYPE, html, head, body, CSS, markdown, or code blocks
+Return ONLY clean HTML. Tags allowed: h1 h2 h3 p ul ol li strong em table thead tbody tr th td blockquote figure img figcaption div a.
+Every H2/H3 must have id. No DOCTYPE, html, head, body, CSS, markdown, or code fences.
 PROMPT;
     }
 
