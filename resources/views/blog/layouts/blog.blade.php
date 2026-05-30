@@ -115,9 +115,14 @@
             $manifestPath = public_path('build/manifest.json');
             if (file_exists($manifestPath)) {
                 $manifest = json_decode(file_get_contents($manifestPath), true);
-                $entry = $manifest['resources/js/app.js'] ?? [];
-                $cssFiles = $entry['css'] ?? [];
-                $jsFile = $entry['file'] ?? '';
+                $jsEntry  = $manifest['resources/js/app.js'] ?? [];
+                $cssEntry = $manifest['resources/css/app.css'] ?? [];
+                // Tailwind v4 outputs CSS as its own entry (not nested under JS)
+                $cssFiles = array_unique(array_merge(
+                    $jsEntry['css'] ?? [],
+                    $cssEntry['file'] ? [$cssEntry['file']] : []
+                ));
+                $jsFile = $jsEntry['file'] ?? '';
             }
         @endphp
         @foreach($cssFiles ?? [] as $css)
