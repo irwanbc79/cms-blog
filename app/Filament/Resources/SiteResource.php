@@ -6,9 +6,11 @@ use App\Filament\Resources\SiteResource\Pages;
 use App\Models\Site;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 class SiteResource extends Resource
 {
@@ -149,6 +151,32 @@ class SiteResource extends Resource
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
+
+            Forms\Components\Section::make('🔌 API & Webhook')
+                ->description('Untuk distribusi konten ke domain non-WordPress (dira, gma, dll).')
+                ->schema([
+                    Forms\Components\TextInput::make('api_token')
+                        ->label('API Token')
+                        ->maxLength(64)
+                        ->readOnly()
+                        ->helperText('Digunakan sebagai Bearer token di header Authorization.')
+                        ->suffixAction(
+                            Forms\Components\Actions\Action::make('generate_token')
+                                ->label('Generate')
+                                ->icon('heroicon-o-arrow-path')
+                                ->action(function ($set) {
+                                    $set('api_token', bin2hex(random_bytes(32)));
+                                })
+                        )
+                        ->columnSpanFull(),
+                    Forms\Components\TextInput::make('webhook_url')
+                        ->label('Webhook URL')
+                        ->url()
+                        ->maxLength(255)
+                        ->helperText('URL yang di-ping saat artikel dipublish (untuk cache revalidation).')
+                        ->placeholder('https://dira.co.id/api/revalidate')
+                        ->columnSpanFull(),
+                ]),
         ]);
     }
 

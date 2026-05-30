@@ -70,10 +70,26 @@ class ArticleResource extends Resource
                         ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
                     Forms\Components\TextInput::make('slug')->required()->maxLength(255)
                         ->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('seo_title')->maxLength(255),
+                    Forms\Components\TextInput::make('og_title')->label('SEO Title')->maxLength(255),
                     Forms\Components\TextInput::make('focus_keyword')->maxLength(255),
                     Forms\Components\Textarea::make('meta_description')->maxLength(160)->columnSpanFull(),
                     Forms\Components\TextInput::make('featured_image_url')->url()->maxLength(255)->columnSpanFull(),
+                    Forms\Components\TextInput::make('canonical_url')
+                        ->label('Canonical URL')
+                        ->url()
+                        ->maxLength(255)
+                        ->helperText('Kosongkan jika artikel ini adalah pemilik canonical. Isi jika artikel ini salinan dari domain lain.')
+                        ->columnSpanFull(),
+                    Forms\Components\Select::make('schema_type')
+                        ->label('Schema Type')
+                        ->options([
+                            'Article'     => 'Article',
+                            'BlogPosting' => 'BlogPosting',
+                            'FAQPage'     => 'FAQPage',
+                            'HowTo'       => 'HowTo',
+                        ])
+                        ->default('Article')
+                        ->required(),
                 ])
                 ->columns(2),
 
