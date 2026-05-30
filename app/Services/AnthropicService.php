@@ -90,7 +90,7 @@ class AnthropicService
 
         // Call 1: structured metadata (JSON)
         $metaPrompt = $this->buildMetaPrompt($title, $pillar, $lang);
-        $metaRaw    = $this->callApi($metaPrompt, 1024);
+        $metaRaw    = $this->callApi($metaPrompt, 2048);
         $meta       = $this->parseMetaJson($metaRaw);
 
         // Call 2: full HTML content
@@ -349,7 +349,7 @@ PROMPT;
         $data = json_decode($clean, true);
 
         if (! is_array($data)) {
-            throw new \RuntimeException('Failed to parse article metadata JSON from Anthropic response.');
+            throw new \RuntimeException('Failed to parse metadata JSON. Raw[0:200]: ' . substr($clean, 0, 200));
         }
 
         return [
