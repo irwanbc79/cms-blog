@@ -25,7 +25,7 @@ class Settings extends Page implements HasForms
     {
         $this->form->fill([
             'anthropic_api_key'   => Setting::get('anthropic_api_key', ''),
-            'anthropic_model'     => Setting::get('anthropic_model', 'claude-sonnet-4-20250514'),
+            'anthropic_model'     => Setting::get('anthropic_model', 'claude-sonnet-4-6'),
             'wp_url'              => Setting::get('wp_url', 'https://m2b.co.id'),
             'wp_username'         => Setting::get('wp_username', ''),
             'wp_app_password'     => Setting::get('wp_app_password', ''),
@@ -47,10 +47,11 @@ class Settings extends Page implements HasForms
                         Forms\Components\Select::make('anthropic_model')
                             ->label('AI Model')
                             ->options([
-                                'claude-sonnet-4-20250514' => 'Claude Sonnet 4 (Recommended)',
-                                'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet',
-                                'claude-opus-4-20250514' => 'Claude Opus 4',
-                                'claude-3-5-haiku-20241022' => 'Claude 3.5 Haiku',
+                                'claude-sonnet-4-6'          => 'Claude Sonnet 4.6 (Recommended)',
+                                'claude-opus-4-7'            => 'Claude Opus 4.7 (Most capable)',
+                                'claude-haiku-4-5-20251001'  => 'Claude Haiku 4.5 (Fast)',
+                                'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet (Stable)',
+                                'claude-3-5-haiku-20241022'  => 'Claude 3.5 Haiku (Stable/Fast)',
                             ])
                             ->required(),
                     ]),
