@@ -6,7 +6,6 @@ use App\Jobs\GenerateArticleJob;
 use App\Models\Article;
 use App\Models\Site;
 use App\Models\TopicIdea;
-use App\Services\WordPressService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -159,29 +158,16 @@ class ContentStudio extends Page implements HasForms, HasTable
             ->actions([
                 Action::make('publish_now')
                     ->label('Publish Now')
-                    ->icon('heroicon-o-arrow-up-tray')
+                    ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
+                    ->visible(fn (Article $record) => $record->status !== 'published')
                     ->action(function (Article $record) {
-                        try {
-                            $wp = new WordPressService($record->site);
-                            $result = $wp->publishArticle($record, 'publish');
-                            $record->update([
-                                'wp_post_id'   => $result['id'],
-                                'wp_post_url'  => $result['link'],
-                                'status'       => 'published',
-                                'published_at' => now(),
-                            ]);
-                            Notification::make()
-                                ->title("✅ Published: {$result['link']}")
-                                ->success()
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title("❌ {$e->getMessage()}")
-                                ->danger()
-                                ->send();
-                        }
+                        $record->update(['status' => 'published', 'published_at' => now()]);
+                        Notification::make()
+                            ->title('✅ Article published')
+                            ->success()
+                            ->send();
                     }),
                 Action::make('edit')
                     ->url(fn (Article $record): string => route('filament.admin.resources.articles.edit', $record)),
@@ -189,40 +175,21 @@ class ContentStudio extends Page implements HasForms, HasTable
             ->bulkActions([
                 BulkAction::make('publish_bulk')
                     ->label('Publish Selected')
-                    ->icon('heroicon-o-arrow-up-tray')
+                    ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
-                        $success = 0;
-                        $errors  = [];
+                        $count = 0;
                         foreach ($records as $record) {
-                            try {
-                                $record->load('site');
-                                $wp = new WordPressService($record->site);
-                                $result = $wp->publishArticle($record, 'publish');
-                                $record->update([
-                                    'wp_post_id'   => $result['id'],
-                                    'wp_post_url'  => $result['link'],
-                                    'status'       => 'published',
-                                    'published_at' => now(),
-                                ]);
-                                $success++;
-                            } catch (\Exception $e) {
-                                $errors[] = "{$record->title}: {$e->getMessage()}";
+                            if ($record->status !== 'published') {
+                                $record->update(['status' => 'published', 'published_at' => now()]);
+                                $count++;
                             }
                         }
-                        if ($success > 0) {
-                            Notification::make()
-                                ->title("✅ {$success} article(s) published")
-                                ->success()
-                                ->send();
-                        }
-                        if (! empty($errors)) {
-                            Notification::make()
-                                ->title('❌ ' . implode(' | ', array_slice($errors, 0, 3)))
-                                ->danger()
-                                ->send();
-                        }
+                        Notification::make()
+                            ->title("✅ {$count} article(s) published")
+                            ->success()
+                            ->send();
                     }),
             ]);
     }

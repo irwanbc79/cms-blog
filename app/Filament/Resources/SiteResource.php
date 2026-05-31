@@ -95,22 +95,6 @@ class SiteResource extends Resource
                         ->rows(4),
                 ]),
 
-            Forms\Components\Section::make('WordPress')
-                ->description('Leave empty if this site does not use WordPress.')
-                ->schema([
-                    Forms\Components\TextInput::make('wp_url')
-                        ->label('WordPress URL')
-                        ->url()
-                        ->placeholder('https://m2b.co.id'),
-                    Forms\Components\TextInput::make('wp_username')
-                        ->label('Username'),
-                    Forms\Components\TextInput::make('wp_app_password')
-                        ->label('Application Password')
-                        ->password()
-                        ->revealable(),
-                ])
-                ->columns(2),
-
             Forms\Components\Section::make('Content Configuration')
                 ->schema([
                     Forms\Components\KeyValue::make('content_pillars')

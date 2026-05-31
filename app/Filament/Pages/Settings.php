@@ -24,11 +24,8 @@ class Settings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'anthropic_api_key'   => Setting::get('anthropic_api_key', ''),
-            'anthropic_model'     => Setting::get('anthropic_model', 'claude-sonnet-4-6'),
-            'wp_url'              => Setting::get('wp_url', 'https://m2b.co.id'),
-            'wp_username'         => Setting::get('wp_username', ''),
-            'wp_app_password'     => Setting::get('wp_app_password', ''),
+            'anthropic_api_key' => Setting::get('anthropic_api_key', ''),
+            'anthropic_model'   => Setting::get('anthropic_model', 'claude-sonnet-4-6'),
         ]);
     }
 
@@ -56,23 +53,6 @@ class Settings extends Page implements HasForms
                             ->required(),
                     ]),
 
-                Forms\Components\Section::make('WordPress')
-                    ->schema([
-                        Forms\Components\TextInput::make('wp_url')
-                            ->label('WordPress URL')
-                            ->url()
-                            ->required()
-                            ->default('https://m2b.co.id'),
-                        Forms\Components\TextInput::make('wp_username')
-                            ->label('Username')
-                            ->required(),
-                        Forms\Components\TextInput::make('wp_app_password')
-                            ->label('Application Password')
-                            ->password()
-                            ->revealable()
-                            ->required(),
-                    ])
-                    ->columns(2),
             ])
             ->statePath('data');
     }
@@ -83,9 +63,6 @@ class Settings extends Page implements HasForms
 
         Setting::set('anthropic_api_key', $data['anthropic_api_key'], 'ai', true);
         Setting::set('anthropic_model', $data['anthropic_model'], 'ai', false);
-        Setting::set('wp_url', $data['wp_url'], 'wordpress', false);
-        Setting::set('wp_username', $data['wp_username'], 'wordpress', false);
-        Setting::set('wp_app_password', $data['wp_app_password'], 'wordpress', true);
 
         cache()->forget('settings_all');
 

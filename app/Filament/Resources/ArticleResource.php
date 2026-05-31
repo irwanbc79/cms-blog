@@ -7,7 +7,6 @@ use App\Models\Article;
 use App\Models\Site;
 use App\Services\AutoTagService;
 use App\Services\SeoService;
-use App\Services\WordPressService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -167,25 +166,15 @@ class ArticleResource extends Resource
                     ->options(['id' => 'Indonesia', 'en' => 'English']),
             ])
             ->actions([
-                Tables\Actions\Action::make('publish_wp')
-                    ->label('Push to WP')
-                    ->icon('heroicon-o-arrow-up-tray')
+                Tables\Actions\Action::make('publish')
+                    ->label('Publish')
+                    ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
+                    ->visible(fn (Article $record) => $record->status !== 'published')
                     ->action(function (Article $record) {
-                        try {
-                            $wp = new WordPressService($record->site);
-                            $result = $wp->publishArticle($record);
-                            $record->update([
-                                'wp_post_id'   => $result['id'],
-                                'wp_post_url'  => $result['link'],
-                                'status'       => $result['status'] === 'publish' ? 'published' : 'draft',
-                                'published_at' => now(),
-                            ]);
-                            Notification::make()->title('✅ Published: ' . $result['link'])->success()->send();
-                        } catch (\Exception $e) {
-                            Notification::make()->title('❌ ' . $e->getMessage())->danger()->send();
-                        }
+                        $record->update(['status' => 'published', 'published_at' => now()]);
+                        Notification::make()->title('✅ Article published')->success()->send();
                     }),
                 Tables\Actions\Action::make('auto_tag')
                     ->label('Auto Tag')
@@ -229,42 +218,23 @@ class ArticleResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    BulkAction::make('publish_wp_bulk')
-                        ->label('Push to WP')
-                        ->icon('heroicon-o-arrow-up-tray')
+                    BulkAction::make('publish_bulk')
+                        ->label('Publish Selected')
+                        ->icon('heroicon-o-check-circle')
                         ->color('success')
                         ->requiresConfirmation()
                         ->action(function (Collection $records) {
-                            $success = 0;
-                            $errors = [];
+                            $count = 0;
                             foreach ($records as $record) {
-                                try {
-                                    $record->load('site');
-                                    $wp = new WordPressService($record->site);
-                                    $result = $wp->publishArticle($record);
-                                    $record->update([
-                                        'wp_post_id'   => $result['id'],
-                                        'wp_post_url'  => $result['link'],
-                                        'status'       => $result['status'] === 'publish' ? 'published' : 'draft',
-                                        'published_at' => $result['status'] === 'publish' ? now() : null,
-                                    ]);
-                                    $success++;
-                                } catch (\Exception $e) {
-                                    $errors[] = "{$record->title}: {$e->getMessage()}";
+                                if ($record->status !== 'published') {
+                                    $record->update(['status' => 'published', 'published_at' => now()]);
+                                    $count++;
                                 }
                             }
-                            if ($success > 0) {
-                                Notification::make()
-                                    ->title("✅ {$success} article(s) published to WordPress")
-                                    ->success()
-                                    ->send();
-                            }
-                            if (! empty($errors)) {
-                                Notification::make()
-                                    ->title('❌ ' . implode(' | ', array_slice($errors, 0, 3)))
-                                    ->danger()
-                                    ->send();
-                            }
+                            Notification::make()
+                                ->title("✅ {$count} article(s) published")
+                                ->success()
+                                ->send();
                         }),
                     BulkAction::make('auto_tag_bulk')
                         ->label('Auto Tag Selected')
