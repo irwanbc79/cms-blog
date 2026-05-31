@@ -426,6 +426,100 @@
 </article>
 
 {{-- Related Articles --}}
+{{-- Comments Section --}}
+<section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-4">
+
+    {{-- Success flash message --}}
+    @if(session('comment_success'))
+    <div class="mb-8 p-4 bg-teal-pale border border-teal/20 rounded-2xl flex items-start gap-3">
+        <svg class="w-5 h-5 text-teal shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-sm text-teal-dark font-medium">{{ session('comment_success') }}</p>
+    </div>
+    @endif
+
+    {{-- Comments Count + List --}}
+    @php $approvedComments = $article->approvedComments; @endphp
+    @if($approvedComments->count() > 0)
+    <div class="mb-10">
+        <h2 class="text-2xl font-bold font-serif text-teal-deep mb-6 flex items-center gap-2">
+            <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
+            </svg>
+            {{ $approvedComments->count() }} Komentar
+        </h2>
+        <div class="space-y-5">
+            @foreach($approvedComments as $comment)
+            <div class="bg-white border border-teal/10 rounded-2xl p-5 shadow-sm hover:border-teal/20 transition-colors">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal to-teal-dark flex items-center justify-center text-white font-bold text-sm shrink-0">
+                        {{ strtoupper(substr($comment->name, 0, 1)) }}
+                    </div>
+                    <div>
+                        <p class="font-bold text-teal-deep text-sm">{{ e($comment->name) }}</p>
+                        <p class="text-xs text-gray-400">{{ $comment->created_at->isoFormat('D MMM YYYY, HH:mm') }}</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 text-sm leading-relaxed">{{ e($comment->content) }}</p>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Comment Form --}}
+    <div class="bg-white border border-teal/10 rounded-3xl p-6 md:p-8 shadow-sm">
+        <h2 class="text-xl font-bold font-serif text-teal-deep mb-1 flex items-center gap-2">
+            <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Tinggalkan Komentar
+        </h2>
+        <p class="text-xs text-gray-400 mb-6">Komentar Anda akan ditampilkan setelah disetujui admin.</p>
+
+        <form action="{{ route('blog.comments.store', $article->slug) }}" method="POST" class="space-y-4" id="comment-form">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="comment-name" class="block text-xs font-bold text-teal-deep mb-1.5 uppercase tracking-wider">Nama *</label>
+                    <input type="text" id="comment-name" name="name" required
+                           value="{{ old('name') }}"
+                           class="w-full px-4 py-3 rounded-xl border border-teal/15 bg-teal-pale/20 text-gray-800 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal/40 transition-all"
+                           placeholder="Nama lengkap Anda">
+                    @error('name')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="comment-email" class="block text-xs font-bold text-teal-deep mb-1.5 uppercase tracking-wider">Email *</label>
+                    <input type="email" id="comment-email" name="email" required
+                           value="{{ old('email') }}"
+                           class="w-full px-4 py-3 rounded-xl border border-teal/15 bg-teal-pale/20 text-gray-800 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal/40 transition-all"
+                           placeholder="email@contoh.com">
+                    @error('email')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+            </div>
+            <div>
+                <label for="comment-content" class="block text-xs font-bold text-teal-deep mb-1.5 uppercase tracking-wider">Komentar *</label>
+                <textarea id="comment-content" name="content" rows="4" required
+                          class="w-full px-4 py-3 rounded-xl border border-teal/15 bg-teal-pale/20 text-gray-800 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal/30 focus:border-teal/40 transition-all resize-none"
+                          placeholder="Tuliskan komentar atau pertanyaan Anda...">{{ old('content') }}</textarea>
+                @error('content')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+            </div>
+            <div class="flex items-center justify-between pt-2">
+                <p class="text-xs text-gray-400">* Kolom wajib diisi</p>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal to-teal-dark text-white font-bold text-sm rounded-full shadow-md hover:shadow-lg hover:from-teal-dark hover:to-teal-deep transition-all duration-300 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                    </svg>
+                    Kirim Komentar
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{{-- Related Articles --}}
 @if($relatedArticles->count() > 0)
 <section class="bg-gray-50 mt-12 py-12 md:py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
