@@ -107,17 +107,19 @@ class BlogController extends Controller
         if ($article->published_at) {
             $navArticles = Article::forSite($site->id)
                 ->published()
+                ->select(['id', 'title', 'slug', 'published_at'])
                 ->where('published_at', '<', $article->published_at)
                 ->latest('published_at')
                 ->take(1)
                 ->union(
                     Article::forSite($site->id)
                         ->published()
+                        ->select(['id', 'title', 'slug', 'published_at'])
                         ->where('published_at', '>', $article->published_at)
                         ->oldest('published_at')
                         ->take(1)
                 )
-                ->get(['id', 'title', 'slug', 'published_at']);
+                ->get();
 
             foreach ($navArticles as $nav) {
                 if ($nav->published_at?->lt($article->published_at)) {
