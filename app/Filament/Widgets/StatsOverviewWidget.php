@@ -20,8 +20,7 @@ class StatsOverviewWidget extends BaseWidget
             COUNT(*) as total,
             SUM(CASE WHEN status = 'published' THEN 1 ELSE 0 END) as published,
             SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END) as draft,
-            SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as scheduled,
-            SUM(CASE WHEN wp_post_id IS NOT NULL THEN 1 ELSE 0 END) as wp_published
+            SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as scheduled
         ")->first();
 
         $ideaCounts = TopicIdea::selectRaw("
@@ -42,17 +41,17 @@ class StatsOverviewWidget extends BaseWidget
 
         return [
             Stat::make('Total Articles', $counts->total ?? 0)
-                ->description(($counts->published ?? 0) . ' published, ' . ($counts->draft ?? 0) . ' drafts')
+                ->description($siteStats ?: 'No articles yet')
                 ->descriptionIcon('heroicon-o-document-text')
                 ->color('info'),
 
-            Stat::make('Published to WordPress', $counts->wp_published ?? 0)
-                ->description(($counts->scheduled ?? 0) . ' scheduled')
-                ->descriptionIcon('heroicon-o-globe-alt')
+            Stat::make('Published', $counts->published ?? 0)
+                ->description(($counts->scheduled ?? 0) . ' scheduled, ' . ($counts->draft ?? 0) . ' drafts')
+                ->descriptionIcon('heroicon-o-check-circle')
                 ->color('success'),
 
             Stat::make('Active Sites', $activeSites)
-                ->description($siteStats ?: 'No articles yet')
+                ->description('Sites generating content')
                 ->descriptionIcon('heroicon-o-globe-alt')
                 ->color('warning'),
 

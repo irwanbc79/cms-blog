@@ -18,9 +18,6 @@ class LatestArticlesTable extends BaseWidget
             ->query(
                 Article::with('site')
                     ->where('status', 'published')
-                    ->orWhere(function ($q) {
-                        $q->whereNotNull('wp_post_id');
-                    })
                     ->latest()
                     ->limit(10)
             )
@@ -36,11 +33,6 @@ class LatestArticlesTable extends BaseWidget
                     ->colors(['warning' => 'regulasi', 'success' => 'umkm', 'info' => 'news', 'primary' => 'logistik']),
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors(['gray' => 'draft', 'warning' => 'scheduled', 'success' => 'published']),
-                Tables\Columns\TextColumn::make('wp_post_url')
-                    ->label('WP URL')
-                    ->limit(30)
-                    ->url(fn ($record) => $record->wp_post_url, true)
-                    ->color('primary'),
                 Tables\Columns\TextColumn::make('published_at')
                     ->dateTime('d M Y')
                     ->sortable(),
