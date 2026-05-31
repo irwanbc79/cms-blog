@@ -32,6 +32,7 @@ Route::prefix('blog')->group(function () {
         return response($content, 200, ['Content-Type' => 'text/plain']);
     });
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
+    Route::post('/{slug}/comments', [BlogController::class, 'storeComment'])->name('blog.comments.store');
 });
 
 // Sitemap & RSS Feed (root level for CMS)

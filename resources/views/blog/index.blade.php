@@ -6,41 +6,44 @@
 
 @section('content')
 {{-- Hero Section --}}
-<section class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white relative overflow-hidden">
+<section class="bg-gradient-to-br from-teal-deep via-teal-dark to-ink text-white relative overflow-hidden border-b border-gold/10">
     {{-- Decorative background pattern --}}
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute -top-24 -right-24 w-96 h-96 bg-white rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-300 rounded-full blur-3xl"></div>
+    <div class="absolute inset-0 opacity-15 pointer-events-none">
+        <div class="absolute -top-32 -right-32 w-[500px] h-[500px] bg-gold rounded-full blur-[120px]"></div>
+        <div class="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-teal rounded-full blur-[100px]"></div>
     </div>
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative z-10">
         <div class="max-w-3xl">
-            <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-light/10 text-gold-light border border-teal-light/20 text-xs font-semibold mb-6 uppercase tracking-wider">
+                🌟 Dira Insights & Analysis
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight mb-5">
                 Blog {{ $site->name }}
             </h1>
-            <p class="text-lg md:text-xl text-blue-100 leading-relaxed">
-                Temukan artikel, wawasan, dan informasi terbaru seputar bisnis dan industri kami.
+            <p class="text-lg md:text-xl text-white/80 leading-relaxed font-medium">
+                Temukan artikel, analisis mendalam, dan informasi regulasi terbaru seputar komoditas ekspor-impor dan trading global.
             </p>
         </div>
     </div>
 </section>
 
 {{-- Search & Filter Bar --}}
-<section class="border-b border-gray-100 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<section class="border-b border-teal/5 bg-teal-pale/30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             {{-- Pillar Filter --}}
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2.5">
                 <a href="{{ url('/blog') }}"
-                   class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
-                          {{ !$pillar ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                   class="px-4 py-2 rounded-full text-xs font-bold transition-all duration-200
+                          {{ !$pillar ? 'bg-teal text-white shadow-md ring-1 ring-white/10' : 'bg-white text-teal-deep hover:bg-teal-pale hover:text-teal border border-teal/10' }}">
                     Semua
                 </a>
                 @foreach($pillarCounts as $key => $count)
                 <a href="{{ url('/blog?pillar=' . $key) }}"
-                   class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors
-                          {{ $pillar === $key ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                   class="px-4 py-2 rounded-full text-xs font-bold transition-all duration-200
+                          {{ $pillar === $key ? 'bg-teal text-white shadow-md ring-1 ring-white/10' : 'bg-white text-teal-deep hover:bg-teal-pale hover:text-teal border border-teal/10' }}">
                     {{ ucfirst($key) }}
-                    <span class="ml-1 text-xs opacity-60">({{ $count }})</span>
+                    <span class="ml-1 opacity-60 font-semibold">({{ $count }})</span>
                 </a>
                 @endforeach
             </div>

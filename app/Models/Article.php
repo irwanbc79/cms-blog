@@ -54,6 +54,16 @@ class Article extends Model
         return $this->hasMany(TopicIdea::class);
     }
 
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function approvedComments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->where('is_approved', true)->latest();
+    }
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', 'published');

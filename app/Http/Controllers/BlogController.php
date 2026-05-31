@@ -76,7 +76,7 @@ class BlogController extends Controller
 
         $article = Article::forSite($site->id)
             ->published()
-            ->with('user:id,name')
+            ->with(['user:id,name', 'approvedComments'])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -189,5 +189,33 @@ class BlogController extends Controller
         }
 
         return $toc;
+    }
+
+    /**
+     * Store a comment for an article.
+     */
+    public function storeComment(Request $request, string $slug)
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $article = Article::forSite($site->id)
+            ->published()
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'content' => 'required|string|max:65535',
+        ]);
+
+        $article->comments()->create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'content' => $validated['content'],
+            'is_approved' => false,
+        ]);
+
+        return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu persetujuan admin.');
     }
 }

@@ -159,7 +159,7 @@
     }
     </script>
 </head>
-<body class="bg-white text-gray-900 font-['Inter',sans-serif] antialiased">
+<body class="bg-white text-gray-900 font-sans antialiased">
     {{-- Schema.org WebSite + Search --}}
     <script type="application/ld+json">
     {
@@ -179,27 +179,29 @@
     </script>
 
     {{-- Navbar --}}
-    <header class="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-50">
+    <header class="border-b border-teal/10 sticky top-0 bg-white/85 backdrop-blur-lg z-50 shadow-[0_4px_30px_rgba(13,85,70,0.06)]">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 {{-- Logo / Brand --}}
-                <a href="{{ url('/') }}" class="flex items-center gap-2 font-bold text-xl text-gray-900 hover:text-blue-600 transition-colors">
+                <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold text-xl text-teal-deep hover:text-teal transition-colors">
                     @if($site->logo_url)
-                    <img src="{{ $site->logo_url }}"
-                         alt="{{ $site->name }}"
-                         class="h-8 w-auto"
-                         onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-blue-600 text-white px-2 py-0.5 rounded text-sm\'>{{ substr($site->name, 0, 2) }}</span>'">
+                    <div class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-gold/40 bg-teal-deep flex items-center justify-center">
+                        <img src="{{ $site->logo_url }}"
+                             alt="{{ $site->name }}"
+                             class="w-full h-full object-cover scale-[2.2] -translate-y-[3%]"
+                             onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2 py-0.5 rounded text-xs font-bold\'>{{ substr($site->name, 0, 2) }}</span>'">
+                    </div>
                     @else
-                    <span class="bg-blue-600 text-white px-2 py-0.5 rounded text-sm">{{ substr($site->name, 0, 2) }}</span>
+                    <span class="bg-teal text-white px-2 py-0.5 rounded text-sm">{{ substr($site->name, 0, 2) }}</span>
                     @endif
-                    <span class="hidden sm:inline">{{ $site->name }}</span>
+                    <span class="hidden sm:inline font-serif font-bold text-base leading-none">{{ $site->name }}</span>
                 </a>
 
                 {{-- Nav links --}}
-                <nav class="flex items-center gap-6 text-sm font-medium text-gray-600">
-                    <a href="{{ url('/blog') }}" class="hover:text-blue-600 transition-colors {{ request()->is('blog') ? 'text-blue-600' : '' }}">Blog</a>
+                <nav class="flex items-center gap-6 text-sm font-semibold text-teal-deep">
+                    <a href="{{ url('/blog') }}" class="hover:text-teal transition-colors {{ request()->is('blog') ? 'text-teal border-b-2 border-teal pb-1' : '' }}">Blog</a>
                     @if($site->domain)
-                    <a href="{{ 'https://' . $site->domain }}" class="hover:text-blue-600 transition-colors" target="_blank" rel="noopener">Website</a>
+                    <a href="{{ 'https://' . $site->domain }}" class="hover:text-teal transition-colors" target="_blank" rel="noopener">Website</a>
                     @endif
                     {{-- Language Switcher --}}
                     @if($site->languages && count($site->languages) > 1)
@@ -299,27 +301,36 @@
     </main>
 
     {{-- Footer --}}
-    <footer class="bg-gray-900 text-gray-400 mt-16">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <footer class="bg-[#051c18] text-white/75 mt-16 relative overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-teal/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full bg-gold/5 blur-3xl pointer-events-none"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div>
-                    <h3 class="text-white font-semibold mb-3">{{ $site->name }}</h3>
-                    <p class="text-sm leading-relaxed">{{ $site->ai_prompt_context ? \Illuminate\Support\Str::limit($site->ai_prompt_context, 120) : 'Blog resmi ' . $site->name }}</p>
+                    <h3 class="font-serif text-gold-light text-base mb-5 font-bold">{{ $site->name }}</h3>
+                    <p class="text-white/65 text-sm leading-relaxed">{{ $site->ai_prompt_context ? \Illuminate\Support\Str::limit($site->ai_prompt_context, 150) : 'Mitra perdagangan terpercaya untuk layanan ekspor, impor, undername, dan komoditas internasional.' }}</p>
                 </div>
                 <div>
-                    <h3 class="text-white font-semibold mb-3">Blog</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="{{ url('/blog') }}" class="hover:text-white transition-colors">Semua Artikel</a></li>
-                        <li><a href="{{ url('/sitemap.xml') }}" class="hover:text-white transition-colors">Sitemap</a></li>
-                        <li><a href="{{ url('/feed.xml') }}" class="hover:text-white transition-colors">RSS Feed</a></li>
+                    <h3 class="font-serif text-gold-light text-base mb-5 font-bold">Blog</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="{{ url('/blog') }}" class="text-white/75 hover:text-gold-light transition-colors">Semua Artikel</a></li>
+                        <li><a href="{{ url('/blog/sitemap.xml') }}" class="text-white/75 hover:text-gold-light transition-colors">Sitemap SEO</a></li>
+                        <li><a href="{{ url('/blog/feed.xml') }}" class="text-white/75 hover:text-gold-light transition-colors">RSS Feed</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h3 class="text-white font-semibold mb-3">Ikuti Kami</h3>
-                    <p class="text-sm leading-relaxed">Dapatkan update artikel terbaru langsung dari blog kami.</p>
+                    <h3 class="font-serif text-gold-light text-base mb-5 font-bold">Kontak Kami</h3>
+                    <p class="text-white/65 text-sm leading-relaxed mb-4">Butuh konsultasi perdagangan internasional?</p>
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $site->whatsapp_number ?: '6281264882678') }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 bg-teal hover:bg-teal-light text-white rounded-full text-xs font-bold transition-all shadow-md">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.292-4.148c1.686.997 3.525 1.523 5.419 1.524 5.473 0 9.917-4.402 9.92-9.82.002-2.625-1.023-5.093-2.887-6.963C16.944 2.723 14.475 1.7 11.85 1.7c-5.461 0-9.907 4.402-9.91 9.822-.001 1.952.515 3.86 1.493 5.558L2.43 21.67l4.137-.992c-.114-.07-.215-.145-.218-.145z"/>
+                        </svg>
+                        Konsultasi WhatsApp
+                    </a>
                 </div>
             </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
+            <div class="border-t border-white/10 mt-12 pt-8 text-xs text-white/50 text-center">
                 &copy; {{ date('Y') }} {{ $site->name }}. All rights reserved.
             </div>
         </div>

@@ -111,11 +111,11 @@
             </svg>
             @endif
             @if($crumb['url'])
-            <a href="{{ $crumb['url'] }}" itemprop="item" class="hover:text-blue-600 transition-colors">
+            <a href="{{ $crumb['url'] }}" itemprop="item" class="hover:text-teal transition-colors font-medium">
                 <span itemprop="name">{{ $crumb['label'] }}</span>
             </a>
             @else
-            <span itemprop="name" class="text-gray-900 font-medium">{{ $crumb['label'] }}</span>
+            <span itemprop="name" class="text-teal-deep font-semibold">{{ $crumb['label'] }}</span>
             @endif
             <meta itemprop="position" content="{{ $index + 1 }}">
         </li>
@@ -142,13 +142,13 @@
     <div class="flex flex-wrap items-center gap-3 mb-4">
         @if($article->pillar)
         <a href="{{ url('/blog?pillar=' . $article->pillar) }}"
-           class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors">
+           class="px-3 py-1 rounded-full text-xs font-bold bg-teal-pale text-teal-dark hover:bg-teal-pale/80 border border-teal/10 transition-colors">
             {{ ucfirst($article->pillar) }}
         </a>
         @endif
         @if(!empty($article->tags))
             @foreach(array_slice($article->tags, 0, 3) as $tag)
-            <span class="px-2.5 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">{{ $tag }}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs bg-gray-50 text-gray-500 border border-gray-100 font-medium">{{ $tag }}</span>
             @endforeach
         @endif
     </div>
@@ -207,8 +207,8 @@
                 <nav class="space-y-1 mb-6">
                     @foreach($toc as $item)
                     <a href="#{{ $item['id'] }}"
-                       class="block text-sm py-1.5 {{ $item['level'] == 3 ? 'pl-4' : 'pl-0' }} border-l-2 border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors
-                              {{ $loop->first ? 'font-medium text-gray-900 border-blue-500' : 'text-gray-600' }}">
+                       class="block text-sm py-1.5 {{ $item['level'] == 3 ? 'pl-4' : 'pl-0' }} border-l-2 border-transparent hover:border-teal hover:text-teal transition-colors
+                              {{ $loop->first ? 'font-bold text-teal border-teal' : 'text-gray-600' }}">
                         {{ $item['title'] }}
                     </a>
                     @endforeach
@@ -233,18 +233,18 @@
         {{-- Article Content --}}
         <div class="flex-1 min-w-0">
             {{-- Content CSS with fixed blockquote --}}
-            <div class="prose prose-lg prose-blue max-w-none
-                        prose-headings:font-bold prose-headings:text-gray-900
+            <div class="prose prose-lg prose-teal max-w-none
+                        prose-headings:font-bold prose-headings:font-serif prose-headings:text-teal-deep
                         prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:scroll-mt-24
                         prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-h3:scroll-mt-24
                         prose-p:leading-relaxed prose-p:text-gray-700
-                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                        prose-a:text-teal prose-a:font-semibold prose-a:no-underline hover:prose-a:text-teal-dark hover:prose-a:underline
                         prose-img:rounded-xl prose-img:shadow-md
-                        prose-blockquote:border-l-4 prose-blockquote:border-l-blue-500 prose-blockquote:bg-blue-50/50 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-gray-700 prose-blockquote:my-6
+                        prose-blockquote:border-l-4 prose-blockquote:border-l-gold prose-blockquote:bg-teal-pale/40 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-teal-dark prose-blockquote:my-6
                         prose-ul:space-y-2 prose-li:text-gray-700
                         prose-strong:text-gray-900
-                        prose-code:text-sm prose-code:bg-gray-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:rounded-xl">
+                        prose-code:text-sm prose-code:bg-teal-pale prose-code:text-teal-dark prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+                        prose-pre:bg-teal-deep prose-pre:text-white/95 prose-pre:rounded-xl">
                 {!! $article->content_html !!}
             </div>
 
@@ -267,7 +267,7 @@
                 <h4 class="text-sm font-semibold text-gray-500 mb-3">Tags:</h4>
                 <div class="flex flex-wrap gap-2">
                     @foreach($article->tags as $tag)
-                    <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors cursor-default">{{ $tag }}</span>
+                    <span class="px-3 py-1.5 bg-teal-pale text-teal-dark text-xs font-bold rounded-lg hover:bg-teal/10 transition-colors cursor-default border border-teal/5">{{ $tag }}</span>
                     @endforeach
                 </div>
             </div>
@@ -285,6 +285,76 @@
                 <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
             @endif
+
+            {{-- Comments Section --}}
+            <section class="mt-12 pt-8 border-t border-gray-100">
+                <h3 class="text-2xl font-serif font-bold text-teal-deep mb-6 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                    Komentar ({{ $article->approvedComments->count() }})
+                </h3>
+
+                {{-- Alert Flash Success --}}
+                @if(session('comment_success'))
+                <div class="mb-6 p-4 bg-teal-pale text-teal-dark border border-teal/20 rounded-xl text-sm font-medium flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {{ session('comment_success') }}
+                </div>
+                @endif
+
+                {{-- Comments List --}}
+                @if($article->approvedComments->count() > 0)
+                <div class="space-y-6 mb-10">
+                    @foreach($article->approvedComments as $comment)
+                    <div class="flex gap-4 p-5 bg-teal-pale/10 rounded-2xl border border-teal/5">
+                        <div class="w-10 h-10 rounded-full bg-teal text-white font-bold flex items-center justify-center shrink-0">
+                            {{ strtoupper(substr($comment->name, 0, 1)) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <span class="font-bold text-teal-deep text-sm">{{ $comment->name }}</span>
+                                <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ $comment->content }}</p>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <p class="text-gray-500 text-sm mb-8 italic">Belum ada komentar. Jadilah yang pertama memberikan tanggapan!</p>
+                @endif
+
+                {{-- Comment Form --}}
+                <div class="bg-teal-pale/5 rounded-2xl p-6 border border-teal/5">
+                    <h4 class="text-lg font-serif font-bold text-teal-deep mb-4">Tulis Komentar</h4>
+                    <form action="{{ url('/blog/' . $article->slug . '/comments') }}" method="POST" class="space-y-4">
+                        @csrf
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="comment-name" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Nama Anda</label>
+                                <input type="text" id="comment-name" name="name" required placeholder="Nama Lengkap"
+                                       class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors">
+                            </div>
+                            <div>
+                                <label for="comment-email" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Email (Tidak dipublikasikan)</label>
+                                <input type="email" id="comment-email" name="email" required placeholder="Alamat Email"
+                                       class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="comment-content" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Isi Komentar</label>
+                            <textarea id="comment-content" name="content" rows="4" required placeholder="Tulis tanggapan atau pertanyaan Anda di sini..."
+                                      class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors"></textarea>
+                        </div>
+                        <button type="submit" class="px-5 py-2.5 bg-teal hover:bg-teal-light text-white text-xs font-bold rounded-full transition-all shadow-md flex items-center gap-1.5 uppercase tracking-wider cursor-pointer">
+                            Kirim Komentar
+                        </button>
+                    </form>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -302,15 +372,15 @@
 
     {{-- FAQ Section --}}
     @if($article->schema_faq && count($article->schema_faq) > 0)
-    <section class="mt-12 pt-8 border-t border-gray-100">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Pertanyaan Umum (FAQ)</h2>
+    <section class="mt-12 pt-8 border-t border-teal/10">
+        <h2 class="text-2xl font-serif font-bold text-teal-deep mb-6">Pertanyaan Umum (FAQ)</h2>
         <div class="space-y-4" x-data="{ openFaq: null }">
             @foreach($article->schema_faq as $index => $faq)
-            <div class="border border-gray-200 rounded-xl overflow-hidden">
+            <div class="border border-teal/10 rounded-xl overflow-hidden bg-white">
                 <button @click="openFaq = openFaq === {{ $index }} ? null : {{ $index }}"
-                        class="w-full flex items-center justify-between px-5 py-4 text-left font-medium text-gray-900 hover:bg-gray-50 transition-colors">
+                        class="w-full flex items-center justify-between px-5 py-4 text-left font-bold text-teal-deep hover:bg-teal-pale/30 transition-colors">
                     <span>{{ $faq['question'] ?? $faq['q'] ?? '' }}</span>
-                    <svg class="w-5 h-5 text-gray-400 shrink-0 ml-4 transition-transform duration-200"
+                    <svg class="w-5 h-5 text-teal shrink-0 ml-4 transition-transform duration-200"
                          :class="openFaq === {{ $index }} ? 'rotate-180' : ''"
                          fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -335,21 +405,21 @@
     @endif
 
     {{-- Previous / Next Navigation --}}
-    <nav class="mt-12 pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <nav class="mt-12 pt-8 border-t border-teal/10 grid grid-cols-1 md:grid-cols-2 gap-6">
         @if($prevArticle)
         <a href="{{ url('/blog/' . $prevArticle->slug) }}"
-           class="group p-4 rounded-xl border border-gray-200 hover:border-blue-200 hover:bg-blue-50/50 transition-all">
-            <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">← Artikel Sebelumnya</span>
-            <p class="mt-1 font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{{ $prevArticle->title }}</p>
+           class="group p-5 rounded-2xl border border-teal/10 hover:border-teal/20 hover:bg-teal-pale/20 transition-all">
+            <span class="text-xs text-teal/65 font-bold uppercase tracking-wider">← Artikel Sebelumnya</span>
+            <p class="mt-1 font-bold text-teal-deep group-hover:text-teal transition-colors font-serif">{{ $prevArticle->title }}</p>
         </a>
         @else
         <div></div>
         @endif
         @if($nextArticle)
         <a href="{{ url('/blog/' . $nextArticle->slug) }}"
-           class="group p-4 rounded-xl border border-gray-200 hover:border-blue-200 hover:bg-blue-50/50 transition-all text-right md:col-start-2">
-            <span class="text-xs text-gray-400 font-medium uppercase tracking-wider">Artikel Selanjutnya →</span>
-            <p class="mt-1 font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{{ $nextArticle->title }}</p>
+           class="group p-5 rounded-2xl border border-teal/10 hover:border-teal/20 hover:bg-teal-pale/20 transition-all text-right md:col-start-2">
+            <span class="text-xs text-teal/65 font-bold uppercase tracking-wider">Artikel Selanjutnya →</span>
+            <p class="mt-1 font-bold text-teal-deep group-hover:text-teal transition-colors font-serif">{{ $nextArticle->title }}</p>
         </a>
         @endif
     </nav>
