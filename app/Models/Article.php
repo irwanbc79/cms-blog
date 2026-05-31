@@ -30,6 +30,15 @@ class Article extends Model
         'wp_post_id'         => 'integer',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function (Article $article) {
+            if ($article->status === 'published' && is_null($article->published_at)) {
+                $article->published_at = now();
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

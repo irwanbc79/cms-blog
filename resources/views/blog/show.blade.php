@@ -204,7 +204,7 @@
         <aside class="lg:w-64 shrink-0">
             <div class="lg:sticky lg:top-24">
                 <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Daftar Isi</h4>
-                <nav class="space-y-1">
+                <nav class="space-y-1 mb-6">
                     @foreach($toc as $item)
                     <a href="#{{ $item['id'] }}"
                        class="block text-sm py-1.5 {{ $item['level'] == 3 ? 'pl-4' : 'pl-0' }} border-l-2 border-transparent hover:border-blue-500 hover:text-blue-600 transition-colors
@@ -213,6 +213,19 @@
                     </a>
                     @endforeach
                 </nav>
+
+                {{-- Sticky Sidebar Ad --}}
+                @if($site->getAdsensePublisher() && $site->getAdSlot('sidebar_sticky'))
+                <div class="mt-8 pt-6 border-t border-gray-100 hidden lg:block">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="{{ $site->getAdsensePublisher() }}"
+                         data-ad-slot="{{ $site->getAdSlot('sidebar_sticky') }}"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                </div>
+                @endif
             </div>
         </aside>
         @endif
@@ -257,6 +270,19 @@
                     <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors cursor-default">{{ $tag }}</span>
                     @endforeach
                 </div>
+            </div>
+            @endif
+
+            {{-- Below Article Display Ad --}}
+            @if($site->getAdsensePublisher() && $site->getAdSlot('display_bottom'))
+            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="{{ $site->getAdsensePublisher() }}"
+                     data-ad-slot="{{ $site->getAdSlot('display_bottom') }}"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
             </div>
             @endif
         </div>

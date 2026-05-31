@@ -132,7 +132,7 @@ class SiteResource extends Resource
                         ->label('Ad Unit Slot IDs')
                         ->keyLabel('Placement')
                         ->valueLabel('Slot ID')
-                        ->helperText('Placements: in_article, in_feed, display_top, display_bottom, multiplex')
+                        ->helperText('Placements: in_article, in_feed, display_top, display_bottom, multiplex, sidebar_sticky')
                         ->columnSpanFull(),
                     Forms\Components\Textarea::make('ads_txt_content')
                         ->label('ads.txt Content')
