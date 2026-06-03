@@ -141,16 +141,38 @@
     {{-- Per-site theme override (selaras dgn frontpage tiap domain). Override CSS variables -> semua util Tailwind ikut. --}}
     @php
         $siteThemes = [
-            // gma-world.id: ORANYE + navy + putih (selaras frontpage: accent #ff5a1f, dark #0A1128)
+            // gma-world.id: ORANYE + navy (selaras frontpage: accent #ff5a1f, dark #0A1128)
             'gma-world.id' => [
-                'teal'      => '#ff5a1f', // accent utama = oranye brand
-                'teal-dark' => '#1e3a5f', // navy-mid (untuk gradient hero & link hover)
-                'teal-deep' => '#0A1128', // navy gelap (heading, hero, footer)
-                'teal-light'=> '#ff7a47', // oranye terang
-                'teal-pale' => '#fff1ea', // pale hangat (bg pill/blockquote di atas putih)
-                'gold'      => '#ff5a1f', // secondary = oranye (blockquote border, ring)
+                'teal'      => '#ff5a1f',
+                'teal-dark' => '#1e3a5f',
+                'teal-deep' => '#0A1128',
+                'teal-light'=> '#ff7a47',
+                'teal-pale' => '#fff1ea',
+                'gold'      => '#ff5a1f',
                 'gold-light'=> '#ff8a5c',
                 'ink'       => '#07112c',
+            ],
+            // dira.co.id: FOREST GREEN + amber (komoditas/agrikultur)
+            'dira.co.id' => [
+                'teal'      => '#1e6b4a',
+                'teal-dark' => '#124d34',
+                'teal-deep' => '#0a3320',
+                'teal-light'=> '#2d8a5e',
+                'teal-pale' => '#e8f4ed',
+                'gold'      => '#c9922a',
+                'gold-light'=> '#e6a83d',
+                'ink'       => '#051a10',
+            ],
+            // m2b.co.id: BLUE + amber (professional, selaras frontend #0B4DFF, dark #131b2e)
+            'm2b.co.id' => [
+                'teal'      => '#0B4DFF',
+                'teal-dark' => '#0040cc',
+                'teal-deep' => '#131b2e',
+                'teal-light'=> '#4d79ff',
+                'teal-pale' => '#eef0ff',
+                'gold'      => '#f59e0b',
+                'gold-light'=> '#fbbf24',
+                'ink'       => '#0a1020',
             ],
         ];
         $st = $siteThemes[$site->domain] ?? null;
