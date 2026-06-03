@@ -48,4 +48,9 @@ return [
         'tag_manager_id' => env('GOOGLE_TAG_MANAGER_ID'),
     ],
 
+
+    'admin_api' => [
+        'secret' => env('ADMIN_API_SECRET'),
+    ],
+
 ];

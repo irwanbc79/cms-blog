@@ -100,6 +100,17 @@
 @endpush
 
 @section('content')
+{{-- Reading progress bar --}}
+<div id="read-progress" class="fixed top-0 left-0 h-1 bg-teal z-[60] w-0 transition-[width] duration-150"></div>
+<script>
+document.addEventListener('scroll',function(){
+  var el=document.getElementById('read-progress');if(!el)return;
+  var h=document.documentElement,b=document.body;
+  var st=(h.scrollTop||b.scrollTop),sh=(h.scrollHeight||b.scrollHeight)-h.clientHeight;
+  el.style.width=(sh>0?(st/sh*100):0)+'%';
+},{passive:true});
+</script>
+
 {{-- Breadcrumbs --}}
 <nav class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2" aria-label="Breadcrumb">
     <ol class="flex items-center gap-2 text-sm text-gray-500" itemscope itemtype="https://schema.org/BreadcrumbList">
@@ -182,6 +193,20 @@
             {{ number_format($article->word_count) }} kata
         </span>
         @endif
+        {{-- Share buttons --}}
+        @php $shareUrl = urlencode(url('/blog/' . $article->slug)); $shareTitle = urlencode($article->title); @endphp
+        <span class="flex items-center gap-2 ml-auto">
+            <span class="text-xs text-gray-400 font-medium hidden sm:inline">Bagikan:</span>
+            <a href="https://wa.me/?text={{ $shareTitle }}%20{{ $shareUrl }}" target="_blank" rel="noopener" aria-label="WhatsApp" class="w-8 h-8 rounded-full bg-teal-pale text-teal-deep flex items-center justify-center hover:bg-teal hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.16 5.335 5.495 0 12.05 0c3.18.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zM6.597 20.13c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+            </a>
+            <a href="https://twitter.com/intent/tweet?text={{ $shareTitle }}&url={{ $shareUrl }}" target="_blank" rel="noopener" aria-label="X" class="w-8 h-8 rounded-full bg-teal-pale text-teal-deep flex items-center justify-center hover:bg-teal hover:text-white transition-colors">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ $shareUrl }}" target="_blank" rel="noopener" aria-label="Facebook" class="w-8 h-8 rounded-full bg-teal-pale text-teal-deep flex items-center justify-center hover:bg-teal hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+        </span>
     </div>
 
     {{-- Featured Image --}}
@@ -197,54 +222,12 @@
     </div>
     @endif
 
-    {{-- Two Column Layout: TOC + Content --}}
+    {{-- Article + optional sticky ad (TOC dihapus utk tampilan bersih) --}}
     <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
-        {{-- Sidebar: Table of Contents (sticky) --}}
-        @if(count($toc) > 0)
-        <aside class="lg:w-64 shrink-0">
-            <div class="lg:sticky lg:top-24">
-                <h4 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Daftar Isi</h4>
-                <nav class="space-y-1 mb-6">
-                    @foreach($toc as $item)
-                    <a href="#{{ $item['id'] }}"
-                       class="block text-sm py-1.5 {{ $item['level'] == 3 ? 'pl-4' : 'pl-0' }} border-l-2 border-transparent hover:border-teal hover:text-teal transition-colors
-                              {{ $loop->first ? 'font-bold text-teal border-teal' : 'text-gray-600' }}">
-                        {{ $item['title'] }}
-                    </a>
-                    @endforeach
-                </nav>
-
-                {{-- Sticky Sidebar Ad --}}
-                @if($site->getAdsensePublisher() && $site->getAdSlot('sidebar_sticky'))
-                <div class="mt-8 pt-6 border-t border-gray-100 hidden lg:block">
-                    <ins class="adsbygoogle"
-                         style="display:block"
-                         data-ad-client="{{ $site->getAdsensePublisher() }}"
-                         data-ad-slot="{{ $site->getAdSlot('sidebar_sticky') }}"
-                         data-ad-format="auto"
-                         data-full-width-responsive="true"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-                </div>
-                @endif
-            </div>
-        </aside>
-        @endif
-
         {{-- Article Content --}}
         <div class="flex-1 min-w-0">
-            {{-- Content CSS with fixed blockquote --}}
-            <div class="prose prose-lg prose-teal max-w-none
-                        prose-headings:font-bold prose-headings:font-serif prose-headings:text-teal-deep
-                        prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:scroll-mt-24
-                        prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3 prose-h3:scroll-mt-24
-                        prose-p:leading-relaxed prose-p:text-gray-700
-                        prose-a:text-teal prose-a:font-semibold prose-a:no-underline hover:prose-a:text-teal-dark hover:prose-a:underline
-                        prose-img:rounded-xl prose-img:shadow-md
-                        prose-blockquote:border-l-4 prose-blockquote:border-l-gold prose-blockquote:bg-teal-pale/40 prose-blockquote:py-3 prose-blockquote:px-5 prose-blockquote:rounded-r-lg prose-blockquote:not-italic prose-blockquote:text-teal-dark prose-blockquote:my-6
-                        prose-ul:space-y-2 prose-li:text-gray-700
-                        prose-strong:text-gray-900
-                        prose-code:text-sm prose-code:bg-teal-pale prose-code:text-teal-dark prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-teal-deep prose-pre:text-white/95 prose-pre:rounded-xl">
+            {{-- Article body (typography via .article-body di layout) --}}
+            <div class="article-body">
                 {!! $article->content_html !!}
             </div>
 
@@ -286,75 +269,7 @@
             </div>
             @endif
 
-            {{-- Comments Section --}}
-            <section class="mt-12 pt-8 border-t border-gray-100">
-                <h3 class="text-2xl font-serif font-bold text-teal-deep mb-6 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                    </svg>
-                    Komentar ({{ $article->approvedComments->count() }})
-                </h3>
-
-                {{-- Alert Flash Success --}}
-                @if(session('comment_success'))
-                <div class="mb-6 p-4 bg-teal-pale text-teal-dark border border-teal/20 rounded-xl text-sm font-medium flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    {{ session('comment_success') }}
-                </div>
-                @endif
-
-                {{-- Comments List --}}
-                @if($article->approvedComments->count() > 0)
-                <div class="space-y-6 mb-10">
-                    @foreach($article->approvedComments as $comment)
-                    <div class="flex gap-4 p-5 bg-teal-pale/10 rounded-2xl border border-teal/5">
-                        <div class="w-10 h-10 rounded-full bg-teal text-white font-bold flex items-center justify-center shrink-0">
-                            {{ strtoupper(substr($comment->name, 0, 1)) }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between gap-2 mb-1">
-                                <span class="font-bold text-teal-deep text-sm">{{ $comment->name }}</span>
-                                <span class="text-xs text-gray-400">{{ $comment->created_at->diffForHumans() }}</span>
-                            </div>
-                            <p class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ $comment->content }}</p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-                @else
-                <p class="text-gray-500 text-sm mb-8 italic">Belum ada komentar. Jadilah yang pertama memberikan tanggapan!</p>
-                @endif
-
-                {{-- Comment Form --}}
-                <div class="bg-teal-pale/5 rounded-2xl p-6 border border-teal/5">
-                    <h4 class="text-lg font-serif font-bold text-teal-deep mb-4">Tulis Komentar</h4>
-                    <form action="{{ url('/blog/' . $article->slug . '/comments') }}" method="POST" class="space-y-4">
-                        @csrf
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label for="comment-name" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Nama Anda</label>
-                                <input type="text" id="comment-name" name="name" required placeholder="Nama Lengkap"
-                                       class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors">
-                            </div>
-                            <div>
-                                <label for="comment-email" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Email (Tidak dipublikasikan)</label>
-                                <input type="email" id="comment-email" name="email" required placeholder="Alamat Email"
-                                       class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="comment-content" class="block text-xs font-bold text-teal-deep uppercase mb-1.5">Isi Komentar</label>
-                            <textarea id="comment-content" name="content" rows="4" required placeholder="Tulis tanggapan atau pertanyaan Anda di sini..."
-                                      class="w-full px-4 py-2.5 bg-white border border-teal/10 rounded-xl text-sm focus:outline-none focus:border-teal transition-colors"></textarea>
-                        </div>
-                        <button type="submit" class="px-5 py-2.5 bg-teal hover:bg-teal-light text-white text-xs font-bold rounded-full transition-all shadow-md flex items-center gap-1.5 uppercase tracking-wider cursor-pointer">
-                            Kirim Komentar
-                        </button>
-                    </form>
-                </div>
-            </section>
+            {{-- Comments: dipindah ke section standalone di bawah artikel (lihat di luar grid) untuk hindari duplikasi --}}
         </div>
     </div>
 

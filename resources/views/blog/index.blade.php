@@ -5,9 +5,35 @@
 @section('og_type', 'website')
 
 @section('content')
-{{-- Hero Section --}}
+@php $isGma = ($site->domain === 'gma-world.id'); @endphp
+
+@if($isGma)
+{{-- Hero GMA: editorial korporat putih + grid pattern + sans-serif (selaras frontpage) --}}
+<section class="relative bg-white border-b border-gray-200 overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none opacity-[0.5]"
+         style="background-image:linear-gradient(#e8edf3 1px,transparent 1px),linear-gradient(90deg,#e8edf3 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,black,transparent)"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
+        <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal/10 text-teal border border-teal/20 text-xs font-bold mb-5 uppercase tracking-wider">
+                {{ $pageEyebrow ?? ($site->name . ' Insights & Analysis') }}
+            </div>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-sans font-extrabold leading-[1.05] tracking-tight text-teal-deep mb-5">
+                {{ $pageHeading ?? ('Blog ' . $site->name) }}
+            </h1>
+            <p class="text-lg md:text-xl text-gray-500 leading-relaxed font-medium">
+                {{ $pageSubtitle ?? 'Wawasan, analisis, dan panduan praktis seputar perdagangan, maritim, dan konstruksi.' }}
+            </p>
+            @if(isset($pageEyebrow))
+            <a href="{{ url('/blog') }}" class="inline-flex items-center gap-1.5 mt-5 text-sm text-teal hover:text-teal-dark transition-colors font-bold">
+                ← Kembali ke semua artikel
+            </a>
+            @endif
+        </div>
+    </div>
+</section>
+@else
+{{-- Hero default (teal/gold) --}}
 <section class="bg-gradient-to-br from-teal-deep via-teal-dark to-ink text-white relative overflow-hidden border-b border-gold/10">
-    {{-- Decorative background pattern --}}
     <div class="absolute inset-0 opacity-15 pointer-events-none">
         <div class="absolute -top-32 -right-32 w-[500px] h-[500px] bg-gold rounded-full blur-[120px]"></div>
         <div class="absolute -bottom-32 -left-32 w-[400px] h-[400px] bg-teal rounded-full blur-[100px]"></div>
@@ -15,17 +41,23 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative z-10">
         <div class="max-w-3xl">
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-light/10 text-gold-light border border-teal-light/20 text-xs font-semibold mb-6 uppercase tracking-wider">
-                🌟 Dira Insights & Analysis
+                🌟 {{ $pageEyebrow ?? ($site->name . ' Insights & Analysis') }}
             </div>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight mb-5">
-                Blog {{ $site->name }}
+                {{ $pageHeading ?? ('Blog ' . $site->name) }}
             </h1>
             <p class="text-lg md:text-xl text-white/80 leading-relaxed font-medium">
-                Temukan artikel, analisis mendalam, dan informasi regulasi terbaru seputar komoditas ekspor-impor dan trading global.
+                {{ $pageSubtitle ?? 'Temukan artikel, analisis mendalam, dan informasi terbaru seputar industri dan bisnis kami.' }}
             </p>
+            @if(isset($pageEyebrow))
+            <a href="{{ url('/blog') }}" class="inline-flex items-center gap-1.5 mt-5 text-sm text-gold-light hover:text-white transition-colors font-semibold">
+                ← Kembali ke semua artikel
+            </a>
+            @endif
         </div>
     </div>
 </section>
+@endif
 
 {{-- Search & Filter Bar --}}
 <section class="border-b border-teal/5 bg-teal-pale/30">
@@ -39,10 +71,10 @@
                     Semua
                 </a>
                 @foreach($pillarCounts as $key => $count)
-                <a href="{{ url('/blog?pillar=' . $key) }}"
+                <a href="{{ url('/blog/category/' . $key) }}"
                    class="px-4 py-2 rounded-full text-xs font-bold transition-all duration-200
                           {{ $pillar === $key ? 'bg-teal text-white shadow-md ring-1 ring-white/10' : 'bg-white text-teal-deep hover:bg-teal-pale hover:text-teal border border-teal/10' }}">
-                    {{ ucfirst($key) }}
+                    {{ $site->content_pillars[$key] ?? ucfirst(str_replace('-',' ',$key)) }}
                     <span class="ml-1 opacity-60 font-semibold">({{ $count }})</span>
                 </a>
                 @endforeach
@@ -59,16 +91,45 @@
     </div>
 </section>
 
-{{-- Article Grid --}}
+{{-- Content + Sidebar Layout --}}
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+  <div class="flex flex-col lg:flex-row gap-8 lg:gap-10">
+    {{-- Main column --}}
+    <div class="flex-1 min-w-0">
     @if($articles->count() > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        @php $skipFirst = false; @endphp
+        {{-- GMA: Featured post besar di halaman utama (page 1, tanpa filter/search) --}}
+        @if($isGma && !$pillar && !$search && ($articles->currentPage() == 1))
+            @php $feat = $articles->first(); $skipFirst = true; @endphp
+            <a href="{{ url('/blog/' . $feat->slug) }}" class="group block mb-8 rounded-2xl overflow-hidden border border-gray-200 hover:border-teal/30 hover:shadow-xl hover:shadow-teal/5 transition-all duration-300">
+                <div class="overflow-hidden bg-teal-pale/40 relative" style="aspect-ratio:16/8">
+                    @if($feat->featured_image_url)
+                    <img src="{{ $feat->featured_image_url }}" alt="{{ $feat->image_alt_texts[0] ?? $feat->title }}" loading="eager" class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500">
+                    @endif
+                    <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold bg-teal text-white shadow">Featured</span>
+                    @if($feat->pillar)
+                    <span class="absolute top-4 left-[6.5rem] px-3 py-1 rounded-full text-xs font-bold bg-white/95 text-teal-deep shadow">{{ ucwords(str_replace('-',' ',$feat->pillar)) }}</span>
+                    @endif
+                </div>
+                <div class="p-6">
+                    <h2 class="text-2xl md:text-3xl font-extrabold font-sans tracking-tight text-teal-deep group-hover:text-teal transition-colors mb-2 leading-snug">{{ $feat->title }}</h2>
+                    <p class="text-gray-500 leading-relaxed mb-3 line-clamp-2">{{ $feat->excerpt ?: \Illuminate\Support\Str::limit(strip_tags($feat->content_html), 160) }}</p>
+                    <div class="flex items-center gap-4 text-xs text-gray-400">
+                        <span>{{ $feat->published_at?->isoFormat('D MMMM YYYY') }}</span>
+                        @if($feat->estimated_read_time)<span>· {{ $feat->estimated_read_time }} menit baca</span>@endif
+                    </div>
+                </div>
+            </a>
+        @endif
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6">
             @foreach($articles as $index => $article)
+                @if($skipFirst && $loop->first) @continue @endif
                 <x-article-card :article="$article" />
 
-                {{-- In-Feed Ad every 3 articles --}}
-                @if(($index + 1) % 3 === 0 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed') && !$loop->last)
-                <div class="col-span-full flex justify-center py-2">
+                {{-- In-Feed Ad every 4 articles --}}
+                @if(($index + 1) % 4 === 0 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed') && !$loop->last)
+                <div class="flex justify-center py-2" style="grid-column:1/-1">
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"
@@ -119,5 +180,14 @@
             @endif
         </div>
     @endif
+    </div>{{-- /main column --}}
+
+    {{-- Sidebar --}}
+    <div class="shrink-0 w-full lg:w-80" x-data>
+        <div class="lg:sticky lg:top-24">
+            <x-blog-sidebar :site="$site" />
+        </div>
+    </div>
+  </div>
 </section>
 @endsection

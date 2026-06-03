@@ -138,6 +138,61 @@
         </style>
     @endif
 
+    {{-- Per-site theme override (selaras dgn frontpage tiap domain). Override CSS variables -> semua util Tailwind ikut. --}}
+    @php
+        $siteThemes = [
+            // gma-world.id: ORANYE + navy + putih (selaras frontpage: accent #ff5a1f, dark #0A1128)
+            'gma-world.id' => [
+                'teal'      => '#ff5a1f', // accent utama = oranye brand
+                'teal-dark' => '#1e3a5f', // navy-mid (untuk gradient hero & link hover)
+                'teal-deep' => '#0A1128', // navy gelap (heading, hero, footer)
+                'teal-light'=> '#ff7a47', // oranye terang
+                'teal-pale' => '#fff1ea', // pale hangat (bg pill/blockquote di atas putih)
+                'gold'      => '#ff5a1f', // secondary = oranye (blockquote border, ring)
+                'gold-light'=> '#ff8a5c',
+                'ink'       => '#07112c',
+            ],
+        ];
+        $st = $siteThemes[$site->domain] ?? null;
+    @endphp
+    @if($st)
+    <style>
+        :root{
+            --color-teal:{{ $st['teal'] }};
+            --color-teal-dark:{{ $st['teal-dark'] }};
+            --color-teal-deep:{{ $st['teal-deep'] }};
+            --color-teal-light:{{ $st['teal-light'] }};
+            --color-teal-pale:{{ $st['teal-pale'] }};
+            --color-gold:{{ $st['gold'] }};
+            --color-gold-light:{{ $st['gold-light'] }};
+            --color-ink:{{ $st['ink'] }};
+        }
+    </style>
+    @endif
+
+    {{-- Article typography (pengganti Tailwind prose yg tdk ter-compile) --}}
+    <style>
+        .article-body{font-size:1.0625rem;line-height:1.85;color:#374151;max-width:none}
+        .article-body > *:first-child{margin-top:0}
+        .article-body p{margin:0 0 1.35em}
+        .article-body h2{font-family:var(--font-serif,Georgia,serif);font-size:1.6rem;line-height:1.3;font-weight:700;color:var(--color-teal-deep,#083d33);margin:2em 0 .7em;scroll-margin-top:6rem}
+        .article-body h3{font-size:1.28rem;line-height:1.35;font-weight:700;color:var(--color-teal-deep,#083d33);margin:1.6em 0 .5em}
+        .article-body h1{font-size:1.9rem;font-weight:800;color:var(--color-teal-deep,#083d33);margin:0 0 .6em;line-height:1.2}
+        .article-body ul,.article-body ol{margin:0 0 1.35em;padding-left:1.4em}
+        .article-body ul{list-style:disc}.article-body ol{list-style:decimal}
+        .article-body li{margin:.45em 0}
+        .article-body a{color:var(--color-teal,#1a7a6a);font-weight:600;text-decoration:underline;text-underline-offset:2px}
+        .article-body a:hover{color:var(--color-teal-dark,#0d5546)}
+        .article-body strong{color:#111827;font-weight:700}
+        .article-body blockquote{border-left:4px solid var(--color-gold,#c9a227);background:var(--color-teal-pale,#e6f4f1);margin:1.6em 0;padding:.9em 1.2em;border-radius:0 .5rem .5rem 0;font-style:italic;color:var(--color-teal-deep,#083d33)}
+        .article-body img{border-radius:.75rem;margin:1.6em 0;max-width:100%;height:auto}
+        .article-body table{width:100%;border-collapse:collapse;margin:1.6em 0;font-size:.95rem}
+        .article-body th,.article-body td{border:1px solid #e5e7eb;padding:.6em .8em;text-align:left}
+        .article-body th{background:var(--color-teal-pale,#e6f4f1);font-weight:700;color:var(--color-teal-deep,#083d33)}
+        .article-body code{background:var(--color-teal-pale,#e6f4f1);color:var(--color-teal-dark,#0d5546);padding:.15em .4em;border-radius:.3em;font-size:.9em}
+        .article-body h1:first-child{display:none}
+    </style>
+
     {{-- Additional head --}}
     @stack('head')
 
@@ -201,7 +256,7 @@
                 <nav class="flex items-center gap-6 text-sm font-semibold text-teal-deep">
                     <a href="{{ url('/blog') }}" class="hover:text-teal transition-colors {{ request()->is('blog') ? 'text-teal border-b-2 border-teal pb-1' : '' }}">Blog</a>
                     @if($site->domain)
-                    <a href="{{ 'https://' . $site->domain }}" class="hover:text-teal transition-colors" target="_blank" rel="noopener">Website</a>
+                    <a href="{{ 'https://' . $site->domain }}" class="hover:text-teal transition-colors">Website</a>
                     @endif
                     {{-- Language Switcher --}}
                     @if($site->languages && count($site->languages) > 1)
