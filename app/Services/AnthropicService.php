@@ -98,6 +98,52 @@ CTA;
     }
 
     /**
+     * Autopilot: generate fresh, specific article topics for a pillar
+     * based on the site's niche. Used when user does not type a topic.
+     */
+    public function suggestTopics(string $pillar, string $language, int $count = 1): array
+    {
+        $lang    = $language === 'en' ? 'English' : 'Bahasa Indonesia';
+        $context = $this->getContextString();
+        $company = $this->getCompanyName();
+
+        $prompt = <<<PROMPT
+You are a content strategist for {$company}.
+{$context}
+Content pillar: {$pillar}. Write in {$lang}.
+
+Generate exactly {$count} FRESH, SPECIFIC, and UNIQUE blog article topic ideas for the pillar "{$pillar}".
+Each topic must be:
+- Highly relevant to the company niche and this pillar
+- Specific and actionable (NOT generic)
+- Commercial or informational search intent
+- 40-70 characters, suitable as an article title seed
+
+Return ONLY a valid JSON array of strings, no markdown:
+["topic 1", "topic 2"]
+PROMPT;
+
+        $raw   = $this->callApi($prompt, 512);
+        $clean = $this->cleanJsonResponse($raw);
+        $decoded = json_decode($clean, true);
+
+        if (! is_array($decoded)) {
+            return [];
+        }
+
+        $topics = [];
+        foreach ($decoded as $item) {
+            if (is_string($item)) {
+                $topics[] = trim($item);
+            } elseif (is_array($item)) {
+                $topics[] = trim($item['title'] ?? $item['topic'] ?? '');
+            }
+        }
+
+        return array_slice(array_values(array_filter($topics)), 0, $count);
+    }
+
+    /**
      * Generate full article. Two API calls: metadata then content.
      */
     public function generateArticle(string $title, string $pillar, string $language): array

@@ -82,119 +82,166 @@
         </div>
     </div>
 
-    {{-- Quick Create Form --}}
-    <div style="background:#fff;border-radius:.75rem;border:1px solid #e5e7eb;padding:1.5rem;margin-bottom:2rem;">
-        <h2 style="font-size:1rem;font-weight:600;color:#111827;margin:0 0 1rem;display:flex;align-items:center;gap:.5rem;">
-            <x-heroicon-o-sparkles style="width:1.25rem;height:1.25rem;color:#2563eb;" />
-            Quick Create & Schedule
-        </h2>
+    {{-- ═══ Content Studio: Autopilot + Manual ═══ --}}
+    <div x-data="{ mode: @entangle('mode').live }" style="background:#fff;border-radius:.75rem;border:1px solid #e5e7eb;padding:1.5rem;margin-bottom:1.5rem;">
 
-        <form wire:submit="quickCreate">
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;">
+        {{-- Mode Tabs --}}
+        <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid #e5e7eb;padding-bottom:0;">
+            <button type="button" @click="mode='autopilot'"
+                :style="mode==='autopilot' ? 'border-bottom:2px solid #2563eb;color:#2563eb;font-weight:700' : 'border-bottom:2px solid transparent;color:#6b7280;font-weight:500'"
+                style="padding:.6rem 1rem;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;font-size:.95rem;display:flex;align-items:center;gap:.4rem;">
+                🪄 Autopilot
+            </button>
+            <button type="button" @click="mode='manual'"
+                :style="mode==='manual' ? 'border-bottom:2px solid #2563eb;color:#2563eb;font-weight:700' : 'border-bottom:2px solid transparent;color:#6b7280;font-weight:500'"
+                style="padding:.6rem 1rem;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;font-size:.95rem;display:flex;align-items:center;gap:.4rem;">
+                ✍️ Manual
+            </button>
+        </div>
 
-                {{-- Site --}}
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Site</label>
-                    <select wire:model.live="siteId"
-                            style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;">
-                        <option value="">Pilih Site...</option>
-                        @foreach(\App\Models\Site::where('is_active', true)->orderBy('name')->get() as $s)
-                            <option value="{{ $s->id }}">{{ $s->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('siteId') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
-                </div>
+        {{-- ─── AUTOPILOT PANEL ─── --}}
+        <div x-show="mode==='autopilot'" x-cloak>
+            <p style="font-size:.9rem;color:#6b7280;margin:0 0 1rem;">
+                Pilih blog → sistem otomatis pilihkan topik + kategori relevan untuk tiap blog, lalu langsung publish. Cukup satu klik. ✨
+            </p>
 
-                {{-- Pillar --}}
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Pillar</label>
-                    <select wire:model="pillar"
-                            style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;">
-                        @foreach($this->pillarOptions as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    @error('pillar') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
-                </div>
-
-                {{-- Language --}}
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Language</label>
-                    <select wire:model="language"
-                            style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;">
-                        @foreach($this->languageOptions as $key => $label)
-                            <option value="{{ $key }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    @error('language') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
-                </div>
-
-                {{-- Article Count --}}
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Article Count</label>
-                    <input type="number" wire:model="articleCount" min="1" max="30"
-                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                    @error('articleCount') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            {{-- Topic (multi-line batch input) --}}
+            {{-- Blog Selector --}}
             <div style="margin-bottom:1rem;">
-                <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">
-                    Topic / Keyword
-                    <span style="font-weight:400;color:#9ca3af;font-size:.75rem;margin-left:.5rem;">— satu per baris atau pisahkan dengan koma</span>
-                </label>
-                <textarea wire:model="topic" rows="4"
-                       placeholder="Cara ekspor kopi ke Eropa&#10;Regulasi impor terbaru 2026&#10;Tips mendapatkan buyer luar negeri&#10;..."
-                       style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;resize:vertical;line-height:1.6"></textarea>
-                <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Jumlah baris = jumlah artikel yang digenerate. Maks 30 topik.</p>
-                @error('topic') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
-            </div>
-
-            {{-- Schedule Options + Auto-Image --}}
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Schedule Start (optional)</label>
-                    <input type="datetime-local" wire:model="scheduleStart"
-                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Kosong = besok jam 08:00</p>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+                    <label style="font-size:.875rem;font-weight:600;color:#374151;">Pilih Blog</label>
+                    <button type="button" wire:click="toggleAllSites"
+                        style="font-size:.75rem;color:#2563eb;background:none;border:none;cursor:pointer;font-weight:600;">
+                        Pilih Semua / Batal
+                    </button>
                 </div>
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Jarak Antar Artikel</label>
-                    <input type="number" wire:model="scheduleGap" min="1" max="30"
-                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">1 = tiap hari, 7 = seminggu sekali</p>
-                </div>
-                <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Featured Image</label>
-                    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.6rem .75rem;border-radius:.5rem;border:1px solid #d1d5db;background:#f9fafb;margin-top:0">
-                        <input type="checkbox" wire:model="autoFetchImage" style="width:1rem;height:1rem;accent-color:#2563eb">
-                        <span style="font-size:.875rem;color:#374151;font-weight:500">Auto-Fetch Image</span>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;">
+                    @foreach($this->sites as $s)
+                    <label style="display:flex;align-items:center;gap:.6rem;padding:.7rem .9rem;border:1px solid #d1d5db;border-radius:.5rem;cursor:pointer;background:#f9fafb;">
+                        <input type="checkbox" wire:model.live="siteIds" value="{{ $s->id }}" style="width:1.1rem;height:1.1rem;accent-color:#2563eb;">
+                        <div>
+                            <span style="font-size:.875rem;font-weight:600;color:#111827;display:block;">{{ $s->name }}</span>
+                            <span style="font-size:.7rem;color:#9ca3af;">{{ $s->domain }}</span>
+                        </div>
                     </label>
-                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Picsum/Unsplash otomatis</p>
+                    @endforeach
+                </div>
+                @error('siteIds') <p style="font-size:.75rem;color:#ef4444;margin-top:.4rem;">{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Options Row --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+                <div>
+                    <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Artikel / Blog</label>
+                    <input type="number" wire:model="perBlog" min="1" max="10"
+                        style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                    <p style="font-size:.7rem;color:#9ca3af;margin-top:.25rem;">Disebar merata ke tiap kategori</p>
+                </div>
+                <div>
+                    <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Bahasa</label>
+                    <select wire:model="language" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                        <option value="id">🇮🇩 Indonesia</option>
+                        <option value="en">🇬🇧 English</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Publish</label>
+                    <select wire:model="publishMode" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                        <option value="published">⚡ Langsung Tayang</option>
+                        <option value="draft">📝 Draft Dulu</option>
+                    </select>
                 </div>
             </div>
 
-            <div style="display:flex;align-items:center;gap:.75rem;padding-top:.5rem;">
-                <button type="submit"
-                        style="display:inline-flex;align-items:center;gap:.5rem;padding:.625rem 1.25rem;background:#2563eb;color:#fff;border:none;border-radius:.5rem;font-size:.875rem;font-weight:500;cursor:pointer;"
-                        wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="quickCreate">
-                        <x-heroicon-o-sparkles style="width:1rem;height:1rem;" />
-                    </span>
-                    <span wire:loading wire:target="quickCreate" style="display:flex;align-items:center;gap:.5rem;">
-                        <svg style="animation:spin 1s linear infinite;width:1rem;height:1rem;" fill="none" viewBox="0 0 24 24">
-                            <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                            <path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                        </svg>
-                        Generating...
-                    </span>
-                    Generate & Schedule
+            {{-- Big Generate Button --}}
+            <button type="button" wire:click="autopilot" wire:loading.attr="disabled"
+                style="width:100%;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:none;border-radius:.6rem;padding:.9rem;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;box-shadow:0 4px 12px rgba(37,99,235,.25);">
+                <span wire:loading.remove wire:target="autopilot">🪄 Generate &amp; Publish Otomatis</span>
+                <span wire:loading wire:target="autopilot" style="display:flex;align-items:center;gap:.5rem;">
+                    <svg style="width:1.1rem;height:1.1rem;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+                        <path d="M12 2a10 10 0 0110 10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    Mengantrekan...
+                </span>
+            </button>
+        </div>
+
+        {{-- ─── MANUAL PANEL ─── --}}
+        <div x-show="mode==='manual'" x-cloak>
+            <form wire:submit="quickCreate">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                    <div>
+                        <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Blog</label>
+                        <select wire:model.live="siteId" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                            <option value="">Pilih Site...</option>
+                            @foreach($this->sites as $s)
+                            <option value="{{ $s->id }}">{{ $s->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('siteId') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Kategori</label>
+                        <div style="display:flex;gap:.4rem;align-items:center;">
+                            <select wire:model.live="categoryMode" style="border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .5rem;font-size:.8rem;color:#111827;background:#fff;">
+                                <option value="auto">🤖 Auto</option>
+                                <option value="manual">Manual</option>
+                            </select>
+                            <select wire:model="pillar" x-show="$wire.categoryMode==='manual'" style="flex:1;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;">
+                                <option value="">Pilih...</option>
+                                @foreach($this->pillarOptions as $key => $label)
+                                <option value="{{ $key }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @error('pillar') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">
+                        Topik / Keyword <span style="font-weight:400;color:#9ca3af;font-size:.75rem;">— satu per baris atau pisahkan koma</span>
+                    </label>
+                    <textarea wire:model="topic" rows="3"
+                        placeholder="Cara ekspor kopi ke Eropa&#10;Regulasi impor terbaru 2026&#10;..."
+                        style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;resize:vertical;line-height:1.6;"></textarea>
+                    @error('topic') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+                    <div>
+                        <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Bahasa</label>
+                        <select wire:model="language" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                            <option value="id">🇮🇩 Indonesia</option>
+                            <option value="en">🇬🇧 English</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Publish</label>
+                        <select wire:model="publishMode" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                            <option value="published">⚡ Langsung Tayang</option>
+                            <option value="draft">📝 Draft</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Featured Image</label>
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.55rem .75rem;border-radius:.5rem;border:1px solid #d1d5db;background:#f9fafb;">
+                            <input type="checkbox" wire:model="autoFetchImage" style="width:1rem;height:1rem;accent-color:#2563eb;">
+                            <span style="font-size:.8rem;color:#374151;font-weight:500;">Auto-Image</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" wire:loading.attr="disabled"
+                    style="width:100%;background:#2563eb;color:#fff;border:none;border-radius:.6rem;padding:.85rem;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+                    <span wire:loading.remove wire:target="quickCreate">✨ Generate &amp; Publish</span>
+                    <span wire:loading wire:target="quickCreate">⏳ Memproses...</span>
                 </button>
-                <p style="font-size:.75rem;color:#9ca3af;">~60s per article. Max 30 articles.</p>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
+
+    <style>@keyframes spin{to{transform:rotate(360deg)}}[x-cloak]{display:none!important}</style>
 
     {{-- Recent Articles Preview --}}
     @php

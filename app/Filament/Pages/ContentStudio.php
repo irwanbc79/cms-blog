@@ -45,6 +45,13 @@ class ContentStudio extends Page implements HasForms, HasTable
     public int     $scheduleGap   = 1; // days between articles
     public bool    $autoFetchImage = true;  // fetch image from Unsplash/Picsum
 
+    // ─── Autopilot Mode ──────────────────────────────────────────────────────────
+    public string $mode         = 'autopilot';   // autopilot | manual
+    public array  $siteIds      = [];            // selected blogs for autopilot
+    public int    $perBlog      = 3;             // articles per blog
+    public string $publishMode  = 'published';   // published | draft
+    public string $categoryMode = 'auto';        // auto | manual (for manual tab pillar)
+
     public function getTitle(): string
     {
         return 'Content Studio';
@@ -70,14 +77,83 @@ class ContentStudio extends Page implements HasForms, HasTable
         ];
     }
 
-    public function quickCreate(): void
+    public function getSitesProperty()
+    {
+        return Site::where('is_active', true)->orderBy('name')->get(['id', 'name', 'domain']);
+    }
+
+    public function toggleAllSites(): void
+    {
+        $all = Site::where('is_active', true)->pluck('id')->map(fn ($id) => (int) $id)->toArray();
+        $this->siteIds = count($this->siteIds) === count($all) ? [] : $all;
+    }
+
+    /**
+     * Autopilot: for each selected blog, distribute N articles across its pillars
+     * (round-robin), auto-generate relevant topics, and publish instantly.
+     */
+    public function autopilot(): void
     {
         $this->validate([
-            'siteId'  => 'required|exists:sites,id',
-            'pillar'  => 'required|string',
-            'topic'   => 'required|min:5',
-            'language' => 'required|string',
+            'siteIds'     => 'required|array|min:1',
+            'siteIds.*'   => 'exists:sites,id',
+            'perBlog'     => 'required|integer|min:1|max:10',
+            'language'    => 'required|string',
+            'publishMode' => 'required|in:published,draft',
+        ], [
+            'siteIds.required' => 'Pilih minimal satu blog.',
         ]);
+
+        $userId = auth()->id();
+        $total  = 0;
+
+        foreach ($this->siteIds as $siteId) {
+            $site = Site::find($siteId);
+            if (! $site) {
+                continue;
+            }
+            $pillars = array_keys($site->getPillarOptions());
+            if (empty($pillars)) {
+                $pillars = ['news'];
+            }
+
+            for ($i = 0; $i < $this->perBlog; $i++) {
+                $pillar = $pillars[$i % count($pillars)]; // round-robin = balanced coverage
+                GenerateArticleJob::dispatch(
+                    (int) $siteId,
+                    '',                               // empty -> autopilot generates topic
+                    $pillar,
+                    $this->language,
+                    now()->toDateTimeString(),
+                    $userId,
+                    $this->publishMode,
+                );
+                $total++;
+            }
+        }
+
+        $modeLabel = $this->publishMode === 'published' ? 'Langsung Tayang' : 'Draft';
+        Notification::make()
+            ->title("🪄 Autopilot: {$total} artikel diantrekan untuk " . count($this->siteIds) . " blog!")
+            ->body("Mode: {$modeLabel}. Estimasi ~1-2 menit/artikel. Pantau progres di Queue bawah.")
+            ->success()
+            ->persistent()
+            ->send();
+    }
+
+    public function quickCreate(): void
+    {
+        $rules = [
+            'siteId'   => 'required|exists:sites,id',
+            'topic'    => 'required|min:5',
+            'language' => 'required|string',
+        ];
+        if ($this->categoryMode === 'manual') {
+            $rules['pillar'] = 'required|string';
+        }
+        $this->validate($rules);
+
+        $effectivePillar = $this->categoryMode === 'auto' ? 'auto' : $this->pillar;
 
         // Parse multi-line or comma-separated topics
         $rawTopics = preg_split('/[\n,]+/', $this->topic);
@@ -101,10 +177,11 @@ class ContentStudio extends Page implements HasForms, HasTable
             GenerateArticleJob::dispatch(
                 $this->siteId,
                 $topic,
-                $this->pillar,
+                $effectivePillar,
                 $this->language,
                 $scheduleDate->copy()->toDateTimeString(),
                 $userId,
+                $this->publishMode,
             );
             $scheduleDate->addDays($this->scheduleGap);
         }
