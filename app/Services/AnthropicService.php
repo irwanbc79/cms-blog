@@ -83,6 +83,12 @@ class AnthropicService
 CTA;
     }
 
+    /** Public accessor for the CTA block (used by GenerateArticleJob). */
+    public function renderCta(): string
+    {
+        return $this->getCtaBlock();
+    }
+
     // ─── Public Methods ────────────────────────────────────────────────────────
 
     /**
@@ -157,7 +163,7 @@ PROMPT;
 
         // Call 2: full HTML content
         $contentPrompt = $this->buildContentPrompt($title, $pillar, $lang, $meta['focus_keyword'] ?? '');
-        $contentHtml   = $this->callApi($contentPrompt, 8000);
+        $contentHtml   = $this->callApi($contentPrompt, 12000);
         $wordCount     = str_word_count(strip_tags($contentHtml));
 
         return array_merge($meta, [
@@ -198,7 +204,7 @@ CONTENT:
 PROMPT;
 
         try {
-            return $this->callApi($prompt, 8000);
+            return $this->callApi($prompt, 12000);
         } catch (\Throwable) {
             // If internal linking fails, return original content
             return $contentHtml;
@@ -308,26 +314,30 @@ Write a comprehensive, authoritative blog article for: "{$title}"
 • 4-6 H2 sections with 2-3 H3 subsections each (200+ words per H2)
 • "📰 Update Terbaru {$year}" section: mention recent regulations, policy changes, or market data from {$year}
 • Comparison table OR numbered steps OR checklist in at least 2 sections
+• A "🔥 Situasi & Tren Terkini {$year}" section: discuss CURRENT, hot developments relevant to this topic and {$company}'s business — recent regulation changes, market shifts, global/national trade situations in {$year}. Be specific and timely.
 • Conclusion: 3-5 actionable takeaways
-• End with this EXACT HTML CTA block:
-{$ctaBlock}
+(Do NOT add a CTA block yourself — it will be inserted automatically.)
 
-═══ EMOJI RULES (MANDATORY) ═══
+═══ EMOJI RULES (MANDATORY — make it lively) ═══
 
-- Every H2: start with 1 relevant emoji (📦 🚢 ✅ 📋 💡 🌏 🔑 📈 ⚠️ 💰 🏗️ 📊 🎯 🔍 📌 🏆 ⚡ 🛡️ 🌿 🤝)
+- Every H2: start with 1 relevant emoji (📦 🚢 ✅ 📋 💡 🌏 🔑 📈 ⚠️ 💰 🏗️ 📊 🎯 🔍 📌 🏆 ⚡ 🛡️ 🌿 🤝 ☕ 🌶️ 🧾 ⚖️ 💵)
 - Every H3: start with 1 smaller emoji
-- Key insight paragraphs: add 1 emoji at start
-- Inside lists: add emoji to bullet items where natural
-- MAX 1 emoji per element — do not stack emojis
+- MOST paragraphs (at least 1 emoji every 1-2 paragraphs) should open OR contain 1 contextual emoji that fits the meaning
+- Every bullet/numbered list item: begin with a fitting emoji
+- Use emojis that MATCH the content (☕ for coffee, 🚢 for shipping, 💰 for cost, 📑 for documents)
+- MAX 1 emoji per sentence — never stack; keep it tasteful and professional
 
 ═══ IMAGES (MANDATORY — include 2-3) ═══
 
-Place images INSIDE the article content at natural positions using this EXACT format:
-<figure style="margin:2rem 0;">
-  <img src="https://picsum.photos/seed/UNIQUE_SEED/800/450" alt="DESCRIPTIVE ALT TEXT WITH KEYWORD" style="width:100%;border-radius:.75rem;object-fit:cover;" loading="lazy">
-  <figcaption style="text-align:center;color:#6b7280;font-size:.875rem;margin-top:.5rem;font-style:italic;">CAPTION TEXT</figcaption>
-</figure>
-Replace UNIQUE_SEED with a unique word related to the image topic (e.g. "ekspor-kopi-2", "pelabuhan-indonesia").
+Do NOT write <img> tags yourself. Instead, place EXACTLY this marker where an image fits:
+[[IMG: <english search query> || <Indonesian caption that matches the article topic>]]
+
+Rules:
+- The english search query must be VERY specific to the surrounding text so the image is relevant
+  (e.g. "arabica coffee beans drying", "cargo container ship port", "customs documents desk").
+- The caption (Indonesian) must describe the image in the context of THIS article.
+- Place markers on their own line between paragraphs, 2-3 total, spread across the article.
+- Example: [[IMG: green coffee beans warehouse || Gudang penyimpanan green bean kopi siap ekspor]]
 
 ═══ SEO & HIGH-VALUE ADSENSE KEYWORDS ═══
 
