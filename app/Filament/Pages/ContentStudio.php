@@ -43,6 +43,7 @@ class ContentStudio extends Page implements HasForms, HasTable
     public int     $articleCount  = 1;
     public ?string $scheduleStart = null;
     public int     $scheduleGap   = 1; // days between articles
+    public bool    $autoFetchImage = true;  // fetch image from Unsplash/Picsum
 
     public function getTitle(): string
     {
@@ -72,12 +73,23 @@ class ContentStudio extends Page implements HasForms, HasTable
     public function quickCreate(): void
     {
         $this->validate([
-            'siteId'       => 'required|exists:sites,id',
-            'pillar'       => 'required|string',
-            'topic'        => 'required|min:5|max:255',
-            'language'     => 'required|string',
-            'articleCount' => 'required|integer|min:1|max:30',
+            'siteId'  => 'required|exists:sites,id',
+            'pillar'  => 'required|string',
+            'topic'   => 'required|min:5',
+            'language' => 'required|string',
         ]);
+
+        // Parse multi-line or comma-separated topics
+        $rawTopics = preg_split('/[\n,]+/', $this->topic);
+        $topics    = array_values(array_filter(array_map('trim', $rawTopics), fn($t) => strlen($t) >= 5));
+
+        if (empty($topics)) {
+            $this->addError('topic', 'Minimal satu topik (min 5 karakter).');
+            return;
+        }
+
+        // Limit to 30 topics max
+        $topics = array_slice($topics, 0, 30);
 
         $scheduleDate = $this->scheduleStart
             ? \Carbon\Carbon::parse($this->scheduleStart)
@@ -85,10 +97,10 @@ class ContentStudio extends Page implements HasForms, HasTable
 
         $userId = auth()->id();
 
-        for ($i = 0; $i < $this->articleCount; $i++) {
+        foreach ($topics as $topic) {
             GenerateArticleJob::dispatch(
                 $this->siteId,
-                $this->topic,
+                $topic,
                 $this->pillar,
                 $this->language,
                 $scheduleDate->copy()->toDateTimeString(),
@@ -97,10 +109,12 @@ class ContentStudio extends Page implements HasForms, HasTable
             $scheduleDate->addDays($this->scheduleGap);
         }
 
+        $count = count($topics);
         Notification::make()
-            ->title("🚀 {$this->articleCount} article(s) queued — generating in background")
-            ->body('Refresh halaman ini dalam 2-3 menit untuk melihat hasilnya.')
+            ->title("🚀 {$count} artikel diantrekan!")
+            ->body("Topik: " . implode(', ', array_map(fn($t) => substr($t,0,30), array_slice($topics,0,3))) . ($count > 3 ? '...' : '') . ". Cek queue di bawah.")
             ->success()
+            ->persistent()
             ->send();
 
         $this->topic = '';

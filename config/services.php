@@ -53,4 +53,9 @@ return [
         'secret' => env('ADMIN_API_SECRET'),
     ],
 
+
+    'unsplash' => [
+        'access_key' => env('UNSPLASH_ACCESS_KEY'),
+    ],
+
 ];

@@ -27,6 +27,21 @@
             <a href="{{ url('/blog') }}" class="inline-flex items-center gap-1.5 mt-5 text-sm text-teal hover:text-teal-dark transition-colors font-bold">
                 ← Kembali ke semua artikel
             </a>
+            @else
+            {{-- Search Bar --}}
+            <form method="GET" action="{{ url('/blog') }}" class="mt-8 flex max-w-lg gap-2">
+                <div class="flex-1 relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" value="{{ $search ?? '' }}"
+                           placeholder="Cari artikel..."
+                           class="w-full pl-10 pr-4 py-2.5 border border-gray-200 hover:border-teal/40 focus:border-teal/60 focus:outline-none rounded-xl text-sm bg-white text-gray-800 placeholder-gray-400 transition-colors shadow-sm">
+                </div>
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors shadow-sm" style="background:var(--color-teal,#1a7a6a)">
+                    Cari
+                </button>
+            </form>
             @endif
         </div>
     </div>
@@ -53,6 +68,22 @@
             <a href="{{ url('/blog') }}" class="inline-flex items-center gap-1.5 mt-5 text-sm text-gold-light hover:text-white transition-colors font-semibold">
                 ← Kembali ke semua artikel
             </a>
+            @else
+            {{-- Search Bar --}}
+            <form method="GET" action="{{ url('/blog') }}" class="mt-8 flex max-w-lg gap-2">
+                <div class="flex-1 relative">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" name="q" value="{{ $search ?? '' }}"
+                           placeholder="Cari artikel..."
+                           class="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm placeholder-white/40 text-white focus:outline-none transition-colors"
+                           style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)">
+                </div>
+                <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" style="background:var(--color-gold,#c9a227);color:#111">
+                    Cari
+                </button>
+            </form>
             @endif
         </div>
     </div>

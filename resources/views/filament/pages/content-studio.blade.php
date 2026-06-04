@@ -138,28 +138,40 @@
                 </div>
             </div>
 
-            {{-- Topic --}}
+            {{-- Topic (multi-line batch input) --}}
             <div style="margin-bottom:1rem;">
-                <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Topic / Keyword</label>
-                <input type="text" wire:model="topic"
-                       placeholder="e.g., Tips ekspor untuk UMKM, Regulasi bea cukai terbaru..."
-                       style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
+                <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">
+                    Topic / Keyword
+                    <span style="font-weight:400;color:#9ca3af;font-size:.75rem;margin-left:.5rem;">— satu per baris atau pisahkan dengan koma</span>
+                </label>
+                <textarea wire:model="topic" rows="4"
+                       placeholder="Cara ekspor kopi ke Eropa&#10;Regulasi impor terbaru 2026&#10;Tips mendapatkan buyer luar negeri&#10;..."
+                       style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;resize:vertical;line-height:1.6"></textarea>
+                <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Jumlah baris = jumlah artikel yang digenerate. Maks 30 topik.</p>
                 @error('topic') <p style="font-size:.75rem;color:#ef4444;margin-top:.25rem;">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Schedule Options --}}
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+            {{-- Schedule Options + Auto-Image --}}
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
                 <div>
                     <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Schedule Start (optional)</label>
                     <input type="datetime-local" wire:model="scheduleStart"
                            style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Leave empty to start tomorrow at 08:00</p>
+                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Kosong = besok jam 08:00</p>
                 </div>
                 <div>
-                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Days Between Articles</label>
+                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Jarak Antar Artikel</label>
                     <input type="number" wire:model="scheduleGap" min="1" max="30"
                            style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">1 = every day, 7 = once a week</p>
+                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">1 = tiap hari, 7 = seminggu sekali</p>
+                </div>
+                <div>
+                    <label style="display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;">Featured Image</label>
+                    <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.6rem .75rem;border-radius:.5rem;border:1px solid #d1d5db;background:#f9fafb;margin-top:0">
+                        <input type="checkbox" wire:model="autoFetchImage" style="width:1rem;height:1rem;accent-color:#2563eb">
+                        <span style="font-size:.875rem;color:#374151;font-weight:500">Auto-Fetch Image</span>
+                    </label>
+                    <p style="font-size:.75rem;color:#9ca3af;margin-top:.25rem;">Picsum/Unsplash otomatis</p>
                 </div>
             </div>
 
@@ -184,11 +196,45 @@
         </form>
     </div>
 
-    {{-- Queue Table --}}
-    <div style="background:#fff;border-radius:.75rem;border:1px solid #e5e7eb;padding:1.5rem;">
+    {{-- Recent Articles Preview --}}
+    @php
+        $recentArticles = \App\Models\Article::with('site')
+            ->latest('created_at')->take(3)->get(['id','title','site_id','status','scheduled_at','featured_image_url','created_at']);
+    @endphp
+    @if($recentArticles->count())
+    <div style="margin-bottom:1.5rem;">
+        <h3 style="font-size:.875rem;font-weight:600;color:#6b7280;margin:0 0 .75rem;text-transform:uppercase;letter-spacing:.05em;">Terakhir Dibuat</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;">
+            @foreach($recentArticles as $ra)
+            <a href="{{ route('filament.admin.resources.articles.edit', $ra) }}"
+               style="display:flex;gap:.75rem;align-items:flex-start;padding:.75rem;border-radius:.5rem;border:1px solid #e5e7eb;background:#f9fafb;text-decoration:none;transition:border-color .15s"
+               onmouseover="this.style.borderColor='#2563eb'" onmouseout="this.style.borderColor='#e5e7eb'">
+                @if($ra->featured_image_url)
+                <img src="{{ $ra->featured_image_url }}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:.375rem;flex-shrink:0">
+                @else
+                <div style="width:48px;height:48px;background:#e5e7eb;border-radius:.375rem;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+                    <span style="color:#9ca3af;font-size:1.25rem">📄</span>
+                </div>
+                @endif
+                <div style="min-width:0">
+                    <p style="font-size:.75rem;font-weight:600;color:#111827;line-height:1.3;margin:0 0 .25rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $ra->title }}</p>
+                    <div style="display:flex;align-items:center;gap:.375rem">
+                        <span style="font-size:.65rem;padding:.125rem .375rem;border-radius:.25rem;font-weight:600;background:{{ $ra->status==='published'?'#dcfce7':($ra->status==='scheduled'?'#fef9c3':'#f3f4f6') }};color:{{ $ra->status==='published'?'#166534':($ra->status==='scheduled'?'#854d0e':'#6b7280') }}">{{ $ra->status }}</span>
+                        <span style="font-size:.65rem;color:#9ca3af">{{ $ra->site->name ?? '—' }}</span>
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Queue Table (live refresh every 15s) --}}
+    <div wire:poll.15000ms style="background:#fff;border-radius:.75rem;border:1px solid #e5e7eb;padding:1.5rem;">
         <h2 style="font-size:1rem;font-weight:600;color:#111827;margin:0 0 1rem;display:flex;align-items:center;gap:.5rem;">
             <x-heroicon-o-queue-list style="width:1.25rem;height:1.25rem;color:#d97706;" />
             Publishing Queue
+            <span wire:loading.delay style="font-size:.7rem;color:#9ca3af;font-weight:400;margin-left:auto">↻ syncing...</span>
         </h2>
         {{ $this->table }}
     </div>

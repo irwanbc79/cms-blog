@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Article;
 use App\Models\Site;
 use App\Services\AnthropicService;
+use App\Services\UnsplashService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -65,7 +66,7 @@ class GenerateArticleJob implements ShouldQueue
                                        ?? Str::limit(strip_tags($articleData['content_html'] ?? ''), 200),
             'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
             'content_html'        => $articleData['content_html'] ?? '',
-            'featured_image_url'  => "https://picsum.photos/seed/{$imgSeed}/1200/630",
+            'featured_image_url'  => (new UnsplashService())->fetchForKeyword($keyword),
             'tags'                => $articleData['tags'] ?? [],
             'hashtags'            => $articleData['hashtags'] ?? [],
             'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],
