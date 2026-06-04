@@ -68,6 +68,22 @@ class GenerateArticleJob implements ShouldQueue
         // Step 2: generate full article (metadata + content)
         $articleData = $service->generateArticle($selectedTitle, $pillar, $this->language);
 
+        // Step 2b: inject internal links to existing articles on the same site (SEO)
+        $existing = Article::where('site_id', $this->siteId)
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(20)
+            ->get(['title', 'slug'])
+            ->map(fn ($a) => ['title' => $a->title, 'slug' => $a->slug])
+            ->toArray();
+
+        if (count($existing) >= 2 && ! empty($articleData['content_html'])) {
+            $articleData['content_html'] = $service->generateInternalLinks(
+                $articleData['content_html'],
+                $existing
+            );
+        }
+
         // Step 3: save to DB
         $slug    = $this->ensureUniqueSlug($articleData['slug'] ?: Str::slug($selectedTitle));
         $keyword = $articleData['focus_keyword'] ?? $topic;
