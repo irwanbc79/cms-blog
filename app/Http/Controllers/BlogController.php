@@ -57,8 +57,8 @@ class BlogController extends Controller
             ->pluck('count', 'pillar');
 
         $seo = [
-            'title'       => $site->name . ' - Blog',
-            'description' => 'Blog dan artikel terbaru dari ' . $site->name . '. Temukan informasi menarik seputar bisnis dan industri kami.',
+            'title'       => $site->company_name . ' - Blog',
+            'description' => 'Blog dan artikel terbaru dari ' . $site->company_name . '. Temukan informasi menarik seputar bisnis dan industri kami.',
             'canonical'   => url('/blog'),
         ];
 
@@ -144,7 +144,7 @@ class BlogController extends Controller
             'canonical'      => $article->canonical_url ?: url('/blog/' . $article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
             'modified_time'  => $article->updated_at->toIso8601String(),
-            'author'         => $article->user?->name ?? $site->name,
+            'author'         => $article->user?->name ?? $site->company_name,
             'tags'           => $article->tags,
             'focus_keyword'  => $article->focus_keyword,
         ];

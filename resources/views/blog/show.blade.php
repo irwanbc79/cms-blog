@@ -71,11 +71,11 @@
     @endif
     "author": {
         "@@type": "Organization",
-        "name": {{ json_encode($seo['author'] ?? $site->name) }}
+        "name": {{ json_encode($seo['author'] ?? $site->company_name) }}
     },
     "publisher": {
         "@@type": "Organization",
-        "name": {{ json_encode($site->name) }}
+        "name": {{ json_encode($site->company_name) }}
         @if($site->logo_url)
         ,"logo": {
             "@@type": "ImageObject",

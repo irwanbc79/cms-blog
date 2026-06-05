@@ -122,6 +122,13 @@ class UnsplashService
             'eropa'                => 'european city business trade',
             'malaysia'             => 'malaysia port trade',
             'asia'                 => 'asian shipping trade port',
+            'ai'                   => 'artificial intelligence robot technology brain',
+            'artificial intelligence' => 'artificial intelligence digital technology',
+            'generatif'            => 'generative ai digital concept',
+            'kecerdasan buatan'    => 'artificial intelligence neural network',
+            'cloud'                => 'cloud computing server datacenter',
+            'software'             => 'software developer writing code',
+            'indonesia'            => 'indonesia beautiful landscape',
         ];
 
         $lower = strtolower($keyword);

@@ -12,12 +12,13 @@
         $hasHot = file_exists(public_path('hot'));
         $useVite = !$blogAssetPrefix && ($hasManifest || $hasHot);
         $useInline = !$blogAssetPrefix && !$hasManifest && !$hasHot;
+        $companyName = $site->company_name;
     @endphp
 
     {{-- Primary Meta Tags --}}
-    <title>@yield('title', $seo['title'] ?? ($site->name . ' - Blog'))</title>
+    <title>@yield('title', $seo['title'] ?? ($companyName . ' - Blog'))</title>
     <meta name="description" content="@yield('description', $seo['description'] ?? '')">
-    <meta name="keywords" content="{{ trim(($seo['focus_keyword'] ?? '') ? ($seo['focus_keyword'] . ', ') : '') }}{{ $site->name }}, blog, artikel">
+    <meta name="keywords" content="{{ trim(($seo['focus_keyword'] ?? '') ? ($seo['focus_keyword'] . ', ') : '') }}{{ $companyName }}, blog, artikel">
     @if($seo['canonical'] ?? false)
     <link rel="canonical" href="{{ $seo['canonical'] }}">
     @endif
@@ -60,8 +61,8 @@
 
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:site_name" content="{{ $site->name }}">
-    <meta property="og:title" content="@yield('og_title', $seo['title'] ?? $site->name . ' - Blog')">
+    <meta property="og:site_name" content="{{ $companyName }}">
+    <meta property="og:title" content="@yield('og_title', $seo['title'] ?? $companyName . ' - Blog')">
     <meta property="og:description" content="@yield('og_description', $seo['description'] ?? '')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="id_ID">
@@ -84,7 +85,7 @@
 
     {{-- Twitter Cards --}}
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('og_title', $seo['title'] ?? $site->name . ' - Blog')">
+    <meta name="twitter:title" content="@yield('og_title', $seo['title'] ?? $companyName . ' - Blog')">
     <meta name="twitter:description" content="@yield('og_description', $seo['description'] ?? '')">
     @if($seo['image'] ?? false)
     <meta name="twitter:image" content="{{ $seo['image'] }}">
@@ -92,7 +93,7 @@
     <meta name="twitter:site" content="{{ '@' . str_replace(['.', ' '], '_', $site->slug) }}">
 
     {{-- RSS Feed --}}
-    <link rel="alternate" type="application/rss+xml" title="{{ $site->name }} Blog RSS Feed" href="{{ url($blogAssetPrefix . '/feed.xml') }}">
+    <link rel="alternate" type="application/rss+xml" title="{{ $companyName }} Blog RSS Feed" href="{{ url($blogAssetPrefix . '/feed.xml') }}">
 
     {{-- Sitemap --}}
     <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url($blogAssetPrefix . '/sitemap.xml') }}">
@@ -226,12 +227,12 @@
     {
         "@@context": "https://schema.org",
         "@@type": "Blog",
-        "name": "{{ $site->name }} Blog",
-        "description": "Blog dan artikel terbaru dari {{ $site->name }}",
+        "name": "{{ $companyName }} Blog",
+        "description": "Blog dan artikel terbaru dari {{ $companyName }}",
         "url": "{{ url('/blog') }}",
         "publisher": {
             "@@type": "Organization",
-            "name": "{{ $site->name }}"
+            "name": "{{ $companyName }}"
         }
     }
     </script>
@@ -242,7 +243,7 @@
     {
         "@@context": "https://schema.org",
         "@@type": "WebSite",
-        "name": "{{ $site->name }}",
+        "name": "{{ $companyName }}",
         "url": "{{ url('/') }}",
         "potentialAction": {
             "@@type": "SearchAction",
@@ -261,17 +262,63 @@
             <div class="flex items-center justify-between h-16">
                 {{-- Logo / Brand --}}
                 <a href="{{ url('/') }}" class="flex items-center gap-3 font-bold text-xl text-teal-deep hover:text-teal transition-colors">
-                    @if($site->logo_url)
-                    <div class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-gold/40 bg-teal-deep flex items-center justify-center">
-                        <img src="{{ $site->logo_url }}"
-                             alt="{{ $site->name }}"
-                             class="w-full h-full object-cover scale-[2.2] -translate-y-[3%]"
-                             onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2 py-0.5 rounded text-xs font-bold\'>{{ substr($site->name, 0, 2) }}</span>'">
-                    </div>
+                    @if($site->domain === 'dira.co.id')
+                        <div class="relative flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-full overflow-hidden ring-1 ring-gold/40 shadow-lg shadow-teal-deep/30 bg-teal-deep flex items-center justify-center">
+                                <img src="{{ $site->logo_url ?: '/logo.jpg' }}"
+                                     alt="PT. Dira Baraka Mulia"
+                                     class="w-full h-full object-cover scale-[2.2] -translate-y-[3%]"
+                                     onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2.5 py-1 rounded text-xs font-bold\'>DB</span>'">
+                            </div>
+                            <div class="hidden sm:block text-left leading-tight">
+                                <div class="font-serif font-bold text-[15px] tracking-tight text-teal-deep">PT. Dira Baraka Mulia</div>
+                                <div class="text-[10px] uppercase tracking-[0.18em] font-semibold text-teal/70">Trusted Trading Co.</div>
+                            </div>
+                        </div>
+                    @elseif($site->domain === 'gma-world.id')
+                        <div class="relative flex items-center gap-3">
+                            <div class="flex items-center justify-center w-10 h-10 bg-[var(--color-teal,#ff5a1f)]">
+                                <span class="text-white font-bold text-sm" style="font-family: sans-serif;">GMA</span>
+                            </div>
+                            <div class="hidden sm:block text-left leading-tight">
+                                <div class="font-bold text-sm text-teal-deep">PT. Geya Mora Agung</div>
+                                <div class="text-gray-500 text-[10px] uppercase tracking-[0.12em] font-semibold mt-0.5">Integrated Trading & Maritime</div>
+                            </div>
+                        </div>
+                    @elseif($site->domain === 'morabangun.com')
+                        <div class="relative flex items-center gap-2.5">
+                            <div class="h-10 w-10 flex-shrink-0" style="filter:drop-shadow(0 0 8px rgba(34,211,238,0.35))">
+                                <img src="{{ $site->logo_url ?: 'https://morabangun.com/images/brand/mbs-symbol-160.png' }}"
+                                     alt="Mora Bangun"
+                                     class="w-full h-full object-contain"
+                                     onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2 py-0.5 rounded text-xs font-bold\'>MB</span>'">
+                            </div>
+                            <span class="font-bold text-base tracking-tight text-teal-deep">
+                                Mora <span class="text-teal">Bangun</span>
+                                <span class="text-slate-500 font-normal text-xs ml-1">Solutions</span>
+                            </span>
+                        </div>
+                    @elseif($site->domain === 'm2b.co.id')
+                        <div class="flex items-center">
+                            <img src="{{ $site->logo_url ?: 'https://m2b.co.id/images/logo_m2b_final.svg' }}"
+                                 alt="M2B Logo"
+                                 class="h-10 w-auto object-contain"
+                                 style="max-width: 120px;"
+                                 onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2 py-0.5 rounded text-xs font-bold\'>M2B</span>'">
+                        </div>
                     @else
-                    <span class="bg-teal text-white px-2 py-0.5 rounded text-sm">{{ substr($site->name, 0, 2) }}</span>
+                        @if($site->logo_url)
+                        <div class="w-9 h-9 rounded-full overflow-hidden ring-1 ring-gold/40 bg-teal-deep flex items-center justify-center">
+                            <img src="{{ $site->logo_url }}"
+                                 alt="{{ $site->name }}"
+                                 class="w-full h-full object-cover scale-[2.2] -translate-y-[3%]"
+                                 onerror="this.onerror=null;this.parentElement.innerHTML='<span class=\'bg-teal text-white px-2 py-0.5 rounded text-xs font-bold\'>{{ substr($site->name, 0, 2) }}</span>'">
+                        </div>
+                        @else
+                        <span class="bg-teal text-white px-2 py-0.5 rounded text-sm">{{ substr($site->name, 0, 2) }}</span>
+                        @endif
+                        <span class="hidden sm:inline font-serif font-bold text-base leading-none">{{ $site->name }}</span>
                     @endif
-                    <span class="hidden sm:inline font-serif font-bold text-base leading-none">{{ $site->name }}</span>
                 </a>
 
                 {{-- Nav links --}}
@@ -385,7 +432,7 @@
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div>
-                    <h3 class="font-serif text-gold-light text-base mb-5 font-bold">{{ $site->name }}</h3>
+                    <h3 class="font-serif text-gold-light text-base mb-5 font-bold">{{ $companyName }}</h3>
                     <p class="text-white/65 text-sm leading-relaxed">{{ $site->ai_prompt_context ? \Illuminate\Support\Str::limit($site->ai_prompt_context, 150) : 'Mitra perdagangan terpercaya untuk layanan ekspor, impor, undername, dan komoditas internasional.' }}</p>
                 </div>
                 <div>
@@ -408,7 +455,7 @@
                 </div>
             </div>
             <div class="border-t border-white/10 mt-12 pt-8 text-xs text-white/50 text-center">
-                &copy; {{ date('Y') }} {{ $site->name }}. All rights reserved.
+                &copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.
             </div>
         </div>
     </footer>

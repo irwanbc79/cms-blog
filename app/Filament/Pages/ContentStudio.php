@@ -219,13 +219,15 @@ class ContentStudio extends Page implements HasForms, HasTable
                     ->limit(40),
                 TextColumn::make('pillar')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'regulasi' => 'warning',
-                        'umkm'     => 'success',
-                        'news'     => 'info',
-                        'logistik' => 'primary',
-                        default    => 'gray',
-                    }),
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains($state, 'ai') || str_contains($state, 'teknologi') || str_contains($state, 'digital') => 'info',
+                        str_contains($state, 'ekspor') || str_contains($state, 'impor') || str_contains($state, 'trading') || str_contains($state, 'dagang') => 'success',
+                        str_contains($state, 'logistik') || str_contains($state, 'ppjk') || str_contains($state, 'pergudangan') || str_contains($state, 'maritim') => 'primary',
+                        str_contains($state, 'regulasi') || str_contains($state, 'kepabeanan') || str_contains($state, 'bea-cukai') => 'warning',
+                        str_contains($state, 'bisnis') || str_contains($state, 'umkm') || str_contains($state, 'sales') || str_contains($state, 'enterprise') || str_contains($state, 'crm') => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state, Article $record): string => $record->site?->getPillarOptions()[$state] ?? ucfirst(str_replace('-', ' ', $state))),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

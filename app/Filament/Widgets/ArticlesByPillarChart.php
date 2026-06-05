@@ -17,12 +17,7 @@ class ArticlesByPillarChart extends ChartWidget
             ->pluck('total', 'pillar')
             ->toArray();
 
-        $labels = [
-            'regulasi' => 'Regulasi',
-            'umkm'     => 'UMKM Ekspor',
-            'news'     => 'News',
-            'logistik' => 'Logistik',
-        ];
+        $labels = \App\Models\Site::all()->flatMap(fn ($s) => $s->getPillarOptions())->toArray();
 
         $colors = [
             'regulasi' => '#f59e0b',
@@ -38,12 +33,18 @@ class ArticlesByPillarChart extends ChartWidget
                 [
                     'label' => 'All Sites',
                     'data' => array_values($data),
-                    'backgroundColor' => array_map(fn($k) => $colors[$k] ?? '#6b7280', $keys),
+                    'backgroundColor' => array_map(function($k) use ($colors) {
+                        if (isset($colors[$k])) return $colors[$k];
+                        if (str_contains($k, 'ai') || str_contains($k, 'teknologi')) return '#06b6d4'; // Cyan
+                        if (str_contains($k, 'ekspor') || str_contains($k, 'impor')) return '#10b981'; // Green
+                        if (str_contains($k, 'logistik') || str_contains($k, 'ppjk')) return '#3b82f6'; // Blue
+                        return '#6b7280'; // Gray
+                    }, $keys),
                     'borderColor' => '#1f2937',
                     'borderWidth' => 1,
                 ],
             ],
-            'labels' => array_map(fn($k) => $labels[$k] ?? $k, $keys),
+            'labels' => array_map(fn($k) => $labels[$k] ?? ucfirst(str_replace('-', ' ', $k)), $keys),
         ];
     }
 

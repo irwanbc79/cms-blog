@@ -125,13 +125,15 @@ class ArticleResource extends Resource
                 Tables\Columns\TextColumn::make('title')->searchable()->limit(50),
                 Tables\Columns\TextColumn::make('pillar')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'regulasi' => 'warning',
-                        'umkm'     => 'success',
-                        'news'     => 'info',
-                        'logistik' => 'primary',
-                        default    => 'gray',
-                    }),
+                    ->color(fn (string $state): string => match (true) {
+                        str_contains($state, 'ai') || str_contains($state, 'teknologi') || str_contains($state, 'digital') => 'info',
+                        str_contains($state, 'ekspor') || str_contains($state, 'impor') || str_contains($state, 'trading') || str_contains($state, 'dagang') => 'success',
+                        str_contains($state, 'logistik') || str_contains($state, 'ppjk') || str_contains($state, 'pergudangan') || str_contains($state, 'maritim') => 'primary',
+                        str_contains($state, 'regulasi') || str_contains($state, 'kepabeanan') || str_contains($state, 'bea-cukai') => 'warning',
+                        str_contains($state, 'bisnis') || str_contains($state, 'umkm') || str_contains($state, 'sales') || str_contains($state, 'enterprise') || str_contains($state, 'crm') => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state, Article $record): string => $record->site?->getPillarOptions()[$state] ?? ucfirst(str_replace('-', ' ', $state))),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -161,7 +163,7 @@ class ArticleResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'published' => 'Published']),
                 Tables\Filters\SelectFilter::make('pillar')
-                    ->options(['regulasi' => 'Regulasi', 'umkm' => 'UMKM Ekspor', 'news' => 'News', 'logistik' => 'Logistik']),
+                    ->options(fn () => \App\Models\Site::all()->flatMap(fn ($s) => $s->getPillarOptions())->toArray()),
                 Tables\Filters\SelectFilter::make('language')
                     ->options(['id' => 'Indonesia', 'en' => 'English']),
             ])

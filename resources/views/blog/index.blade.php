@@ -5,7 +5,10 @@
 @section('og_type', 'website')
 
 @section('content')
-@php $isGma = ($site->domain === 'gma-world.id'); @endphp
+@php
+    $isGma = ($site->domain === 'gma-world.id');
+    $companyName = $site->company_name;
+@endphp
 
 @if($isGma)
 {{-- Hero GMA: editorial korporat putih + grid pattern + sans-serif (selaras frontpage) --}}
@@ -15,10 +18,10 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
         <div class="max-w-3xl">
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal/10 text-teal border border-teal/20 text-xs font-bold mb-5 uppercase tracking-wider">
-                {{ $pageEyebrow ?? ($site->name . ' Insights & Analysis') }}
+                {{ $pageEyebrow ?? ($companyName . ' Insights & Analysis') }}
             </div>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-sans font-extrabold leading-[1.05] tracking-tight text-teal-deep mb-5">
-                {{ $pageHeading ?? ('Blog ' . $site->name) }}
+                {{ $pageHeading ?? ('Blog ' . $companyName) }}
             </h1>
             <p class="text-lg md:text-xl text-gray-500 leading-relaxed font-medium">
                 {{ $pageSubtitle ?? 'Wawasan, analisis, dan panduan praktis seputar perdagangan, maritim, dan konstruksi.' }}
@@ -56,10 +59,10 @@
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative z-10">
         <div class="max-w-3xl">
             <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-light/10 text-gold-light border border-teal-light/20 text-xs font-semibold mb-6 uppercase tracking-wider">
-                🌟 {{ $pageEyebrow ?? ($site->name . ' Insights & Analysis') }}
+                🌟 {{ $pageEyebrow ?? ($companyName . ' Insights & Analysis') }}
             </div>
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold leading-tight mb-5">
-                {{ $pageHeading ?? ('Blog ' . $site->name) }}
+                {{ $pageHeading ?? ('Blog ' . $companyName) }}
             </h1>
             <p class="text-lg md:text-xl text-white/80 leading-relaxed font-medium">
                 {{ $pageSubtitle ?? 'Temukan artikel, analisis mendalam, dan informasi terbaru seputar industri dan bisnis kami.' }}
@@ -206,7 +209,7 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Artikel</h3>
                 <p class="text-gray-500 max-w-md mx-auto">
-                    Konten artikel sedang dipersiapkan. Pantau terus blog ini untuk artikel menarik dan informatif seputar {{ $site->name }}.
+                    Konten artikel sedang dipersiapkan. Pantau terus blog ini untuk artikel menarik dan informatif seputar {{ $companyName }}.
                 </p>
             @endif
         </div>

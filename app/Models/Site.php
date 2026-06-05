@@ -90,4 +90,21 @@ class Site extends Model
     {
         return $this->adsense_publisher_id ?: config('services.google.adsense_publisher_id');
     }
+
+    /**
+     * Get the formal company name based on the domain.
+     */
+    public function getCompanyNameAttribute(): string
+    {
+        if ($this->domain === 'dira.co.id') {
+            return 'PT. Dira Baraka Mulia';
+        }
+        if ($this->domain === 'gma-world.id') {
+            return 'PT. Geya Mora Agung';
+        }
+        if ($this->domain === 'morabangun.com') {
+            return 'Mora Bangun Solutions';
+        }
+        return $this->name;
+    }
 }
