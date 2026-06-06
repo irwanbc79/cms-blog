@@ -378,6 +378,9 @@ PROMPT;
                         ],
                         'generationConfig' => [
                             'maxOutputTokens' => min($maxTokens, 8192),
+                            'thinkingConfig' => [
+                                'thinkingBudget' => 0,
+                            ],
                         ]
                     ]
                 );
