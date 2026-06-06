@@ -365,36 +365,65 @@ PROMPT;
 
         if ($isGemini) {
             $geminiModel = 'gemini-2.5-flash';
-            try {
-                $response = Http::timeout(300)->post(
-                    "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$this->apiKey}",
-                    [
-                        'contents' => [
-                            [
-                                'parts' => [
-                                    ['text' => $prompt]
+            $attempts = 0;
+            $maxAttempts = 5;
+            $retryDelay = 15; // fallback seconds
+
+            do {
+                try {
+                    $response = Http::timeout(300)->post(
+                        "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$this->apiKey}",
+                        [
+                            'contents' => [
+                                [
+                                    'parts' => [
+                                        ['text' => $prompt]
+                                    ]
                                 ]
-                            ]
-                        ],
-                        'generationConfig' => [
-                            'maxOutputTokens' => min($maxTokens, 8192),
-                            'thinkingConfig' => [
-                                'thinkingBudget' => 0,
                             ],
+                            'generationConfig' => [
+                                'maxOutputTokens' => min($maxTokens, 8192),
+                                'thinkingConfig' => [
+                                    'thinkingBudget' => 0,
+                                ],
+                            ]
                         ]
-                    ]
-                );
-
-                if ($response->failed()) {
-                    throw new \RuntimeException(
-                        "Gemini API error {$response->status()}: " . $response->body()
                     );
-                }
 
-                return $response->json('candidates.0.content.parts.0.text', '');
-            } catch (\Exception $e) {
-                throw new \RuntimeException('Gemini API request failed: ' . $e->getMessage());
-            }
+                    if ($response->status() === 429) {
+                        $attempts++;
+                        if ($attempts >= $maxAttempts) {
+                            throw new \RuntimeException("Gemini API rate limit exceeded after {$maxAttempts} attempts.");
+                        }
+                        
+                        $delay = $response->json('error.details.0.retryInfo.retryDelay') 
+                              ?? $response->json('error.details.1.retryInfo.retryDelay') 
+                              ?? $response->json('error.details.2.retryInfo.retryDelay');
+                        $sleepTime = $delay ? intval(preg_replace('/[^0-9]/', '', $delay)) : $retryDelay;
+                        if ($sleepTime <= 0) $sleepTime = $retryDelay;
+
+                        echo "\n⚠️ Gemini 429 Rate Limit. Sleeping {$sleepTime}s (Attempt {$attempts}/{$maxAttempts})...\n";
+                        sleep($sleepTime);
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        throw new \RuntimeException(
+                            "Gemini API error {$response->status()}: " . $response->body()
+                        );
+                    }
+
+                    return $response->json('candidates.0.content.parts.0.text', '');
+                } catch (\Exception $e) {
+                    if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                        $attempts++;
+                        echo "\n⚠️ Gemini 429 Exception. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
+                        sleep($retryDelay);
+                        continue;
+                    }
+                    throw new \RuntimeException('Gemini API request failed: ' . $e->getMessage());
+                }
+            } while (true);
         }
 
         try {
