@@ -361,7 +361,60 @@ PROMPT;
     {
         set_time_limit(600);
 
-        $isGemini = !str_starts_with($this->apiKey, 'sk-ant-');
+        $isAnthropic = str_starts_with($this->apiKey, 'sk-ant-');
+        $isDeepSeek  = str_starts_with($this->apiKey, 'sk-') && !$isAnthropic;
+        $isGemini    = !$isAnthropic && !$isDeepSeek;
+
+        if ($isDeepSeek) {
+            $model = 'deepseek-chat';
+            $attempts = 0;
+            $maxAttempts = 5;
+            $retryDelay = 5;
+
+            do {
+                try {
+                    $response = Http::withHeaders([
+                        'Authorization' => "Bearer {$this->apiKey}",
+                        'Content-Type' => 'application/json',
+                    ])->timeout(300)->post(
+                        "https://api.deepseek.com/chat/completions",
+                        [
+                            'model' => $model,
+                            'messages' => [
+                                ['role' => 'user', 'content' => $prompt]
+                            ],
+                            'max_tokens' => $maxTokens,
+                        ]
+                    );
+
+                    if ($response->status() === 429) {
+                        $attempts++;
+                        if ($attempts >= $maxAttempts) {
+                            throw new \RuntimeException("DeepSeek API rate limit exceeded after {$maxAttempts} attempts.");
+                        }
+                        echo "\n⚠️ DeepSeek 429 Rate Limit. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
+                        sleep($retryDelay);
+                        continue;
+                    }
+
+                    if ($response->failed()) {
+                        throw new \RuntimeException(
+                            "DeepSeek API error {$response->status()}: " . $response->body()
+                        );
+                    }
+
+                    return $response->json('choices.0.message.content', '');
+                } catch (\Exception $e) {
+                    if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                        $attempts++;
+                        echo "\n⚠️ DeepSeek 429 Exception. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
+                        sleep($retryDelay);
+                        continue;
+                    }
+                    throw new \RuntimeException('DeepSeek API request failed: ' . $e->getMessage());
+                }
+            } while (true);
+        }
 
         if ($isGemini) {
             $geminiModel = 'gemini-2.5-flash';
