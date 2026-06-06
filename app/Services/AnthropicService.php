@@ -361,151 +361,168 @@ PROMPT;
     {
         set_time_limit(600);
 
-        $isAnthropic = str_starts_with($this->apiKey, 'sk-ant-');
-        $isDeepSeek  = str_starts_with($this->apiKey, 'sk-') && !$isAnthropic;
-        $isGemini    = !$isAnthropic && !$isDeepSeek;
+        // Split by comma in case of multiple/hybrid keys
+        $keys = array_map('trim', explode(',', $this->apiKey));
+        $lastException = null;
 
-        if ($isDeepSeek) {
-            $model = 'deepseek-chat';
-            $attempts = 0;
-            $maxAttempts = 5;
-            $retryDelay = 5;
+        foreach ($keys as $index => $key) {
+            if (empty($key)) continue;
+            
+            $num = $index + 1;
+            $isAnthropic = str_starts_with($key, 'sk-ant-');
+            $isDeepSeek  = str_starts_with($key, 'sk-') && !$isAnthropic;
+            $isGemini    = !$isAnthropic && !$isDeepSeek;
 
-            do {
-                try {
-                    $response = Http::withHeaders([
-                        'Authorization' => "Bearer {$this->apiKey}",
-                        'Content-Type' => 'application/json',
-                    ])->timeout(300)->post(
-                        "https://api.deepseek.com/chat/completions",
-                        [
-                            'model' => $model,
-                            'messages' => [
-                                ['role' => 'user', 'content' => $prompt]
-                            ],
-                            'max_tokens' => $maxTokens,
-                        ]
-                    );
+            if ($isDeepSeek) {
+                $model = 'deepseek-chat';
+                $attempts = 0;
+                $maxAttempts = 3;
+                $retryDelay = 5;
 
-                    if ($response->status() === 429) {
-                        $attempts++;
-                        if ($attempts >= $maxAttempts) {
-                            throw new \RuntimeException("DeepSeek API rate limit exceeded after {$maxAttempts} attempts.");
-                        }
-                        echo "\n⚠️ DeepSeek 429 Rate Limit. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
-                        sleep($retryDelay);
-                        continue;
-                    }
-
-                    if ($response->failed()) {
-                        throw new \RuntimeException(
-                            "DeepSeek API error {$response->status()}: " . $response->body()
-                        );
-                    }
-
-                    return $response->json('choices.0.message.content', '');
-                } catch (\Exception $e) {
-                    if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
-                        $attempts++;
-                        echo "\n⚠️ DeepSeek 429 Exception. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
-                        sleep($retryDelay);
-                        continue;
-                    }
-                    throw new \RuntimeException('DeepSeek API request failed: ' . $e->getMessage());
-                }
-            } while (true);
-        }
-
-        if ($isGemini) {
-            $geminiModel = 'gemini-2.5-flash';
-            $attempts = 0;
-            $maxAttempts = 5;
-            $retryDelay = 15; // fallback seconds
-
-            do {
-                try {
-                    $response = Http::timeout(300)->post(
-                        "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$this->apiKey}",
-                        [
-                            'contents' => [
-                                [
-                                    'parts' => [
-                                        ['text' => $prompt]
-                                    ]
-                                ]
-                            ],
-                            'generationConfig' => [
-                                'maxOutputTokens' => min($maxTokens, 8192),
-                                'thinkingConfig' => [
-                                    'thinkingBudget' => 0,
+                do {
+                    try {
+                        $response = Http::withHeaders([
+                            'Authorization' => "Bearer {$key}",
+                            'Content-Type' => 'application/json',
+                        ])->timeout(300)->post(
+                            "https://api.deepseek.com/chat/completions",
+                            [
+                                'model' => $model,
+                                'messages' => [
+                                    ['role' => 'user', 'content' => $prompt]
                                 ],
+                                'max_tokens' => $maxTokens,
                             ]
-                        ]
-                    );
-
-                    if ($response->status() === 429) {
-                        $attempts++;
-                        if ($attempts >= $maxAttempts) {
-                            throw new \RuntimeException("Gemini API rate limit exceeded after {$maxAttempts} attempts.");
-                        }
-                        
-                        $delay = $response->json('error.details.0.retryInfo.retryDelay') 
-                              ?? $response->json('error.details.1.retryInfo.retryDelay') 
-                              ?? $response->json('error.details.2.retryInfo.retryDelay');
-                        $sleepTime = $delay ? intval(preg_replace('/[^0-9]/', '', $delay)) : $retryDelay;
-                        if ($sleepTime <= 0) $sleepTime = $retryDelay;
-
-                        echo "\n⚠️ Gemini 429 Rate Limit. Sleeping {$sleepTime}s (Attempt {$attempts}/{$maxAttempts})...\n";
-                        sleep($sleepTime);
-                        continue;
-                    }
-
-                    if ($response->failed()) {
-                        throw new \RuntimeException(
-                            "Gemini API error {$response->status()}: " . $response->body()
                         );
+
+                        if ($response->status() === 429) {
+                            $attempts++;
+                            if ($attempts >= $maxAttempts) {
+                                throw new \RuntimeException("DeepSeek API rate limit exceeded.");
+                            }
+                            echo "\n⚠️ [Key #{$num}] DeepSeek 429. Sleeping {$retryDelay}s...\n";
+                            sleep($retryDelay);
+                            continue;
+                        }
+
+                        if ($response->failed()) {
+                            throw new \RuntimeException(
+                                "DeepSeek API error {$response->status()}: " . $response->body()
+                            );
+                        }
+
+                        return $response->json('choices.0.message.content', '');
+                    } catch (\Exception $e) {
+                        if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                            $attempts++;
+                            sleep($retryDelay);
+                            continue;
+                        }
+                        $lastException = $e;
+                        echo "\n⚠️ [Key #{$num}] DeepSeek failed: {$e->getMessage()}. Trying next key...\n";
+                        break; // Try next key in $keys
                     }
-
-                    return $response->json('candidates.0.content.parts.0.text', '');
-                } catch (\Exception $e) {
-                    if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
-                        $attempts++;
-                        echo "\n⚠️ Gemini 429 Exception. Sleeping {$retryDelay}s (Attempt {$attempts}/{$maxAttempts})...\n";
-                        sleep($retryDelay);
-                        continue;
-                    }
-                    throw new \RuntimeException('Gemini API request failed: ' . $e->getMessage());
-                }
-            } while (true);
-        }
-
-        try {
-            $response = Http::withHeaders([
-                'x-api-key'         => $this->apiKey,
-                'anthropic-version' => '2023-06-01',
-                'content-type'      => 'application/json',
-            ])->timeout(300)->retry(2, 2000, function (\Exception $exception) {
-                // Only retry on 5xx server errors, NOT on connection timeout
-                return $exception instanceof RequestException
-                    && $exception->response?->status() >= 500;
-            })->post("{$this->baseUrl}/messages", [
-                'model'      => $this->model,
-                'max_tokens' => $maxTokens,
-                'messages'   => [
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-            ]);
-
-            if ($response->failed()) {
-                throw new \RuntimeException(
-                    "Anthropic API error {$response->status()}: " . $response->body()
-                );
+                } while (true);
             }
 
-            return $response->json('content.0.text', '');
-        } catch (RequestException $e) {
-            throw new \RuntimeException('Anthropic API request failed: ' . $e->getMessage());
+            if ($isGemini) {
+                $geminiModel = 'gemini-2.5-flash';
+                $attempts = 0;
+                $maxAttempts = 3;
+                $retryDelay = 15;
+
+                do {
+                    try {
+                        $response = Http::timeout(300)->post(
+                            "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$key}",
+                            [
+                                'contents' => [
+                                    [
+                                        'parts' => [
+                                            ['text' => $prompt]
+                                        ]
+                                    ]
+                                ],
+                                'generationConfig' => [
+                                    'maxOutputTokens' => min($maxTokens, 8192),
+                                    'thinkingConfig' => [
+                                        'thinkingBudget' => 0,
+                                    ],
+                                ]
+                            ]
+                        );
+
+                        if ($response->status() === 429) {
+                            $attempts++;
+                            if ($attempts >= $maxAttempts) {
+                                throw new \RuntimeException("Gemini API rate limit exceeded.");
+                            }
+                            
+                            $delay = $response->json('error.details.0.retryInfo.retryDelay') 
+                                  ?? $response->json('error.details.1.retryInfo.retryDelay') 
+                                  ?? $response->json('error.details.2.retryInfo.retryDelay');
+                            $sleepTime = $delay ? intval(preg_replace('/[^0-9]/', '', $delay)) : $retryDelay;
+                            if ($sleepTime <= 0) $sleepTime = $retryDelay;
+
+                            echo "\n⚠️ [Key #{$num}] Gemini 429. Sleeping {$sleepTime}s...\n";
+                            sleep($sleepTime);
+                            continue;
+                        }
+
+                        if ($response->failed()) {
+                            throw new \RuntimeException(
+                                "Gemini API error {$response->status()}: " . $response->body()
+                            );
+                        }
+
+                        return $response->json('candidates.0.content.parts.0.text', '');
+                    } catch (\Exception $e) {
+                        if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                            $attempts++;
+                            sleep($retryDelay);
+                            continue;
+                        }
+                        $lastException = $e;
+                        echo "\n⚠️ [Key #{$num}] Gemini failed: {$e->getMessage()}. Trying next key...\n";
+                        break; // Try next key in $keys
+                    }
+                } while (true);
+            }
+
+            if ($isAnthropic) {
+                try {
+                    $response = Http::withHeaders([
+                        'x-api-key'         => $key,
+                        'anthropic-version' => '2023-06-01',
+                        'content-type'      => 'application/json',
+                    ])->timeout(300)->retry(2, 2000, function (\Exception $exception) {
+                        return $exception instanceof RequestException
+                            && $exception->response?->status() >= 500;
+                    })->post("{$this->baseUrl}/messages", [
+                        'model'      => $this->model,
+                        'max_tokens' => $maxTokens,
+                        'messages'   => [
+                            ['role' => 'user', 'content' => $prompt],
+                        ],
+                    ]);
+
+                    if ($response->failed()) {
+                        throw new \RuntimeException(
+                            "Anthropic API error {$response->status()}: " . $response->body()
+                        );
+                    }
+
+                    return $response->json('content.0.text', '');
+                } catch (\Exception $e) {
+                    $lastException = $e;
+                    echo "\n⚠️ [Key #{$num}] Anthropic failed: {$e->getMessage()}. Trying next key...\n";
+                    // Loop will continue to next key
+                }
+            }
         }
+
+        // If we reached here, all keys failed
+        throw new \RuntimeException('All hybrid API keys failed. Last error: ' . ($lastException ? $lastException->getMessage() : 'Unknown error'));
     }
 
     private function cleanJsonResponse(string $raw): string
