@@ -20,9 +20,11 @@
         'erp-enterprise'       => ['bg' => 'rgba(146,64,14,0.85)', 'text' => '#fff'],
         'transformasi-digital' => ['bg' => 'rgba(3,105,161,0.85)', 'text' => '#fff'],
     ];
+    $resolvedSite = app(\App\Services\SiteResolver::class)->resolve();
     $pillarLabel = $article->pillar
-        ? (app(\App\Services\SiteResolver::class)->resolve()?->content_pillars[$article->pillar]
-           ?? ucwords(str_replace('-', ' ', $article->pillar)))
+        ? (($resolvedSite && is_array($resolvedSite->content_pillars) && isset($resolvedSite->content_pillars[$article->pillar]))
+           ? $resolvedSite->content_pillars[$article->pillar]
+           : ucwords(str_replace('-', ' ', $article->pillar)))
         : null;
     $badgeBg   = $pillarColors[$article->pillar]['bg']   ?? 'rgba(0,0,0,0.65)';
     $badgeText = $pillarColors[$article->pillar]['text']  ?? '#fff';

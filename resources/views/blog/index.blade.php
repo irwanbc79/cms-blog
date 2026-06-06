@@ -105,10 +105,10 @@
                     Semua
                 </a>
                 @foreach($pillarCounts as $key => $count)
-                <a href="{{ url('/blog/category/' . $key) }}"
+                <a href="{{ url('/blog?pillar=' . $key) }}"
                    class="px-4 py-2 rounded-full text-xs font-bold transition-all duration-200
                           {{ $pillar === $key ? 'bg-teal text-white shadow-md ring-1 ring-white/10' : 'bg-white text-teal-deep hover:bg-teal-pale hover:text-teal border border-teal/10' }}">
-                    {{ $site->content_pillars[$key] ?? ucfirst(str_replace('-',' ',$key)) }}
+                    {{ (is_array($site->content_pillars) && isset($site->content_pillars[$key])) ? $site->content_pillars[$key] : ucfirst(str_replace('-',' ',$key)) }}
                     <span class="ml-1 opacity-60 font-semibold">({{ $count }})</span>
                 </a>
                 @endforeach

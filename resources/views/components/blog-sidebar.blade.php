@@ -78,10 +78,10 @@
         <ul class="space-y-0.5">
             @foreach($sidebarPillars as $key => $count)
             <li>
-                <a href="{{ url('/blog/category/' . $key) }}"
+                <a href="{{ url('/blog?pillar=' . $key) }}"
                    class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-teal-pale/40 hover:text-teal transition-colors group">
                     <span class="font-medium group-hover:translate-x-0.5 transition-transform">
-                        {{ $pillarLabels[$key] ?? ucwords(str_replace('-',' ',$key)) }}
+                        {{ (is_array($pillarLabels) && isset($pillarLabels[$key])) ? $pillarLabels[$key] : ucwords(str_replace('-',' ',$key)) }}
                     </span>
                     <span class="text-xs bg-teal-pale text-teal-dark rounded-full px-2 py-0.5 font-bold">{{ $count }}</span>
                 </a>
