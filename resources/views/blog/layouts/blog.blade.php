@@ -277,7 +277,7 @@
                         </div>
                     @elseif($site->domain === 'gma-world.id')
                         <div class="relative flex items-center gap-3">
-                            <div class="flex items-center justify-center w-10 h-10 bg-[var(--color-teal,#ff5a1f)]">
+                            <div class="flex items-center justify-center w-10 h-10" style="background-color: var(--color-teal, #ff5a1f);">
                                 <span class="text-white font-bold text-sm" style="font-family: sans-serif;">GMA</span>
                             </div>
                             <div class="hidden sm:block text-left leading-tight">

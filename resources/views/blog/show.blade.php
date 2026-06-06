@@ -225,7 +225,7 @@ document.addEventListener('scroll',function(){
     {{-- Article + optional sticky ad (TOC dihapus utk tampilan bersih) --}}
     <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {{-- Article Content --}}
-        <div class="flex-1 min-w-0">
+        <div class="w-full lg:flex-1 lg:min-w-0">
             {{-- Article body (typography via .article-body di layout) --}}
             <div class="article-body">
                 {!! $article->content_html !!}

@@ -129,7 +129,7 @@
 <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
   <div class="flex flex-col lg:flex-row gap-8 lg:gap-10">
     {{-- Main column --}}
-    <div class="flex-1 min-w-0">
+    <div class="w-full lg:flex-1 lg:min-w-0">
     @if($articles->count() > 0)
         @php $skipFirst = false; @endphp
         {{-- GMA: Featured post besar di halaman utama (page 1, tanpa filter/search) --}}
