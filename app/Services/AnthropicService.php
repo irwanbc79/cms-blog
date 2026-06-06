@@ -361,6 +361,39 @@ PROMPT;
     {
         set_time_limit(600);
 
+        $isGemini = !str_starts_with($this->apiKey, 'sk-ant-');
+
+        if ($isGemini) {
+            $geminiModel = 'gemini-2.5-flash';
+            try {
+                $response = Http::timeout(300)->post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$this->apiKey}",
+                    [
+                        'contents' => [
+                            [
+                                'parts' => [
+                                    ['text' => $prompt]
+                                ]
+                            ]
+                        ],
+                        'generationConfig' => [
+                            'maxOutputTokens' => min($maxTokens, 8192),
+                        ]
+                    ]
+                );
+
+                if ($response->failed()) {
+                    throw new \RuntimeException(
+                        "Gemini API error {$response->status()}: " . $response->body()
+                    );
+                }
+
+                return $response->json('candidates.0.content.parts.0.text', '');
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Gemini API request failed: ' . $e->getMessage());
+            }
+        }
+
         try {
             $response = Http::withHeaders([
                 'x-api-key'         => $this->apiKey,
