@@ -152,7 +152,7 @@ PROMPT;
     /**
      * Generate full article. Two API calls: metadata then content.
      */
-    public function generateArticle(string $title, string $pillar, string $language): array
+    public function generateArticle(string $title, string $pillar, string $language, array $existingArticles = []): array
     {
         $lang = $language === 'en' ? 'English' : 'Bahasa Indonesia';
 
@@ -161,14 +161,19 @@ PROMPT;
         $metaRaw    = $this->callApi($metaPrompt, 2048);
         $meta       = $this->parseMetaJson($metaRaw);
 
+        // Fetch related news using the generated focus keyword
+        $keyword    = $meta['focus_keyword'] ?? $title;
+        $news       = (new NewsService())->fetchRelatedNews($keyword, $language, 3);
+
         // Call 2: full HTML content
-        $contentPrompt = $this->buildContentPrompt($title, $pillar, $lang, $meta['focus_keyword'] ?? '');
-        $contentHtml   = $this->callApi($contentPrompt, 12000);
+        $contentPrompt = $this->buildContentPrompt($title, $pillar, $lang, $keyword, $news, $existingArticles);
+        $contentHtml   = $this->cleanHtmlResponse($this->callApi($contentPrompt, 12000));
         $wordCount     = str_word_count(strip_tags($contentHtml));
 
         return array_merge($meta, [
             'content_html' => $contentHtml,
             'word_count'   => $wordCount,
+            'news'         => $news,
         ]);
     }
 
@@ -204,7 +209,8 @@ CONTENT:
 PROMPT;
 
         try {
-            return $this->callApi($prompt, 12000);
+            $response = $this->callApi($prompt, 12000);
+            return $this->cleanHtmlResponse($response);
         } catch (\Throwable) {
             // If internal linking fails, return original content
             return $contentHtml;
@@ -283,7 +289,7 @@ Return ONLY valid JSON with these exact keys, no markdown, no explanation:
 PROMPT;
     }
 
-    private function buildContentPrompt(string $title, string $pillar, string $lang, string $keyword): string
+    private function buildContentPrompt(string $title, string $pillar, string $lang, string $keyword, array $news = [], array $existingArticles = []): string
     {
         $context  = $this->getContextString();
         $company  = $this->getCompanyName();
@@ -292,6 +298,37 @@ PROMPT;
         $ctaBlock = $this->getCtaBlock();
         $year     = date('Y');
 
+        $existingText = '';
+        if (!empty($existingArticles)) {
+            $list = collect($existingArticles)->map(fn ($a) => "- \"{$a['title']}\"")->implode("\n");
+            $existingText = "\n═══ EXISTING ARTICLES (CONTEXT EXCLUSION) ═══\n"
+                . "Here are the titles of recently published articles on this blog. You must ensure that this new article does NOT replicate their specific examples, case studies, or core structure, to keep the blog content fresh and unique:\n"
+                . "{$list}\n";
+        }
+
+        $newsText = '';
+        if (!empty($news)) {
+            $list = '';
+            foreach ($news as $n) {
+                $list .= "- Title: {$n['title']} (Source: {$n['source']}, Date: {$n['date']})\n";
+            }
+            $newsText = "\n═══ HOT TOPICS, GLOBAL NEWS, & RI REGULATORY CONTEXT ═══\n"
+                . "You must weave facts, situations, or events from the following recent news headlines naturally into the article (especially in regulatory, trend, or analysis sections). Use them as concrete review cases or studies:\n"
+                . "{$list}\n"
+                . "Rules for integration:\n"
+                . "- For Indonesian regulatory news (e.g. from Bea Cukai, Kemendag, Kemenkeu, BUMN), present them as a critical Indonesian Government (Pemerintah RI) policy update case study. Provide business advisory/guidance (asistensi) on how local businesses should adapt to it.\n"
+                . "- For global news (e.g. DHL losses, tech updates like Anthropic, supply chain disruptions), review how this global event impacts the local or regional trade, logistics, or tech landscape.\n"
+                . "- Ensure the news integration is organic and flows seamlessly with the paragraph, explaining the 'why' and 'how' rather than just copy-pasting the headline.\n";
+        }
+
+        $bannedTransitions = $lang === 'English'
+            ? "- \"It is important to note that...\"\n- \"Furthermore, ...\"\n- \"Moreover, ...\"\n- \"In conclusion, ...\"\n- \"Ultimately, ...\"\n- \"In this digital age, ...\"\n- \"First and foremost, ...\"\n- \"Testament to...\"\n- \"Delve into...\"\n- \"Labyrinth of...\""
+            : "- \"Penting untuk diingat/dicatat bahwa...\"\n- \"Selain itu, ...\"\n- \"Dengan demikian, ...\"\n- \"Oleh karena itu, ...\"\n- \"Secara keseluruhan, ...\"\n- \"Pada akhirnya, ...\"\n- \"Dalam hal ini, ...\"\n- \"Menawarkan berbagai...\"";
+
+        $ctaSegueExample = $lang === 'English'
+            ? "\"If you are facing challenges adapting to these latest import-export regulations, partnering with a professional logistics expert is a wise decision...\""
+            : "\"Jika Anda menghadapi kesulitan dalam beradaptasi dengan regulasi ekspor-impor terbaru ini, menghubungi partner logistik profesional adalah langkah bijak...\"";
+
         return <<<PROMPT
 You are an expert content writer and SEO specialist for {$company}.
 {$context}
@@ -299,6 +336,14 @@ Content pillar: {$pillar}. Write in {$lang}.
 Focus keyword: "{$keyword}"
 
 Write a comprehensive, authoritative blog article for: "{$title}"
+{$existingText}{$newsText}
+═══ HUMAN STYLE & ANTI-AI DETECTION RULES (MANDATORY) ═══
+
+1. BURSTINESS: Extremely varied sentence length and complexity. Do NOT write sentences of uniform length. Use very short, punchy sentences (3-5 words) adjacent to longer, descriptive sentences. E.g., "Regulasi baru berlaku. Banyak yang panik. Mengapa? Karena kurang persiapan."
+2. PERPLEXITY & VOCABULARY: Use a rich, varied vocabulary. Avoid repetitive keywords. Use natural business colloquial transitions and Indonesian trade terminology.
+3. BANNED AI TRANSITIONS: Do NOT use stereotypical AI transition words or phrases, such as:
+{$bannedTransitions}
+4. ACTIVE & DIRECT TONE: Write in an active voice. Address the reader directly as a business owner or practitioner (e.g. "Anda", "perusahaan Anda"). Avoid overly passive, academic, or textbook-like definitions.
 
 ═══ GOOGLE E-E-A-T REQUIREMENTS ═══
 
@@ -316,6 +361,7 @@ Write a comprehensive, authoritative blog article for: "{$title}"
 • Comparison table OR numbered steps OR checklist in at least 2 sections
 • A "🔥 Situasi & Tren Terkini {$year}" section: discuss CURRENT, hot developments relevant to this topic and {$company}'s business — recent regulation changes, market shifts, global/national trade situations in {$year}. Be specific and timely.
 • Conclusion: 3-5 actionable takeaways
+• Conclude with a strong, persuasive call to action segue (e.g., {$ctaSegueExample}) that naturally leads into the service offerings.
 (Do NOT add a CTA block yourself — it will be inserted automatically.)
 
 ═══ EMOJI RULES (MANDATORY — make it lively) ═══
@@ -543,6 +589,31 @@ PROMPT;
         }
 
         return $clean;
+    }
+
+    /**
+     * Clean raw HTML responses from AI models.
+     */
+    private function cleanHtmlResponse(string $raw): string
+    {
+        // 1. Strip thinking tags (Claude 3.7+ thinking/extended thinking)
+        $clean = preg_replace('/<thinking>.*?<\/thinking>/s', '', $raw);
+
+        // 2. Strip markdown code fences if present
+        if (preg_match('/```(?:html|xml)?\s*(.*?)\s*```/is', $clean, $matches)) {
+            $clean = $matches[1];
+        } else {
+            // 3. Fallback: Trim conversational text before the first HTML tag and after the last HTML tag
+            if (preg_match('/<[a-zA-Z]/', $clean, $match, PREG_OFFSET_CAPTURE)) {
+                $startOffset = $match[0][1];
+                $lastGt = strrpos($clean, '>');
+                if ($lastGt !== false && $lastGt > $startOffset) {
+                    $clean = substr($clean, $startOffset, $lastGt - $startOffset + 1);
+                }
+            }
+        }
+
+        return trim($clean);
     }
 
     // ─── Parsers ───────────────────────────────────────────────────────────────

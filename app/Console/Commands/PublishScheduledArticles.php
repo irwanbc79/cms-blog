@@ -56,6 +56,11 @@ class PublishScheduledArticles extends Command
         $this->newLine();
         $this->info("Done. {$success} published, {$failed} failed.");
 
+        if ($success > 0) {
+            $this->info("Running database synchronization...");
+            @shell_exec('/opt/alt/php83/usr/bin/php /home/u301249154/sync_articles.php');
+        }
+
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

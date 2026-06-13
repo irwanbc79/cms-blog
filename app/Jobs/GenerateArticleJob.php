@@ -57,17 +57,19 @@ class GenerateArticleJob implements ShouldQueue
             })->first();
         $selectedTitle = $bestTitle['title'] ?? $topic;
 
+        // Fetch existing articles for internal linking and context exclusion
+        $existing = Article::where('site_id', $this->siteId)
+            ->where('status', 'published')->latest('published_at')->take(20)
+            ->get(['title', 'slug'])
+            ->map(fn ($a) => ['title' => $a->title, 'slug' => $a->slug])->toArray();
+
         // Step 2: full article
-        $articleData = $service->generateArticle($selectedTitle, $pillar, $this->language);
+        $articleData = $service->generateArticle($selectedTitle, $pillar, $this->language, $existing);
         $keyword     = $articleData['focus_keyword'] ?? $topic;
         $html        = $articleData['content_html'] ?? '';
 
         // ── POST-PROCESS PIPELINE ──────────────────────────────────────────────
         // 1) Internal links FIRST (on core article) so the AI call never truncates CTA/news.
-        $existing = Article::where('site_id', $this->siteId)
-            ->where('status', 'published')->latest('published_at')->take(20)
-            ->get(['title', 'slug'])
-            ->map(fn ($a) => ['title' => $a->title, 'slug' => $a->slug])->toArray();
         if (count($existing) >= 2 && $html !== '') {
             $html = $service->generateInternalLinks($html, $existing);
         }
@@ -75,7 +77,7 @@ class GenerateArticleJob implements ShouldQueue
         // 2) Deterministic additions (cannot be truncated by AI)
         $html = $this->replaceImageMarkers($html, $unsplash);              // relevant images
         $html = $this->injectCta($html, $service->renderCta());            // CTA awal + tengah
-        $html = $this->appendNews($html, $keyword, $this->language);       // berita terkini
+        $html = $this->appendNews($html, $keyword, $this->language, $articleData['news'] ?? []); // berita terkini
 
         // Step 3: save
         $slug        = $this->ensureUniqueSlug($articleData['slug'] ?: Str::slug($selectedTitle));
@@ -109,7 +111,7 @@ class GenerateArticleJob implements ShouldQueue
     /** Replace [[IMG: query || caption]] markers with relevant Unsplash figures. */
     private function replaceImageMarkers(string $html, UnsplashService $unsplash): string
     {
-        $i = 0;
+        $i = mt_rand(0, 5);
         return preg_replace_callback(
             '/\[\[IMG:\s*(.+?)\s*\|\|\s*(.+?)\s*\]\]/s',
             function ($m) use ($unsplash, &$i) {
@@ -152,20 +154,29 @@ class GenerateArticleJob implements ShouldQueue
     }
 
     /** Append a "Berita Terkini Terkait" section with real Google News links. */
-    private function appendNews(string $html, string $keyword, string $lang): string
+    private function appendNews(string $html, string $keyword, string $lang, array $news = []): string
     {
-        $news = (new NewsService())->fetchRelatedNews($keyword, $lang, 4);
+        if (empty($news)) {
+            $news = (new NewsService())->fetchRelatedNews($keyword, $lang, 3);
+        }
         if (empty($news)) {
             return $html;
         }
 
         $cards = '';
         foreach ($news as $n) {
+            $imgHtml = '';
+            if (!empty($n['image_url'])) {
+                $imgHtml = '<img src="' . htmlspecialchars($n['image_url']) . '" style="width:100px;height:75px;object-fit:cover;border-radius:.375rem;flex-shrink:0;" alt="' . htmlspecialchars($n['title']) . '">';
+            }
             $cards .= '<a href="' . htmlspecialchars($n['link']) . '" target="_blank" rel="noopener nofollow" '
-                . 'style="display:block;padding:.9rem 1rem;background:#fff;border:1px solid #e5e7eb;border-radius:.6rem;text-decoration:none;transition:border-color .15s;margin-bottom:.6rem;">'
+                . 'style="display:flex;gap:1rem;align-items:center;padding:.9rem 1rem;background:#fff;border:1px solid #e5e7eb;border-radius:.6rem;text-decoration:none;transition:border-color .15s;margin-bottom:.6rem;">'
+                . $imgHtml
+                . '<div>'
                 . '<span style="display:block;font-weight:600;color:#111827;font-size:.95rem;line-height:1.4;margin-bottom:.3rem;">📰 ' . htmlspecialchars($n['title']) . '</span>'
                 . '<span style="font-size:.78rem;color:#6b7280;">' . htmlspecialchars($n['source'])
-                . ($n['date'] ? ' · ' . htmlspecialchars($n['date']) : '') . '</span></a>';
+                . ($n['date'] ? ' · ' . htmlspecialchars($n['date']) : '') . '</span>'
+                . '</div></a>';
         }
 
         $section = '<div style="margin:2.5rem 0;padding:1.5rem;background:linear-gradient(135deg,#f8fafc,#eef2ff);border-radius:.9rem;border:1px solid #e5e7eb;">'

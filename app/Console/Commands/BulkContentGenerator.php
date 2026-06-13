@@ -16,7 +16,8 @@ class BulkContentGenerator extends Command
         {--pillar=news : Content pillar}
         {--language=id : Language code (id or en)}
         {--schedule-days=1 : Days between each scheduled publish}
-        {--start-hour=8 : Hour of day to schedule (0-23)}';
+        {--start-hour=8 : Hour of day to schedule (0-23)}
+        {--start-date= : Start date for scheduling (YYYY-MM-DD)}';
 
     protected $description = 'Bulk generate articles from a list of topics and auto-schedule them';
 
@@ -40,8 +41,13 @@ class BulkContentGenerator extends Command
         $language     = $this->option('language');
         $scheduleDays = max(1, (int) $this->option('schedule-days'));
         $startHour    = (int) $this->option('start-hour');
+        $startDate    = $this->option('start-date');
 
-        $scheduleDate = now()->addDay()->setTime($startHour, 0);
+        if ($startDate) {
+            $scheduleDate = \Carbon\Carbon::parse($startDate)->setTime($startHour, 0);
+        } else {
+            $scheduleDate = now()->addDay()->setTime($startHour, 0);
+        }
         $totalTopics  = count($topics);
         $success      = 0;
         $failed       = 0;
@@ -55,57 +61,19 @@ class BulkContentGenerator extends Command
             $this->info("📝 [{$num}/{$totalTopics}] Topic: {$topic}");
 
             try {
-                $anthropic = new AnthropicService($site);
-
-                // Step 1: Generate titles
-                $this->comment('   → Generating title options...');
-                $titles = $anthropic->generateTitleOptions($topic, $pillar, $language);
-
-                // Auto-pick best title (highest CTR score)
-                $bestTitle = collect($titles)
-                    ->sortByDesc(fn (array $t) => match ($t['ctr_score'] ?? 'low') {
-                        'high' => 3,
-                        'med'  => 2,
-                        default => 1,
-                    })
-                    ->first();
-
-                $selectedTitle = $bestTitle['title'] ?? $topic;
-                $this->comment("   → Selected: {$selectedTitle}");
-
-                // Step 2: Generate article
-                $this->comment('   → Generating full article (~60s)...');
-                $articleData = $anthropic->generateArticle($selectedTitle, $pillar, $language);
-
-                // Step 3: Create article record
-                $slug = $this->ensureUniqueSlug(
-                    $articleData['slug'] ?: Str::slug($selectedTitle)
+                $this->comment('   → Dispatching generation job...');
+                $job = new \App\Jobs\GenerateArticleJob(
+                    $site->id,
+                    $topic,
+                    $pillar,
+                    $language,
+                    $scheduleDate->toDateTimeString(),
+                    1, // User ID (Admin)
+                    'scheduled'
                 );
+                $job->handle();
 
-                $article = Article::create([
-                    'site_id'             => $site->id,
-                    'title'               => $selectedTitle,
-                    'slug'                => $slug,
-                    'focus_keyword'       => $articleData['focus_keyword'] ?? '',
-                    'meta_description'    => $articleData['meta_description'] ?? '',
-                    'excerpt'             => $articleData['excerpt']
-                                             ?? Str::limit(strip_tags($articleData['content_html'] ?? ''), 200),
-                    'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
-                    'content_html'        => $articleData['content_html'] ?? '',
-                    'tags'                => $articleData['tags'] ?? [],
-                    'hashtags'            => $articleData['hashtags'] ?? [],
-                    'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],
-                    'schema_faq'          => $articleData['schema_faq'] ?? [],
-                    'language'            => $language,
-                    'pillar'              => $pillar,
-                    'status'              => 'scheduled',
-                    'scheduled_at'        => $scheduleDate,
-                    'word_count'          => $articleData['word_count'] ?? 0,
-                    'estimated_read_time' => max(1, intval(($articleData['word_count'] ?? 0) / 238)),
-                    'user_id'             => 1,
-                ]);
-
-                $this->info("   ✅ Created (ID #{$article->id}) — Scheduled: {$scheduleDate->format('d M Y H:i')}");
+                $this->info("   ✅ Created & Scheduled: {$scheduleDate->format('d M Y H:i')}");
                 $scheduleDate = $scheduleDate->addDays($scheduleDays);
                 $success++;
 

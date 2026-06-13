@@ -18,7 +18,8 @@ class UnsplashService
     public function fetchForKeyword(string $keyword): ?string
     {
         $query = $this->buildImageQuery($keyword);
-        $url   = $this->searchImage($query, 0);
+        $index = mt_rand(0, 9);
+        $url   = $this->searchImage($query, $index);
         return $url ?: $this->getPicsumUrl($keyword);
     }
 

@@ -6,6 +6,10 @@
 @section('og_title', $seo['title'])
 
 @push('head')
+@php
+  $keywords = !empty($article->tags) ? (is_array($article->tags) ? implode(', ', $article->tags) : $article->tags) : ($article->pillar ?: 'ekspor, impor, logistik, bea cukai');
+@endphp
+<meta name="keywords" content="{{ $keywords }}">
 @if($article->schema_faq && count($article->schema_faq) > 0)
 <script type="application/ld+json">
 {
@@ -228,7 +232,9 @@ document.addEventListener('scroll',function(){
         <div class="w-full lg:flex-1 lg:min-w-0">
             {{-- Article body (typography via .article-body di layout) --}}
             <div class="article-body">
+                <!-- google_ad_section_start -->
                 {!! $article->content_html !!}
+                <!-- google_ad_section_end -->
             </div>
 
             {{-- In-Article Ad (after content) --}}
