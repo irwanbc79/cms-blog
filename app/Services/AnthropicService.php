@@ -381,6 +381,7 @@ Do NOT write <img> tags yourself. Instead, place EXACTLY this marker where an im
 Rules:
 - The english search query must be VERY specific to the surrounding text so the image is relevant
   (e.g. "arabica coffee beans drying", "cargo container ship port", "customs documents desk").
+- CRITICAL: The english search query must be strictly generic/conceptual and in English. Do NOT include any city, province, country, or location names (such as "Palembang", "Medan", "Jakarta", "Indonesia") in the search query. Doing so biases the search towards tourist/landmark photos rather than business/logistics photos.
 - The caption (Indonesian) must describe the image in the context of THIS article.
 - Place markers on their own line between paragraphs, 2-3 total, spread across the article.
 - Example: [[IMG: green coffee beans warehouse || Gudang penyimpanan green bean kopi siap ekspor]]
@@ -415,11 +416,37 @@ PROMPT;
             if (empty($key)) continue;
             
             $num = $index + 1;
-            $isAnthropic = str_starts_with($key, 'sk-ant-');
-            $isDeepSeek  = str_starts_with($key, 'sk-') && !$isAnthropic;
-            $isGemini    = !$isAnthropic && !$isDeepSeek;
+            $provider = '';
+            $actualKey = $key;
+            
+            // Check if key starts with provider: prefix (e.g. gemini:KEY)
+            if (strpos($key, ':') !== false) {
+                list($pref, $rest) = explode(':', $key, 2);
+                $pref = strtolower(trim($pref));
+                if (in_array($pref, ['gemini', 'deepseek', 'kimi', 'qwen', 'glm', 'anthropic'])) {
+                    $provider = $pref;
+                    $actualKey = trim($rest);
+                }
+            }
+            
+            // Fallback auto-detection if no prefix
+            if (empty($provider)) {
+                if (str_starts_with($key, 'sk-ant-')) {
+                    $provider = 'anthropic';
+                } elseif (str_starts_with($key, 'sk-')) {
+                    $provider = 'deepseek';
+                } else {
+                    $provider = 'gemini';
+                }
+            }
 
-            if ($isDeepSeek) {
+            // Explicitly ignore Claude (Anthropic) as requested by the user
+            if ($provider === 'anthropic') {
+                echo "\n⚠️ [Key #{$num}] Skipping Claude (Anthropic) as requested.\n";
+                continue;
+            }
+
+            if ($provider === 'deepseek') {
                 $model = 'deepseek-chat';
                 $attempts = 0;
                 $maxAttempts = 3;
@@ -428,7 +455,7 @@ PROMPT;
                 do {
                     try {
                         $response = Http::withHeaders([
-                            'Authorization' => "Bearer {$key}",
+                            'Authorization' => "Bearer {$actualKey}",
                             'Content-Type' => 'application/json',
                         ])->timeout(300)->post(
                             "https://api.deepseek.com/chat/completions",
@@ -471,7 +498,7 @@ PROMPT;
                 } while (true);
             }
 
-            if ($isGemini) {
+            if ($provider === 'gemini') {
                 $geminiModel = 'gemini-2.5-flash';
                 $attempts = 0;
                 $maxAttempts = 3;
@@ -480,7 +507,7 @@ PROMPT;
                 do {
                     try {
                         $response = Http::timeout(300)->post(
-                            "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$key}",
+                            "https://generativelanguage.googleapis.com/v1beta/models/{$geminiModel}:generateContent?key={$actualKey}",
                             [
                                 'contents' => [
                                     [
@@ -535,35 +562,68 @@ PROMPT;
                 } while (true);
             }
 
-            if ($isAnthropic) {
-                try {
-                    $response = Http::withHeaders([
-                        'x-api-key'         => $key,
-                        'anthropic-version' => '2023-06-01',
-                        'content-type'      => 'application/json',
-                    ])->timeout(300)->retry(2, 2000, function (\Exception $exception) {
-                        return $exception instanceof RequestException
-                            && $exception->response?->status() >= 500;
-                    })->post("{$this->baseUrl}/messages", [
-                        'model'      => $this->model,
-                        'max_tokens' => $maxTokens,
-                        'messages'   => [
-                            ['role' => 'user', 'content' => $prompt],
-                        ],
-                    ]);
-
-                    if ($response->failed()) {
-                        throw new \RuntimeException(
-                            "Anthropic API error {$response->status()}: " . $response->body()
-                        );
-                    }
-
-                    return $response->json('content.0.text', '');
-                } catch (\Exception $e) {
-                    $lastException = $e;
-                    echo "\n⚠️ [Key #{$num}] Anthropic failed: {$e->getMessage()}. Trying next key...\n";
-                    // Loop will continue to next key
+            if ($provider === 'kimi' || $provider === 'qwen' || $provider === 'glm') {
+                $endpoint = '';
+                $model = '';
+                if ($provider === 'kimi') {
+                    $endpoint = 'https://api.moonshot.cn/v1/chat/completions';
+                    $model = 'moonshot-v1-8k';
+                } elseif ($provider === 'qwen') {
+                    $endpoint = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+                    $model = 'qwen-plus';
+                } elseif ($provider === 'glm') {
+                    $endpoint = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+                    $model = 'glm-4';
                 }
+
+                $attempts = 0;
+                $maxAttempts = 3;
+                $retryDelay = 5;
+
+                do {
+                    try {
+                        $response = Http::withHeaders([
+                            'Authorization' => "Bearer {$actualKey}",
+                            'Content-Type' => 'application/json',
+                        ])->timeout(300)->post(
+                            $endpoint,
+                            [
+                                'model' => $model,
+                                'messages' => [
+                                    ['role' => 'user', 'content' => $prompt]
+                                ],
+                                'max_tokens' => $maxTokens,
+                            ]
+                        );
+
+                        if ($response->status() === 429) {
+                            $attempts++;
+                            if ($attempts >= $maxAttempts) {
+                                throw new \RuntimeException("{$provider} API rate limit exceeded.");
+                            }
+                            echo "\n⚠️ [Key #{$num}] {$provider} 429. Sleeping {$retryDelay}s...\n";
+                            sleep($retryDelay);
+                            continue;
+                        }
+
+                        if ($response->failed()) {
+                            throw new \RuntimeException(
+                                "{$provider} API error {$response->status()}: " . $response->body()
+                            );
+                        }
+
+                        return $response->json('choices.0.message.content', '');
+                    } catch (\Exception $e) {
+                        if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                            $attempts++;
+                            sleep($retryDelay);
+                            continue;
+                        }
+                        $lastException = $e;
+                        echo "\n⚠️ [Key #{$num}] {$provider} failed: {$e->getMessage()}. Trying next key...\n";
+                        break; // Try next key in $keys
+                    }
+                } while (true);
             }
         }
 

@@ -33,6 +33,8 @@ class UnsplashService
             return null;
         }
 
+        $query = $this->sanitizeQuery($query);
+
         try {
             $q      = urlencode($query);
             $apiUrl = "https://api.unsplash.com/search/photos?query={$q}&per_page=10&orientation=landscape&content_filter=high&client_id={$this->accessKey}";
@@ -140,5 +142,81 @@ class UnsplashService
         }
 
         return 'indonesia business export trade professional';
+    }
+
+    /**
+     * Sanitize and translate the image search query to keep it contextually relevant and avoid location bias.
+     */
+    private function sanitizeQuery(string $query): string
+    {
+        // 1. Remove specific Indonesian location/geographic names to prevent search bias towards tourist spots/mosques
+        $locations = [
+            'palembang', 'jakarta', 'medan', 'surabaya', 'semarang', 'bandung', 
+            'yogyakarta', 'jogja', 'bali', 'makassar', 'lampung', 'padang', 
+            'pekanbaru', 'banjarmasin', 'pontianak', 'balikpapan', 'samarinda', 
+            'manado', 'ambon', 'jayapura', 'aceh', 'batam', 'tangerang', 
+            'bekasi', 'depok', 'bogor', 'cirebon', 'solo', 'surakarta', 'malang',
+            'indonesia', 'indonesian', 'indonesia\'s'
+        ];
+
+        foreach ($locations as $loc) {
+            // Remove with preceding prepositions like "in", "at", "from", "of", "to", "near", "di", "dari", "ke", "pada"
+            $query = preg_replace('/\b(in|at|from|of|to|near|dan|di|dari|ke|pada)\s+' . preg_quote($loc, '/') . '\b/i', '', $query);
+            // Remove the location name itself
+            $query = preg_replace('/\b' . preg_quote($loc, '/') . '\b/i', '', $query);
+        }
+
+        // 2. Translate common Indonesian terms to English (fallback in case the AI writes them in Indonesian)
+        $translations = [
+            'rempah-rempah' => 'spices',
+            'rempah' => 'spices',
+            'gudang' => 'warehouse',
+            'kopi' => 'coffee',
+            'arabika' => 'arabica',
+            'robusta' => 'robusta',
+            'ekspor' => 'export',
+            'impor' => 'import',
+            'pelabuhan' => 'port',
+            'kapal' => 'cargo ship',
+            'bea cukai' => 'customs',
+            'kantor' => 'office',
+            'dokumen' => 'documents',
+            'pabean' => 'customs',
+            'peti kemas' => 'shipping container',
+            'kontainer' => 'shipping container',
+            'logistik' => 'logistics',
+            'pengiriman' => 'shipping',
+            'angkutan' => 'transport',
+            'darat' => 'land',
+            'laut' => 'sea',
+            'udara' => 'air',
+            'perdagangan' => 'trade',
+            'kelapa sawit' => 'palm oil',
+            'sawit' => 'palm oil',
+            'karet' => 'rubber',
+            'kakao' => 'cocoa',
+            'teh' => 'tea',
+            'pertanian' => 'agriculture',
+            'sawah' => 'rice field',
+            'kebun' => 'plantation',
+            'pabrik' => 'factory',
+            'industri' => 'industrial',
+        ];
+
+        foreach ($translations as $id => $en) {
+            $query = preg_replace('/\b' . preg_quote($id, '/') . '\b/i', $en, $query);
+        }
+
+        // 3. Remove non-alphanumeric characters except spaces
+        $query = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $query);
+
+        // 4. Remove dangling prepositions/conjunctions
+        $query = preg_replace('/\b(in|at|from|of|to|near|and|dan|atau|with|dengan|di|dari|ke|pada)\b/i', ' ', $query);
+
+        // 5. Clean up whitespaces
+        $query = preg_replace('/\s+/', ' ', $query);
+        $query = trim($query);
+
+        return $query ?: 'logistics export trade';
     }
 }

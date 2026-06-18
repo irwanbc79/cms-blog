@@ -58,7 +58,19 @@ class PublishScheduledArticles extends Command
 
         if ($success > 0) {
             $this->info("Running database synchronization...");
-            @shell_exec('/opt/alt/php83/usr/bin/php /home/u301249154/sync_articles.php');
+            $syncPath = '/home/u301249154/sync_articles.php';
+            if (file_exists($syncPath)) {
+                ob_start();
+                require $syncPath;
+                ob_end_clean();
+            } else {
+                $localSyncPath = base_path('../sync_articles.php');
+                if (file_exists($localSyncPath)) {
+                    ob_start();
+                    require $localSyncPath;
+                    ob_end_clean();
+                }
+            }
         }
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
