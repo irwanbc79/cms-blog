@@ -15,12 +15,12 @@ class UnsplashService
      * Get a RELEVANT image for a keyword (featured image).
      * Uses Unsplash SEARCH (relevant) — not random — with smart query translation.
      */
-    public function fetchForKeyword(string $keyword): ?string
+    public function fetchForKeyword(string $keyword, ?string $alternativeSeed = null): ?string
     {
         $query = $this->buildImageQuery($keyword);
         $index = mt_rand(0, 9);
         $url   = $this->searchImage($query, $index);
-        return $url ?: $this->getPicsumUrl($keyword);
+        return $url ?: $this->getPicsumUrl($alternativeSeed ?: $keyword);
     }
 
     /**
@@ -84,6 +84,8 @@ class UnsplashService
      */
     public function buildImageQuery(string $keyword): string
     {
+        $lower = strtolower(trim($keyword));
+
         $map = [
             'kopi'                 => 'coffee beans plantation harvest',
             'arabika'              => 'arabica coffee beans',
@@ -134,11 +136,21 @@ class UnsplashService
             'indonesia'            => 'indonesia beautiful landscape',
         ];
 
-        $lower = strtolower($keyword);
-        foreach ($map as $id => $en) {
-            if (str_contains($lower, $id)) {
-                return $en;
+        // For simple short keywords (1-2 words), we can check the map directly
+        if (str_word_count($lower) <= 2) {
+            foreach ($map as $id => $en) {
+                if (str_contains($lower, $id)) {
+                    return $en;
+                }
             }
+        }
+
+        // For longer keywords (titles/topics), build a dynamic query by translating
+        // and sanitizing the words to keep it highly specific.
+        $sanitized = $this->sanitizeQuery($keyword);
+
+        if (!empty($sanitized) && $sanitized !== 'logistics export trade') {
+            return $sanitized;
         }
 
         return 'indonesia business export trade professional';
@@ -156,7 +168,11 @@ class UnsplashService
             'pekanbaru', 'banjarmasin', 'pontianak', 'balikpapan', 'samarinda', 
             'manado', 'ambon', 'jayapura', 'aceh', 'batam', 'tangerang', 
             'bekasi', 'depok', 'bogor', 'cirebon', 'solo', 'surakarta', 'malang',
-            'indonesia', 'indonesian', 'indonesia\'s'
+            'indonesia', 'indonesian', 'indonesia\'s',
+            // Port names
+            'tanjung priok', 'tanjung perak', 'kualanamu', 'belawan',
+            // Foreign country names to avoid location-specific bias
+            'jepang', 'japan', 'china', 'tiongkok', 'amerika', 'usa', 'eropa', 'europe', 'singapore', 'singapura'
         ];
 
         foreach ($locations as $loc) {
@@ -201,6 +217,33 @@ class UnsplashService
             'kebun' => 'plantation',
             'pabrik' => 'factory',
             'industri' => 'industrial',
+            
+            // New helpful translations for variety
+            'ikan' => 'fish',
+            'beku' => 'frozen',
+            'basah' => 'fresh',
+            'seafood' => 'seafood',
+            'nelayan' => 'fisherman',
+            'lautan' => 'ocean',
+            'umkm' => 'small business micro enterprise',
+            'biaya' => 'cost price finance',
+            'harga' => 'price rate cost',
+            'tarif' => 'tariff rate cost',
+            'freight' => 'freight',
+            'forwarding' => 'forwarder logistics',
+            'regulasi' => 'regulation law policy',
+            'aturan' => 'regulation rule',
+            'panduan' => 'guide manual',
+            'cara' => 'how to',
+            'tips' => 'tips',
+            'strategi' => 'strategy business',
+            'efisien' => 'efficient optimization',
+            'sukses' => 'success',
+            'kargo' => 'cargo',
+            'kirim' => 'shipment cargo',
+            'perusahaan' => 'company business',
+            'produk' => 'product',
+            'jasa' => 'service',
         ];
 
         foreach ($translations as $id => $en) {
@@ -210,8 +253,8 @@ class UnsplashService
         // 3. Remove non-alphanumeric characters except spaces
         $query = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $query);
 
-        // 4. Remove dangling prepositions/conjunctions
-        $query = preg_replace('/\b(in|at|from|of|to|near|and|dan|atau|with|dengan|di|dari|ke|pada)\b/i', ' ', $query);
+        // 4. Remove dangling prepositions/conjunctions and common stop words
+        $query = preg_replace('/\b(in|at|from|of|to|near|and|dan|atau|with|dengan|di|dari|ke|pada|untuk|yang|adalah|itu|ini|lengkap|terbaru|tahun|year|2024|2025|2026|via)\b/i', ' ', $query);
 
         // 5. Clean up whitespaces
         $query = preg_replace('/\s+/', ' ', $query);

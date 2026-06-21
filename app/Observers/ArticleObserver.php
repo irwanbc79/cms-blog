@@ -15,7 +15,7 @@ class ArticleObserver
             if ($keyword) {
                 try {
                     $unsplash = new \App\Services\UnsplashService();
-                    $article->featured_image_url = $unsplash->fetchForKeyword($keyword);
+                    $article->featured_image_url = $unsplash->fetchForKeyword($keyword, $article->title);
                 } catch (\Throwable) {
                     // Fail silently, don't crash the article creation
                 }

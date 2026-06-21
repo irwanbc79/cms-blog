@@ -58,7 +58,7 @@ class FixMissingImages extends Command
             }
 
             try {
-                $imageUrl = $unsplash->fetchForKeyword($keyword);
+                $imageUrl = $unsplash->fetchForKeyword($keyword, $article->title);
                 if ($imageUrl) {
                     $article->update([
                         'featured_image_url' => $imageUrl

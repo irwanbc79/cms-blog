@@ -92,7 +92,7 @@ class GenerateArticleJob implements ShouldQueue
             'excerpt'             => $articleData['excerpt'] ?? Str::limit(strip_tags($html), 200),
             'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
             'content_html'        => $html,
-            'featured_image_url'  => $unsplash->fetchForKeyword($keyword),
+            'featured_image_url'  => $unsplash->fetchForKeyword($keyword, $selectedTitle),
             'tags'                => $articleData['tags'] ?? [],
             'hashtags'            => $articleData['hashtags'] ?? [],
             'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],
