@@ -454,8 +454,9 @@
                     </a>
                 </div>
             </div>
-            <div class="border-t border-white/10 mt-12 pt-8 text-xs text-white/50 text-center">
-                &copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.
+            <div class="border-t border-white/10 mt-12 pt-8 text-xs text-white/50 text-center flex flex-col sm:flex-row justify-between items-center gap-4">
+                <span>&copy; {{ date('Y') }} {{ $companyName }}. All rights reserved.</span>
+                <span>Powered by: <a href="https://morabangun.com" target="_blank" class="text-white/50 hover:text-white transition-colors">morabangun.com</a></span>
             </div>
         </div>
     </footer>
