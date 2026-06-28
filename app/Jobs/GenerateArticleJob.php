@@ -111,13 +111,17 @@ class GenerateArticleJob implements ShouldQueue
     /** Replace [[IMG: query || caption]] markers with relevant Unsplash figures. */
     private function replaceImageMarkers(string $html, UnsplashService $unsplash): string
     {
-        $i = mt_rand(0, 5);
+        // Use TOP search results (index 0,1,2...) for relevance — a random offset
+        // (mt_rand) was the main cause of off-topic photos. Increment per image for variety.
+        $i = 0;
         return preg_replace_callback(
             '/\[\[IMG:\s*(.+?)\s*\|\|\s*(.+?)\s*\]\]/s',
             function ($m) use ($unsplash, &$i) {
                 $query   = trim($m[1]);
                 $caption = trim($m[2]);
-                $img     = $unsplash->searchImage($query, $i++);
+                // Curate/translate the AI query (ID->EN, strip location bias, map domain
+                // terms) so in-article images stay contextually relevant, not just sanitized.
+                $img     = $unsplash->searchImage($unsplash->buildImageQuery($query), $i++);
                 if (! $img) {
                     return ''; // no image -> remove marker (no empty box)
                 }
