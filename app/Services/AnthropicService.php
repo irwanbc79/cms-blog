@@ -423,7 +423,7 @@ PROMPT;
             if (strpos($key, ':') !== false) {
                 list($pref, $rest) = explode(':', $key, 2);
                 $pref = strtolower(trim($pref));
-                if (in_array($pref, ['gemini', 'deepseek', 'kimi', 'qwen', 'glm', 'anthropic'])) {
+                if (in_array($pref, ['openai', 'gemini', 'deepseek', 'kimi', 'qwen', 'glm', 'anthropic'])) {
                     $provider = $pref;
                     $actualKey = trim($rest);
                 }
@@ -433,6 +433,9 @@ PROMPT;
             if (empty($provider)) {
                 if (str_starts_with($key, 'sk-ant-')) {
                     $provider = 'anthropic';
+                } elseif (str_starts_with($key, 'sk-proj-')) {
+                    // OpenAI project keys are sk-proj-...; bare sk- stays DeepSeek for back-compat.
+                    $provider = 'openai';
                 } elseif (str_starts_with($key, 'sk-')) {
                     $provider = 'deepseek';
                 } else {
@@ -493,6 +496,61 @@ PROMPT;
                         }
                         $lastException = $e;
                         echo "\n⚠️ [Key #{$num}] DeepSeek failed: {$e->getMessage()}. Trying next key...\n";
+                        break; // Try next key in $keys
+                    }
+                } while (true);
+            }
+
+            if ($provider === 'openai') {
+                // Model is config-driven (NOT hardcoded): set `openai_model` in Settings.
+                // Default to a real, currently-valid model so it never 404s if unset.
+                $model = trim((string) Setting::get('openai_model', 'gpt-4o-mini')) ?: 'gpt-4o-mini';
+                $attempts = 0;
+                $maxAttempts = 3;
+                $retryDelay = 5;
+
+                do {
+                    try {
+                        $response = Http::withHeaders([
+                            'Authorization' => "Bearer {$actualKey}",
+                            'Content-Type' => 'application/json',
+                        ])->timeout(300)->post(
+                            "https://api.openai.com/v1/chat/completions",
+                            [
+                                'model' => $model,
+                                'messages' => [
+                                    ['role' => 'user', 'content' => $prompt]
+                                ],
+                                // Newer OpenAI models require max_completion_tokens (max_tokens rejected).
+                                'max_completion_tokens' => $maxTokens,
+                            ]
+                        );
+
+                        if ($response->status() === 429) {
+                            $attempts++;
+                            if ($attempts >= $maxAttempts) {
+                                throw new \RuntimeException("OpenAI API rate limit exceeded.");
+                            }
+                            echo "\n⚠️ [Key #{$num}] OpenAI 429. Sleeping {$retryDelay}s...\n";
+                            sleep($retryDelay);
+                            continue;
+                        }
+
+                        if ($response->failed()) {
+                            throw new \RuntimeException(
+                                "OpenAI API error {$response->status()}: " . $response->body()
+                            );
+                        }
+
+                        return $response->json('choices.0.message.content', '');
+                    } catch (\Exception $e) {
+                        if (str_contains($e->getMessage(), '429') && $attempts < $maxAttempts) {
+                            $attempts++;
+                            sleep($retryDelay);
+                            continue;
+                        }
+                        $lastException = $e;
+                        echo "\n⚠️ [Key #{$num}] OpenAI failed: {$e->getMessage()}. Trying next key...\n";
                         break; // Try next key in $keys
                     }
                 } while (true);

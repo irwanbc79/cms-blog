@@ -26,6 +26,7 @@ class Settings extends Page implements HasForms
         $this->form->fill([
             'anthropic_api_key' => Setting::get('anthropic_api_key', ''),
             'anthropic_model'   => Setting::get('anthropic_model', 'claude-sonnet-4-6'),
+            'openai_model'      => Setting::get('openai_model', 'gpt-4o-mini'),
         ]);
     }
 
@@ -36,10 +37,11 @@ class Settings extends Page implements HasForms
                 Forms\Components\Section::make('Anthropic AI')
                     ->schema([
                         Forms\Components\TextInput::make('anthropic_api_key')
-                            ->label('Anthropic API Key')
+                            ->label('Hybrid API Keys')
                             ->password()
                             ->revealable()
                             ->required()
+                            ->helperText('Pisahkan banyak key dengan koma. Beri prefix provider: openai:KEY, gemini:KEY, deepseek:KEY, kimi:KEY, qwen:KEY, glm:KEY. Key OpenAI WAJIB pakai prefix openai: (atau sk-proj-...) agar tidak salah dideteksi sebagai DeepSeek. Loop mencoba key berurutan & fallback ke berikutnya bila gagal.')
                             ->columnSpanFull(),
                         Forms\Components\Select::make('anthropic_model')
                             ->label('AI Model')
@@ -50,6 +52,11 @@ class Settings extends Page implements HasForms
                                 'claude-3-5-sonnet-20241022' => 'Claude 3.5 Sonnet (Stable)',
                                 'claude-3-5-haiku-20241022'  => 'Claude 3.5 Haiku (Stable/Fast)',
                             ])
+                            ->required(),
+                        Forms\Components\TextInput::make('openai_model')
+                            ->label('OpenAI Model ID')
+                            ->placeholder('gpt-4o-mini')
+                            ->helperText('ID model OpenAI PERSIS dari dashboard akunmu (mis. gpt-4o-mini). Dipakai saat key berprefix openai: aktif. Jangan tebak nama model—salah ID = error 404.')
                             ->required(),
                     ]),
 
@@ -63,6 +70,7 @@ class Settings extends Page implements HasForms
 
         Setting::set('anthropic_api_key', $data['anthropic_api_key'], 'ai', true);
         Setting::set('anthropic_model', $data['anthropic_model'], 'ai', false);
+        Setting::set('openai_model', $data['openai_model'], 'ai', false);
 
         cache()->forget('settings_all');
 
