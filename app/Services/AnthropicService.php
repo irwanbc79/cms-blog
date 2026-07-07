@@ -83,10 +83,35 @@ class AnthropicService
 CTA;
     }
 
+    private function getEbookCtaBlock(): string
+    {
+        return <<<CTA
+<div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-left:4px solid #f59e0b;padding:1.5rem;margin:2.5rem 0;border-radius:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.06);">
+<p style="margin:0 0 .5rem;font-weight:800;font-size:1.15rem;color:#78350f;display:flex;align-items:center;gap:.5rem;">📚 Ingin Kuasai Ekspor-Impor Secara Mandiri?</p>
+<p style="margin:0 0 1rem;color:#451a03;line-height:1.6;font-size:.9rem;">Jangan biarkan ketidaktahuan tentang regulasi kepabeanan, HS Code, dan bea masuk menghambat bisnis Anda. Pelajari panduan langkah demi langkah dari praktisi berpengalaman lewat <strong>Ebook Panduan Praktis Ekspor-Impor M2B</strong>.</p>
+<ul style="margin:0 0 1.25rem;padding-left:1.25rem;color:#78350f;font-size:.85rem;line-height:1.5;list-style-type:none;">
+<li style="margin-bottom:.4rem;position:relative;padding-left:1.25rem;"><span style="position:absolute;left:0;color:#f59e0b;">✓</span> Rahasia menentukan HS Code & Pajak Impor secara akurat</li>
+<li style="margin-bottom:.4rem;position:relative;padding-left:1.25rem;"><span style="position:absolute;left:0;color:#f59e0b;">✓</span> Panduan lengkap dokumen ekspor-impor (BL, Invoice, COO, dll.)</li>
+<li style="margin-bottom:.4rem;position:relative;padding-left:1.25rem;"><span style="position:absolute;left:0;color:#f59e0b;">✓</span> Strategi praktis negosiasi dengan supplier luar negeri</li>
+</ul>
+<div style="display:flex;align-items:center;flex-wrap:wrap;gap:.75rem;">
+<a href="https://ebook.m2b.co.id" target="_blank" rel="noopener" style="display:inline-block;background:#d97706;color:#fff;padding:.7rem 1.5rem;border-radius:.6rem;font-weight:700;text-decoration:none;font-size:.9rem;box-shadow:0 2px 4px rgba(217,119,6,0.2);transition:background .2s;">📖 Dapatkan Ebook Sekarang</a>
+<span style="font-size:.8rem;color:#b45309;font-weight:600;">*Tersedia PDF & Template Dokumen Siap Pakai</span>
+</div>
+</div>
+CTA;
+    }
+
     /** Public accessor for the CTA block (used by GenerateArticleJob). */
     public function renderCta(): string
     {
         return $this->getCtaBlock();
+    }
+
+    /** Public accessor for the Ebook CTA block (used by GenerateArticleJob). */
+    public function renderEbookCta(): string
+    {
+        return $this->getEbookCtaBlock();
     }
 
     // ─── Public Methods ────────────────────────────────────────────────────────
@@ -329,6 +354,13 @@ PROMPT;
             ? "\"If you are facing challenges adapting to these latest import-export regulations, partnering with a professional logistics expert is a wise decision...\""
             : "\"Jika Anda menghadapi kesulitan dalam beradaptasi dengan regulasi ekspor-impor terbaru ini, menghubungi partner logistik profesional adalah langkah bijak...\"";
 
+        $ebookInstruction = '';
+        if ($this->site && $this->site->id === 3) {
+            $ebookInstruction = "\n═══ EBOOK PROMOTION NARRATIVE INTEGRATION (CRITICAL) ═══\n"
+                . "Since this article is for M2B (a prominent logistics and PPJK company), you MUST organically and naturally integrate a narrative in at least 1-2 sections (especially in guides, document lists, or advice sections) suggesting readers to learn export-import systematically by purchasing the 'Ebook Panduan Praktis Ekspor-Impor M2B' at link: ebook.m2b.co.id.\n"
+                . "Do NOT make it sound like a dry advertisement. Instead, write it as a helpful business recommendation. E.g.: 'Bagi Anda yang ingin mempelajari detail pengurusan dokumen ini secara mandiri dan mendalam, Anda dapat mengacu pada panduan lengkap langkah-demi-langkah dalam Ebook Panduan Praktis Ekspor-Impor M2B yang dapat diakses di ebook.m2b.co.id.'\n";
+        }
+
         return <<<PROMPT
 You are an expert content writer and SEO specialist for {$company}.
 {$context}
@@ -336,7 +368,7 @@ Content pillar: {$pillar}. Write in {$lang}.
 Focus keyword: "{$keyword}"
 
 Write a comprehensive, authoritative blog article for: "{$title}"
-{$existingText}{$newsText}
+{$existingText}{$newsText}{$ebookInstruction}
 ═══ HUMAN STYLE & ANTI-AI DETECTION RULES (MANDATORY) ═══
 
 1. BURSTINESS: Extremely varied sentence length and complexity. Do NOT write sentences of uniform length. Use very short, punchy sentences (3-5 words) adjacent to longer, descriptive sentences. E.g., "Regulasi baru berlaku. Banyak yang panik. Mengapa? Karena kurang persiapan."

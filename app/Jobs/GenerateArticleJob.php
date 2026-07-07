@@ -76,7 +76,15 @@ class GenerateArticleJob implements ShouldQueue
 
         // 2) Deterministic additions (cannot be truncated by AI)
         $html = $this->replaceImageMarkers($html, $unsplash);              // relevant images
-        $html = $this->injectCta($html, $service->renderCta());            // CTA awal + tengah
+        
+        $cta1 = $service->renderCta(); // Default Service CTA
+        $cta2 = $cta1;
+        if ($this->siteId === 3) {
+            // Untuk M2B (ID 3): CTA 1 (awal) = Ebook M2B, CTA 2 (tengah) = Layanan Konsultasi M2B
+            $cta1 = $service->renderEbookCta();
+            $cta2 = $service->renderCta();
+        }
+        $html = $this->injectCta($html, $cta1, $cta2);            // CTA awal + tengah
         $html = $this->appendNews($html, $keyword, $this->language, $articleData['news'] ?? []); // berita terkini
 
         // Step 3: save
@@ -136,8 +144,9 @@ class GenerateArticleJob implements ShouldQueue
     }
 
     /** Insert CTA early (after the 1st H2 section) and in the middle of the article. */
-    private function injectCta(string $html, string $cta): string
+    private function injectCta(string $html, string $cta1, ?string $cta2 = null): string
     {
+        $cta2 = $cta2 ?? $cta1;
         $parts = preg_split('/(<\/h2>)/i', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
         // delimiter indices (positions of </h2>) are the odd indices
         $h2 = [];
@@ -149,12 +158,12 @@ class GenerateArticleJob implements ShouldQueue
             $midIdx   = $h2[intdiv($n, 2)];   // middle H2
             $earlyIdx = $h2[0];               // first H2
             // Insert at higher index first so earlier index stays valid
-            $parts[$midIdx]   .= $cta;
-            $parts[$earlyIdx] .= $cta;
+            $parts[$midIdx]   .= $cta2;
+            $parts[$earlyIdx] .= $cta1;
             return implode('', $parts);
         }
         // Short article: one CTA at the end
-        return $html . $cta;
+        return $html . $cta1;
     }
 
     /** Append a "Berita Terkini Terkait" section with real Google News links. */
