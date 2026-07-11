@@ -14,8 +14,8 @@ class ArticleObserver
             $keyword = $article->focus_keyword ?: $article->title;
             if ($keyword) {
                 try {
-                    $unsplash = new \App\Services\UnsplashService();
-                    $article->featured_image_url = $unsplash->fetchForKeyword($keyword, $article->title);
+                    $images = new \App\Services\ImageService();
+                    $article->featured_image_url = $images->fetchForKeyword($keyword, $article->site_id, $article->title);
                 } catch (\Throwable) {
                     // Fail silently, don't crash the article creation
                 }

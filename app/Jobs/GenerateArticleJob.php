@@ -5,8 +5,8 @@ namespace App\Jobs;
 use App\Models\Article;
 use App\Models\Site;
 use App\Services\AnthropicService;
+use App\Services\ImageService;
 use App\Services\NewsService;
-use App\Services\UnsplashService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -33,7 +33,7 @@ class GenerateArticleJob implements ShouldQueue
     {
         $site    = Site::findOrFail($this->siteId);
         $service = new AnthropicService($site);
-        $unsplash = new UnsplashService();
+        $images  = new ImageService();
 
         // Resolve pillar
         $pillar = $this->pillar;
@@ -75,7 +75,7 @@ class GenerateArticleJob implements ShouldQueue
         }
 
         // 2) Deterministic additions (cannot be truncated by AI)
-        $html = $this->replaceImageMarkers($html, $unsplash);              // relevant images
+        $html = $this->replaceImageMarkers($html, $images);               // relevant images
         
         $cta1 = $service->renderCta(); // Default Service CTA
         $cta2 = $cta1;
@@ -100,7 +100,11 @@ class GenerateArticleJob implements ShouldQueue
             'excerpt'             => $articleData['excerpt'] ?? Str::limit(strip_tags($html), 200),
             'og_title'            => $articleData['seo_title'] ?? $selectedTitle,
             'content_html'        => $html,
-            'featured_image_url'  => $unsplash->fetchForKeyword($keyword, $selectedTitle),
+            'featured_image_url'  => $images->fetchForKeyword(
+                trim($articleData['featured_image_query'] ?? '') ?: $keyword,
+                $this->siteId,
+                $selectedTitle
+            ),
             'tags'                => $articleData['tags'] ?? [],
             'hashtags'            => $articleData['hashtags'] ?? [],
             'image_alt_texts'     => $articleData['image_alt_texts'] ?? [],
@@ -116,20 +120,17 @@ class GenerateArticleJob implements ShouldQueue
         ]);
     }
 
-    /** Replace [[IMG: query || caption]] markers with relevant Unsplash figures. */
-    private function replaceImageMarkers(string $html, UnsplashService $unsplash): string
+    /** Replace [[IMG: query || caption]] markers with relevant stock-photo figures. */
+    private function replaceImageMarkers(string $html, ImageService $images): string
     {
-        // Use TOP search results (index 0,1,2...) for relevance — a random offset
-        // (mt_rand) was the main cause of off-topic photos. Increment per image for variety.
-        $i = 0;
         return preg_replace_callback(
             '/\[\[IMG:\s*(.+?)\s*\|\|\s*(.+?)\s*\]\]/s',
-            function ($m) use ($unsplash, &$i) {
+            function ($m) use ($images) {
                 $query   = trim($m[1]);
                 $caption = trim($m[2]);
-                // Curate/translate the AI query (ID->EN, strip location bias, map domain
-                // terms) so in-article images stay contextually relevant, not just sanitized.
-                $img     = $unsplash->searchImage($unsplash->buildImageQuery($query), $i++);
+                // ImageService dedups against photos this site already used, so the
+                // most-relevant UNUSED result is picked — relevance + variety at once.
+                $img     = $images->fetchForQuery($query, $this->siteId);
                 if (! $img) {
                     return ''; // no image -> remove marker (no empty box)
                 }

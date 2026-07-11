@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Article;
-use App\Services\UnsplashService;
+use App\Services\ImageService;
 use Illuminate\Console\Command;
 
 class FixMissingImages extends Command
@@ -46,7 +46,7 @@ class FixMissingImages extends Command
         }
 
         $this->info("Found {$articles->count()} articles to process.");
-        $unsplash = new UnsplashService();
+        $images = new ImageService();
         $success = 0;
         $failed = 0;
 
@@ -58,7 +58,7 @@ class FixMissingImages extends Command
             }
 
             try {
-                $imageUrl = $unsplash->fetchForKeyword($keyword, $article->title);
+                $imageUrl = $images->fetchForKeyword($keyword, $article->site_id, $article->title);
                 if ($imageUrl) {
                     $article->update([
                         'featured_image_url' => $imageUrl

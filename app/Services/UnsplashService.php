@@ -18,8 +18,14 @@ class UnsplashService
     public function fetchForKeyword(string $keyword, ?string $alternativeSeed = null): ?string
     {
         $query = $this->buildImageQuery($keyword);
-        $index = mt_rand(0, 9);
+        // top-4 saja: hasil ke-5..10 pencarian Unsplash sering sudah melenceng topik
+        $index = mt_rand(0, 3);
         $url   = $this->searchImage($query, $index);
+        if (!$url) {
+            // query spesifik tanpa hasil (mis. "demurrage detention") — coba query
+            // generik on-brand dulu sebelum jatuh ke picsum acak
+            $url = $this->searchImage('cargo logistics port business', mt_rand(0, 5));
+        }
         return $url ?: $this->getPicsumUrl($alternativeSeed ?: $keyword);
     }
 
@@ -29,15 +35,33 @@ class UnsplashService
      */
     public function searchImage(string $query, int $index = 0): ?string
     {
-        if (! $this->accessKey) {
+        $results = $this->searchCandidates($query, 10);
+        if (empty($results)) {
             return null;
         }
 
-        $query = $this->sanitizeQuery($query);
+        // Pick from the top results (most relevant). Rotate by index for variety.
+        $pick = $results[$index % min(count($results), 6)] ?? $results[0];
+
+        return $pick['url'] ?? null;
+    }
+
+    /**
+     * Search Unsplash and return the top candidates as [['id' => ..., 'url' => ...], ...]
+     * so callers (ImageService) can deduplicate against already-used photos.
+     */
+    public function searchCandidates(string $query, int $perPage = 30): array
+    {
+        if (! $this->accessKey) {
+            return [];
+        }
+
+        $query   = $this->sanitizeQuery($query);
+        $perPage = max(1, min(30, $perPage));
 
         try {
             $q      = urlencode($query);
-            $apiUrl = "https://api.unsplash.com/search/photos?query={$q}&per_page=10&orientation=landscape&content_filter=high&client_id={$this->accessKey}";
+            $apiUrl = "https://api.unsplash.com/search/photos?query={$q}&per_page={$perPage}&orientation=landscape&content_filter=high&client_id={$this->accessKey}";
 
             $ctx = stream_context_create([
                 'http' => [
@@ -51,29 +75,31 @@ class UnsplashService
 
             $json = @file_get_contents($apiUrl, false, $ctx);
             if (! $json) {
-                return null;
+                return [];
             }
 
             $data    = json_decode($json, true);
             $results = $data['results'] ?? [];
-            if (empty($results)) {
-                return null;
+
+            $candidates = [];
+            foreach ($results as $r) {
+                $raw = $r['urls']['regular'] ?? null;
+                if (! $raw || empty($r['id'])) {
+                    continue;
+                }
+                $candidates[] = [
+                    'id'  => (string) $r['id'],
+                    'url' => strtok($raw, '?') . '?w=1200&q=80&fit=crop&auto=format',
+                ];
             }
 
-            // Pick from the top results (most relevant). Rotate by index for variety.
-            $pick = $results[$index % min(count($results), 6)] ?? $results[0];
-            $raw  = $pick['urls']['regular'] ?? null;
-            if (! $raw) {
-                return null;
-            }
-
-            return strtok($raw, '?') . '?w=1200&q=80&fit=crop&auto=format';
+            return $candidates;
         } catch (\Throwable) {
-            return null;
+            return [];
         }
     }
 
-    private function getPicsumUrl(string $keyword): string
+    public function getPicsumUrl(string $keyword): string
     {
         $seed = substr(md5(strtolower(trim($keyword))), 0, 10);
         return "https://picsum.photos/seed/{$seed}/1200/630";
@@ -84,8 +110,6 @@ class UnsplashService
      */
     public function buildImageQuery(string $keyword): string
     {
-        $lower = strtolower(trim($keyword));
-
         $map = [
             'kopi'                 => 'coffee beans plantation harvest',
             'arabika'              => 'arabica coffee beans',
@@ -136,21 +160,36 @@ class UnsplashService
             'indonesia'            => 'indonesia beautiful landscape',
         ];
 
-        // For simple short keywords (1-2 words), we can check the map directly
-        if (str_word_count($lower) <= 2) {
-            foreach ($map as $id => $en) {
-                if (str_contains($lower, $id)) {
-                    return $en;
-                }
+        $lower = strtolower($keyword);
+
+        // Word-boundary matching (bukan substring: 'ai' jangan kena "container"/"pakaian").
+        // Kumpulkan SEMUA konsep yang cocok berikut posisinya — subjek topik biasanya
+        // muncul lebih awal ("optimasi GUDANG hemat biaya" → gudang, bukan biaya).
+        $hits = [];
+        foreach ($map as $id => $en) {
+            if (preg_match('/(?<![a-z0-9])' . preg_quote($id, '/') . '(?![a-z0-9])/', $lower, $m, PREG_OFFSET_CAPTURE)) {
+                $hits[$m[0][1]] = $en;
             }
         }
 
-        // For longer keywords (titles/topics), build a dynamic query by translating
-        // and sanitizing the words to keep it highly specific.
-        $sanitized = $this->sanitizeQuery($keyword);
+        if (!empty($hits)) {
+            ksort($hits);
+            // Gabungkan maksimal 2 konsep terawal agar konteks tidak hilang
+            // (mis. "barang kiriman UMKM di bea cukai" → small business + customs).
+            $words = [];
+            foreach (array_slice($hits, 0, 2, true) as $en) {
+                foreach (explode(' ', $en) as $w) {
+                    $words[$w] = true;
+                }
+            }
+            return implode(' ', array_slice(array_keys($words), 0, 7));
+        }
 
-        if (!empty($sanitized) && $sanitized !== 'logistics export trade') {
-            return $sanitized;
+        // Tidak ada konsep Indonesia yang cocok. Query marker dari AI umumnya sudah
+        // bahasa Inggris yang spesifik — JANGAN diganti fallback generik; sanitasi saja.
+        $clean = $this->sanitizeQuery($keyword);
+        if (str_word_count($clean) >= 2) {
+            return $clean;
         }
 
         return 'indonesia business export trade professional';
@@ -163,10 +202,10 @@ class UnsplashService
     {
         // 1. Remove specific Indonesian location/geographic names to prevent search bias towards tourist spots/mosques
         $locations = [
-            'palembang', 'jakarta', 'medan', 'surabaya', 'semarang', 'bandung', 
-            'yogyakarta', 'jogja', 'bali', 'makassar', 'lampung', 'padang', 
-            'pekanbaru', 'banjarmasin', 'pontianak', 'balikpapan', 'samarinda', 
-            'manado', 'ambon', 'jayapura', 'aceh', 'batam', 'tangerang', 
+            'palembang', 'jakarta', 'medan', 'surabaya', 'semarang', 'bandung',
+            'yogyakarta', 'jogja', 'bali', 'makassar', 'lampung', 'padang',
+            'pekanbaru', 'banjarmasin', 'pontianak', 'balikpapan', 'samarinda',
+            'manado', 'ambon', 'jayapura', 'aceh', 'batam', 'tangerang',
             'bekasi', 'depok', 'bogor', 'cirebon', 'solo', 'surakarta', 'malang',
             'indonesia', 'indonesian', 'indonesia\'s',
             // Port names
@@ -217,7 +256,7 @@ class UnsplashService
             'kebun' => 'plantation',
             'pabrik' => 'factory',
             'industri' => 'industrial',
-            
+
             // New helpful translations for variety
             'ikan' => 'fish',
             'beku' => 'frozen',
