@@ -84,11 +84,17 @@ class UnsplashService
             $candidates = [];
             foreach ($results as $r) {
                 $raw = $r['urls']['regular'] ?? null;
-                if (! $raw || empty($r['id'])) {
+                if (! $raw) {
+                    continue;
+                }
+                // ID = slug path URL (photo-xxxx), BUKAN id API — supaya used_images
+                // bisa di-seed langsung dari URL artikel lama yang sudah tayang.
+                $slug = ltrim((string) parse_url($raw, PHP_URL_PATH), '/');
+                if ($slug === '') {
                     continue;
                 }
                 $candidates[] = [
-                    'id'  => (string) $r['id'],
+                    'id'  => $slug,
                     'url' => strtok($raw, '?') . '?w=1200&q=80&fit=crop&auto=format',
                 ];
             }
