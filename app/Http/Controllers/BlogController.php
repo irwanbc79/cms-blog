@@ -220,4 +220,39 @@ class BlogController extends Controller
 
         return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu persetujuan admin.');
     }
+
+    /**
+     * Display the dynamic Privacy Policy page.
+     */
+    public function privacyPolicy()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+        
+        $seo = [
+            'title'       => 'Kebijakan Privasi — ' . $site->company_name,
+            'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog ' . $site->company_name,
+            'canonical'   => url('/blog/privacy-policy'),
+        ];
+
+        return response()->view('blog.privacy', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the dynamic Terms of Service page.
+     */
+    public function termsOfService()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title'       => 'Syarat & Ketentuan — ' . $site->company_name,
+            'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog ' . $site->company_name,
+            'canonical'   => url('/blog/terms-of-service'),
+        ];
+
+        return response()->view('blog.terms', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }
+

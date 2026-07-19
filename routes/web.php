@@ -31,6 +31,8 @@ Route::prefix('blog')->group(function () {
             ?: 'google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0';
         return response($content, 200, ['Content-Type' => 'text/plain']);
     });
+    Route::get('/privacy-policy', [BlogController::class, 'privacyPolicy'])->name('blog.privacy');
+    Route::get('/terms-of-service', [BlogController::class, 'termsOfService'])->name('blog.terms');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
     Route::post('/{slug}/comments', [BlogController::class, 'storeComment'])->name('blog.comments.store');
 });

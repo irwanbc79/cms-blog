@@ -439,6 +439,8 @@
                     <h3 class="font-serif text-gold-light text-base mb-5 font-bold">Blog</h3>
                     <ul class="space-y-3 text-sm">
                         <li><a href="{{ url('/blog') }}" class="text-white/75 hover:text-gold-light transition-colors">Semua Artikel</a></li>
+                        <li><a href="{{ route('blog.privacy') }}" class="text-white/75 hover:text-gold-light transition-colors">Kebijakan Privasi</a></li>
+                        <li><a href="{{ route('blog.terms') }}" class="text-white/75 hover:text-gold-light transition-colors">Syarat & Ketentuan</a></li>
                         <li><a href="{{ url('/blog/sitemap.xml') }}" class="text-white/75 hover:text-gold-light transition-colors">Sitemap SEO</a></li>
                         <li><a href="{{ url('/blog/feed.xml') }}" class="text-white/75 hover:text-gold-light transition-colors">RSS Feed</a></li>
                     </ul>
