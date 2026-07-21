@@ -112,6 +112,16 @@ class UnsplashService
     }
 
     /**
+     * Perluas query ke 1-2 kata inti (subjek), untuk retry saat query spesifik
+     * tak mengembalikan hasil — tetap relevan ke SUBJEK, bukan jatuh ke frasa maritim.
+     */
+    public function broadenQuery(string $query): string
+    {
+        $words = preg_split('/\s+/', trim($this->buildImageQuery($query)));
+        return trim(implode(' ', array_slice($words, 0, 2)));
+    }
+
+    /**
      * Translate Indonesian topic keywords into precise English image search queries.
      */
     public function buildImageQuery(string $keyword): string
@@ -127,6 +137,29 @@ class UnsplashService
             'lada'                 => 'black pepper spice',
             'kakao'                => 'cocoa beans plantation',
             'teh'                  => 'tea plantation leaves',
+            // Komoditas ekspor spesifik M2B — subjek konkret, bukan proses ekspor generik.
+            'minyak atsiri'        => 'essential oil bottles distillation',
+            'atsiri'               => 'essential oil distillation glassware',
+            'minyak nilam'         => 'patchouli essential oil',
+            'nilam'                => 'patchouli plant leaves',
+            'arang'                => 'charcoal chunks black',
+            'arang briket'         => 'charcoal briquettes stacked',
+            'briket'               => 'charcoal briquettes barbecue',
+            'kosmetik'             => 'cosmetics beauty products bottles',
+            'skincare'             => 'skincare beauty products',
+            'bpom'                 => 'laboratory quality control testing',
+            'cengkeh'              => 'dried clove spice',
+            'pala'                 => 'nutmeg spice seeds',
+            'vanili'               => 'vanilla beans pods',
+            'porang'               => 'konjac porang tuber plant',
+            'rumput laut'          => 'seaweed harvest ocean',
+            'udang'                => 'fresh shrimp seafood',
+            'sarang walet'         => 'birds nest delicacy',
+            'rotan'                => 'rattan weaving craft',
+            'mebel'                => 'wooden furniture workshop',
+            'furniture'            => 'wooden furniture workshop',
+            'tekstil'              => 'textile fabric factory',
+            'garmen'               => 'garment clothing factory',
             'undername'            => 'cargo container shipping port',
             'ppjk'                 => 'customs office documents',
             'bea cukai'            => 'customs declaration paperwork',
@@ -168,15 +201,32 @@ class UnsplashService
 
         $lower = strtolower($keyword);
 
+        // Konsep "proses/pembungkus" (ekspor, impor, umkm, regulasi, geografi): hampir
+        // semua artikel M2B punya kata ini, jadi kalau diikutkan ia selalu menang dan
+        // membuat SEMUA topik dapat foto kapal/kontainer. Subjek konkret (komoditas,
+        // objek, aktivitas) harus menang; proses generik hanya dipakai bila TAK ADA subjek.
+        // (mis. "Ekspor Minyak Atsiri UMKM" -> essential oil, BUKAN cargo ship.)
+        $genericKeys = [
+            'ekspor', 'impor', 'umkm', 'perdagangan', 'biaya', 'harga pokok',
+            'hs code', 'regulasi', 'sertifikat', 'indonesia', 'asia', 'eropa', 'malaysia',
+        ];
+
         // Word-boundary matching (bukan substring: 'ai' jangan kena "container"/"pakaian").
-        // Kumpulkan SEMUA konsep yang cocok berikut posisinya — subjek topik biasanya
-        // muncul lebih awal ("optimasi GUDANG hemat biaya" → gudang, bukan biaya).
-        $hits = [];
+        // Kumpulkan konsep yang cocok berikut posisinya — subjek biasanya muncul lebih awal.
+        $specificHits = [];
+        $genericHits  = [];
         foreach ($map as $id => $en) {
             if (preg_match('/(?<![a-z0-9])' . preg_quote($id, '/') . '(?![a-z0-9])/', $lower, $m, PREG_OFFSET_CAPTURE)) {
-                $hits[$m[0][1]] = $en;
+                if (in_array($id, $genericKeys, true)) {
+                    $genericHits[$m[0][1]] = $en;
+                } else {
+                    $specificHits[$m[0][1]] = $en;
+                }
             }
         }
+
+        // Subjek konkret menang; proses generik hanya bila tak ada subjek sama sekali.
+        $hits = $specificHits ?: $genericHits;
 
         if (!empty($hits)) {
             ksort($hits);

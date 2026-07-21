@@ -29,9 +29,13 @@ class ImageService
         $url   = $this->pickUnused($query, $siteId);
 
         if (! $url) {
-            // query spesifik tanpa hasil (mis. "demurrage detention") — coba query
-            // generik on-brand dulu sebelum jatuh ke picsum acak
-            $url = $this->pickUnused('cargo logistics port business', $siteId);
+            // Query spesifik tanpa hasil (mis. "essential oil distillation") — perluas ke
+            // SUBJEK inti (1-2 kata), JANGAN jatuh ke frasa maritim tetap yang bikin topik
+            // non-logistik dapat foto kapal. Terakhir baru picsum ber-seed (unik per topik).
+            $broad = $this->unsplash->broadenQuery($query);
+            if ($broad !== '' && $broad !== $query) {
+                $url = $this->pickUnused($broad, $siteId);
+            }
         }
 
         return $url ?: $this->unsplash->getPicsumUrl($alternativeSeed ?: $keyword);

@@ -298,7 +298,7 @@ Return ONLY valid JSON with these exact keys, no markdown, no explanation:
   "slug": "url-friendly-slug-with-keyword",
   "meta_description": "Compelling description with CTA, max 155 chars, include keyword, use power words",
   "focus_keyword": "primary 2-4 word keyword phrase with search volume potential",
-  "featured_image_query": "3-6 word ENGLISH stock photo search query describing ONE concrete visual scene for this topic (physical objects/places/activities only — NO city/country names, NO abstract words like strategy/tips/guide)",
+  "featured_image_query": "3-6 word ENGLISH stock photo search query showing the SPECIFIC SUBJECT or PRODUCT of this article (the actual commodity, object, or activity discussed) - NOT the generic export/shipping/logistics process. Example: article about exporting essential oil => 'patchouli essential oil bottles', NOT 'cargo ship containers'. Physical objects/places/activities only; NO city/country names; NO abstract words like strategy/tips/guide",
   "secondary_keywords": ["related keyword 1", "related keyword 2", "related keyword 3"],
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7"],
   "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5"],
@@ -414,6 +414,8 @@ Do NOT write <img> tags yourself. Instead, place EXACTLY this marker where an im
 Rules:
 - The english search query must be VERY specific to the surrounding text so the image is relevant
   (e.g. "arabica coffee beans drying", "cargo container ship port", "customs documents desk").
+- Depict the SPECIFIC SUBJECT/PRODUCT the paragraph is about, NOT the generic export/shipping process.
+  (article on "ekspor minyak atsiri" => "essential oil distillation", NOT "cargo ship".)
 - CRITICAL: The english search query must be strictly generic/conceptual and in English. Do NOT include any city, province, country, or location names (such as "Palembang", "Medan", "Jakarta", "Indonesia") in the search query. Doing so biases the search towards tourist/landmark photos rather than business/logistics photos.
 - The caption (Indonesian) must describe the image in the context of THIS article.
 - Place markers on their own line between paragraphs, 2-3 total, spread across the article.
