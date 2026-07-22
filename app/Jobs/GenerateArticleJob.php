@@ -83,6 +83,12 @@ class GenerateArticleJob implements ShouldQueue
             // Untuk M2B (ID 3): CTA 1 (awal) = Ebook M2B, CTA 2 (tengah) = Layanan Konsultasi M2B
             $cta1 = $service->renderEbookCta();
             $cta2 = $service->renderCta();
+        } elseif ($this->siteId === 4 && config('services.solusi.enabled')) {
+            // Untuk morabangun (ID 4): CTA 2 (tengah) diarahkan ke /solusi/{vertikal} yang
+            // relevan (deteksi kata kunci industri) atau ke hub /solusi kalau tak spesifik.
+            // GATED oleh flag SOLUSI_CTA_ENABLED — baru dinyalakan setelah rute /solusi/*
+            // live di production (menunggu deploy Antigravity), agar CTA tidak 404.
+            $cta2 = $service->renderSolusiCta($keyword, $selectedTitle);
         }
         $html = $this->injectCta($html, $cta1, $cta2);            // CTA awal + tengah
         $html = $this->appendNews($html, $keyword, $this->language, $articleData['news'] ?? []); // berita terkini
