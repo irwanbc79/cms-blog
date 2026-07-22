@@ -62,4 +62,10 @@ return [
         'key' => env('PEXELS_API_KEY'),
     ],
 
+    'solusi' => [
+        // Nyalakan HANYA setelah /solusi/* live di production morabangun.com
+        // (menunggu deploy Antigravity) — kalau tidak, CTA blog akan 404.
+        'enabled' => env('SOLUSI_CTA_ENABLED', false),
+    ],
+
 ];

@@ -114,6 +114,84 @@ CTA;
         return $this->getEbookCtaBlock();
     }
 
+    /**
+     * Peta kata kunci industri -> slug /solusi/{slug} di morabangun.com.
+     * Dipakai untuk CTA blog site morabangun (site_id=4): pillar blog itu kategori
+     * software (erp/crm/ai/digital), BUKAN industri pembaca — jadi deteksi dari
+     * judul/keyword artikel, sama pola dengan UnsplashService::buildImageQuery().
+     */
+    private const SOLUSI_MAP = [
+        'ceisa'          => ['ceisa', 'pib', 'peb', 'bea cukai', 'kepabeanan', 'ppjk'],
+        'sekolah'        => ['sekolah', 'pesantren', 'santri', 'yayasan', 'spp'],
+        'distributor'    => ['distributor', 'grosir', 'toko bangunan', 'reseller b2b'],
+        'klinik'         => ['klinik', 'satusehat', 'rekam medis', 'puskesmas', 'praktek dokter'],
+        'umroh'          => ['umroh', 'haji', 'jamaah', 'siskopatuh', 'travel umroh'],
+        'kontraktor'     => ['kontraktor', 'proyek konstruksi', 'rab', 'termin proyek'],
+        'bengkel'        => ['bengkel', 'servis kendaraan', 'sparepart motor'],
+        'properti'       => ['developer perumahan', 'siteplan', 'kpr', 'properti'],
+        'koperasi'       => ['koperasi', 'simpan pinjam', 'shu anggota'],
+        'trucking'       => ['trucking', 'ekspedisi', 'armada truk', 'pod digital'],
+        'percetakan'     => ['percetakan', 'konveksi', 'sablon', 'approve proof'],
+        'reseller'       => ['reseller', 'dropship', 'dropshipper'],
+        'kos'            => ['kos', 'kontrakan', 'rumah sewa'],
+        'portal-forwarder' => ['forwarder', 'freight forwarding', 'shipment', 'ekspor impor'],
+    ];
+
+    /** Label tampilan per slug (untuk copy CTA). */
+    private const SOLUSI_LABELS = [
+        'ceisa' => 'PPJK & Ekspor-Impor', 'sekolah' => 'Sekolah & Yayasan',
+        'distributor' => 'Distributor & Grosir', 'klinik' => 'Klinik & Praktek',
+        'umroh' => 'Travel Umroh & Haji', 'kontraktor' => 'Kontraktor & Proyek',
+        'bengkel' => 'Bengkel & Servis', 'properti' => 'Developer Perumahan',
+        'koperasi' => 'Koperasi Simpan Pinjam', 'trucking' => 'Trucking & Ekspedisi',
+        'percetakan' => 'Percetakan & Konveksi', 'reseller' => 'Brand & Reseller',
+        'kos' => 'Kos & Rumah Sewa', 'portal-forwarder' => 'Freight Forwarder',
+    ];
+
+    /** Cocokkan judul/keyword artikel ke satu slug /solusi terkuat (word-boundary, hit pertama menang). */
+    private function matchSolusiVertical(string $text): ?string
+    {
+        $lower = strtolower($text);
+        foreach (self::SOLUSI_MAP as $slug => $terms) {
+            foreach ($terms as $term) {
+                if (preg_match('/(?<![a-z0-9])' . preg_quote($term, '/') . '(?![a-z0-9])/', $lower)) {
+                    return $slug;
+                }
+            }
+        }
+        return null;
+    }
+
+    private function getSolusiCtaBlock(string $focusKeyword, string $title): string
+    {
+        $slug = $this->matchSolusiVertical($focusKeyword . ' ' . $title);
+
+        if ($slug) {
+            $label = self::SOLUSI_LABELS[$slug];
+            $url   = "https://morabangun.com/solusi/{$slug}";
+            $head  = "🎯 Punya Bisnis di Bidang {$label}?";
+            $body  = "Kami punya sistem siap pakai khusus untuk <strong>{$label}</strong> — portal customer, tracking, tagihan & WhatsApp otomatis. Live dalam 14 hari.";
+        } else {
+            $url  = 'https://morabangun.com/solusi';
+            $head = '🎯 Sistem Siap Pakai untuk 13+ Industri';
+            $body = 'Dari CEISA, klinik, sekolah, sampai distributor — kami punya portal siap pakai yang paham bahasa industri Anda.';
+        }
+
+        return <<<CTA
+<div style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-left:4px solid #6366f1;padding:1.25rem 1.5rem;margin:2rem 0;border-radius:.75rem;">
+<p style="margin:0 0 .5rem;font-weight:700;font-size:1.05rem;">{$head}</p>
+<p style="margin:0 0 .75rem;color:#374151;">{$body}</p>
+<a href="{$url}" target="_blank" rel="noopener" style="display:inline-block;background:#4f46e5;color:#fff;padding:.6rem 1.25rem;border-radius:.5rem;font-weight:600;text-decoration:none;">Lihat Solusi →</a>
+</div>
+CTA;
+    }
+
+    /** Public accessor for the industry-solution CTA block (site morabangun / site_id=4). */
+    public function renderSolusiCta(string $focusKeyword, string $title): string
+    {
+        return $this->getSolusiCtaBlock($focusKeyword, $title);
+    }
+
     // ─── Public Methods ────────────────────────────────────────────────────────
 
     /**
