@@ -28,6 +28,15 @@ class SolusiCtaMatcherTest extends TestCase
         $this->assertStringContainsString('/solusi/sekolah', $this->cta('spp', 'Cara Kelola Tagihan SPP Pesantren'));
         $this->assertStringContainsString('/solusi/distributor', $this->cta('grosir', 'Tips Distributor Bahan Bangunan'));
         $this->assertStringContainsString('/solusi/ceisa', $this->cta('pib', 'Panduan Input PIB ke CEISA'));
+        $this->assertStringContainsString('/solusi/jastip', $this->cta('jastip', 'Cara Jastiper Kelola Ratusan Order Tanpa Ribet'));
+    }
+
+    /** matchSolusiSlug() dipakai GenerateArticleJob untuk putuskan apakah cta1 (awal) juga diarahkan ke vertikal. */
+    public function test_match_solusi_slug_returns_slug_or_null(): void
+    {
+        $service = $this->service();
+        $this->assertSame('klinik', $service->matchSolusiSlug('rekam medis', 'Sistem Klinik Wajib SATUSEHAT 2026'));
+        $this->assertNull($service->matchSolusiSlug('erp cloud', 'Kenapa Bisnis Anda Butuh ERP Cloud di 2026'));
     }
 
     /** Topik generik (tanpa sebut industri) harus jatuh ke hub /solusi, bukan link mati. */

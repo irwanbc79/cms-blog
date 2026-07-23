@@ -19,6 +19,7 @@
         'crm-sales'            => ['bg' => 'rgba(20,83,45,0.85)',  'text' => '#fff'],
         'erp-enterprise'       => ['bg' => 'rgba(146,64,14,0.85)', 'text' => '#fff'],
         'transformasi-digital' => ['bg' => 'rgba(3,105,161,0.85)', 'text' => '#fff'],
+        'solusi-industri'      => ['bg' => 'rgba(219,39,119,0.85)', 'text' => '#fff'],
     ];
     $resolvedSite = app(\App\Services\SiteResolver::class)->resolve();
     $pillarLabel = $article->pillar

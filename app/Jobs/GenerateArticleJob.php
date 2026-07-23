@@ -89,6 +89,12 @@ class GenerateArticleJob implements ShouldQueue
             // GATED oleh flag SOLUSI_CTA_ENABLED — baru dinyalakan setelah rute /solusi/*
             // live di production (menunggu deploy Antigravity), agar CTA tidak 404.
             $cta2 = $service->renderSolusiCta($keyword, $selectedTitle);
+            // Kalau judul kena vertikal spesifik, CTA awal (cta1) ikut diarahkan ke situ juga
+            // (pembaca yang bounce sebelum sampai tengah artikel tetap kena penawaran relevan).
+            // Kalau cuma jatuh ke hub generik, cta1 tetap CTA perusahaan biasa — hindari 2x CTA hub berturutan.
+            if ($service->matchSolusiSlug($keyword, $selectedTitle)) {
+                $cta1 = $cta2;
+            }
         }
         $html = $this->injectCta($html, $cta1, $cta2);            // CTA awal + tengah
         $html = $this->appendNews($html, $keyword, $this->language, $articleData['news'] ?? []); // berita terkini
