@@ -121,20 +121,21 @@ CTA;
      * judul/keyword artikel, sama pola dengan UnsplashService::buildImageQuery().
      */
     private const SOLUSI_MAP = [
-        'ceisa'          => ['ceisa', 'pib', 'peb', 'bea cukai', 'kepabeanan', 'ppjk'],
-        'sekolah'        => ['sekolah', 'pesantren', 'santri', 'yayasan', 'spp'],
-        'distributor'    => ['distributor', 'grosir', 'toko bangunan', 'reseller b2b'],
-        'klinik'         => ['klinik', 'satusehat', 'rekam medis', 'puskesmas', 'praktek dokter'],
-        'umroh'          => ['umroh', 'haji', 'jamaah', 'siskopatuh', 'travel umroh'],
-        'kontraktor'     => ['kontraktor', 'proyek konstruksi', 'rab', 'termin proyek'],
-        'bengkel'        => ['bengkel', 'servis kendaraan', 'sparepart motor'],
-        'properti'       => ['developer perumahan', 'siteplan', 'kpr', 'properti'],
-        'koperasi'       => ['koperasi', 'simpan pinjam', 'shu anggota'],
-        'trucking'       => ['trucking', 'ekspedisi', 'armada truk', 'pod digital'],
-        'percetakan'     => ['percetakan', 'konveksi', 'sablon', 'approve proof'],
-        'reseller'       => ['reseller', 'dropship', 'dropshipper'],
-        'kos'            => ['kos', 'kontrakan', 'rumah sewa'],
-        'portal-forwarder' => ['forwarder', 'freight forwarding', 'shipment', 'ekspor impor'],
+        'ceisa'          => ['ceisa', 'pib', 'peb', 'bea cukai', 'kepabeanan', 'ppjk', 'hs code', 'importir', 'eksportir', 'dokumen pabean'],
+        'sekolah'        => ['sekolah', 'pesantren', 'santri', 'yayasan', 'spp', 'wali murid', 'madrasah'],
+        'distributor'    => ['distributor', 'grosir', 'toko bangunan', 'reseller b2b', 'toko grosir'],
+        'klinik'         => ['klinik', 'satusehat', 'rekam medis', 'puskesmas', 'praktek dokter', 'praktik dokter', 'apotek'],
+        'umroh'          => ['umroh', 'haji', 'jamaah', 'siskopatuh', 'travel umroh', 'ibadah haji', 'manasik'],
+        'kontraktor'     => ['kontraktor', 'proyek konstruksi', 'rab', 'termin proyek', 'konstruksi bangunan', 'material proyek'],
+        'bengkel'        => ['bengkel', 'servis kendaraan', 'sparepart motor', 'onderdil', 'motor mogok'],
+        'properti'       => ['developer perumahan', 'siteplan', 'kpr', 'properti', 'perumahan subsidi', 'rumah kpr'],
+        'koperasi'       => ['koperasi', 'simpan pinjam', 'shu anggota', 'anggota koperasi'],
+        'trucking'       => ['trucking', 'ekspedisi', 'armada truk', 'pod digital', 'logistik darat', 'sopir truk'],
+        'percetakan'     => ['percetakan', 'konveksi', 'sablon', 'approve proof', 'digital printing', 'produksi garmen'],
+        'reseller'       => ['reseller', 'dropship', 'dropshipper', 'online shop', 'affiliate marketing'],
+        'kos'            => ['kos', 'kontrakan', 'rumah sewa', 'rumah kos', 'sewa kamar'],
+        'jastip'         => ['jastip', 'jasa titip', 'jastiper', 'titip beli'],
+        'portal-forwarder' => ['forwarder', 'freight forwarding', 'freight forwarder', 'shipment', 'ekspor impor', 'pengurusan ekspor impor'],
     ];
 
     /** Label tampilan per slug (untuk copy CTA). */
@@ -145,7 +146,8 @@ CTA;
         'bengkel' => 'Bengkel & Servis', 'properti' => 'Developer Perumahan',
         'koperasi' => 'Koperasi Simpan Pinjam', 'trucking' => 'Trucking & Ekspedisi',
         'percetakan' => 'Percetakan & Konveksi', 'reseller' => 'Brand & Reseller',
-        'kos' => 'Kos & Rumah Sewa', 'portal-forwarder' => 'Freight Forwarder',
+        'kos' => 'Kos & Rumah Sewa', 'jastip' => 'Jastip & Titip Beli',
+        'portal-forwarder' => 'Freight Forwarder',
     ];
 
     /** Cocokkan judul/keyword artikel ke satu slug /solusi terkuat (word-boundary, hit pertama menang). */
@@ -190,6 +192,12 @@ CTA;
     public function renderSolusiCta(string $focusKeyword, string $title): string
     {
         return $this->getSolusiCtaBlock($focusKeyword, $title);
+    }
+
+    /** Apakah judul/keyword artikel kena vertikal /solusi spesifik? Dipakai untuk putuskan apakah CTA awal juga perlu diarahkan. */
+    public function matchSolusiSlug(string $focusKeyword, string $title): ?string
+    {
+        return $this->matchSolusiVertical($focusKeyword . ' ' . $title);
     }
 
     // ─── Public Methods ────────────────────────────────────────────────────────
