@@ -84,7 +84,36 @@ class ApplyEditorialRevisionTest extends TestCase
         );
     }
 
-    private function sourceArticle(): Article
+    public function test_published_revision_requires_command_and_manifest_opt_in(): void
+    {
+        $this->publishedRevision();
+        $article = $this->publishedSourceArticle();
+
+        $this->artisan('articles:apply-editorial-revision', ['revision' => $this->revisionFilename])
+            ->expectsOutputToContain('Published articles require both manifest allow_published=true and --allow-published.')
+            ->assertFailed();
+
+        $this->assertSame('Original title', $article->fresh()->title);
+    }
+
+    public function test_published_revision_can_be_applied_with_double_opt_in(): void
+    {
+        $this->publishedRevision();
+        $article = $this->publishedSourceArticle();
+
+        $this->artisan('articles:apply-editorial-revision', [
+            'revision' => $this->revisionFilename,
+            '--allow-published' => true,
+        ])->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame('published', $article->status);
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+        $this->assertSame('Checklist Fitosanitari Ekspor Jahe dan Kunyit Sebelum Pengiriman', $article->title);
+        $this->assertNotNull($article->published_at);
+    }
+
+    private function sourceArticle(array $overrides = []): Article
     {
         $site = Site::query()->create([
             'name' => 'Dira',
@@ -94,7 +123,7 @@ class ApplyEditorialRevisionTest extends TestCase
         ]);
         $user = User::factory()->create();
 
-        return Article::query()->forceCreate([
+        return Article::query()->forceCreate(array_merge([
             'id' => 270,
             'site_id' => $site->id,
             'user_id' => $user->id,
@@ -106,7 +135,33 @@ class ApplyEditorialRevisionTest extends TestCase
             'editorial_status' => Article::EDITORIAL_NEEDS_REVISION,
             'word_count' => 1954,
             'pillar' => 'komoditas-ekspor',
+        ], $overrides));
+    }
+
+    private function publishedRevision(): void
+    {
+        $path = database_path('editorial-revisions/'.$this->revisionFilename);
+        $revision = require $path;
+        $revision['allow_published'] = true;
+        $revision['expected']['status'] = 'published';
+        $revision['expected']['editorial_status'] = Article::EDITORIAL_LEGACY;
+
+        File::put($path, "<?php\n\nreturn ".var_export($revision, true).";\n");
+    }
+
+    private function publishedSourceArticle(): Article
+    {
+        $article = $this->sourceArticle([
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+            'editorial_status' => Article::EDITORIAL_APPROVED,
         ]);
+
+        Article::query()->whereKey($article->id)->update([
+            'editorial_status' => Article::EDITORIAL_LEGACY,
+        ]);
+
+        return $article->refresh();
     }
 
 }

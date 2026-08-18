@@ -12,7 +12,8 @@ class ApplyEditorialRevision extends Command
 {
     protected $signature = 'articles:apply-editorial-revision
         {revision : Revision filename under database/editorial-revisions}
-        {--dry-run : Validate without changing the article}';
+        {--dry-run : Validate without changing the article}
+        {--allow-published : Explicitly allow a revision whose manifest also permits a published article}';
 
     protected $description = 'Apply a versioned editorial rewrite with source-state safety checks';
 
@@ -47,7 +48,11 @@ class ApplyEditorialRevision extends Command
                 $article->save();
             });
 
-            $this->info('Revision applied. Article remains unpublished and requires editorial approval.');
+            $this->info(
+                $article->status === 'published'
+                    ? 'Revision applied to the published article. Editorial re-review is required.'
+                    : 'Revision applied. Article remains unpublished and requires editorial approval.'
+            );
 
             return self::SUCCESS;
         } catch (\Throwable $exception) {
@@ -90,8 +95,11 @@ class ApplyEditorialRevision extends Command
             throw new RuntimeException('Site domain mismatch; revision aborted.');
         }
 
-        if ($article->status === 'published') {
-            throw new RuntimeException('Published articles cannot be changed by this command.');
+        if (
+            $article->status === 'published'
+            && (! $this->option('allow-published') || ($revision['allow_published'] ?? false) !== true)
+        ) {
+            throw new RuntimeException('Published articles require both manifest allow_published=true and --allow-published.');
         }
 
         $checks = [
