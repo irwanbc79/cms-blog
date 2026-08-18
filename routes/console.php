@@ -8,10 +8,12 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Auto-publish scheduled articles every minute
-Schedule::command('articles:publish-scheduled')->everyMinute();
+// AdSense editorial gate: automation is opt-in while the portfolio is under review.
+// Commands remain available for deliberate, human-reviewed runs.
+if (config('adsense.automation.auto_publish')) {
+    Schedule::command('articles:publish-scheduled')->everyMinute();
+}
 
-// Jaga stok artikel scheduled per site: auto-generate dari TopicIdea saat stok menipis
-// (command sudah ada sejak lama tapi belum pernah didaftarkan ke scheduler — auto-topup
-// sebenarnya tidak pernah jalan sendiri, hanya lewat run manual/shell script bulk)
-Schedule::command('pipeline:topup')->dailyAt('01:00');
+if (config('adsense.automation.auto_topup')) {
+    Schedule::command('pipeline:topup')->dailyAt('01:00');
+}
