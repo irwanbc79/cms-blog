@@ -61,6 +61,38 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertNull($article->editorial_review_notes);
     }
 
+    public function test_percentage_in_formula_is_not_treated_as_a_promissory_claim(): void
+    {
+        $article = $this->article([
+            'title' => 'Scorecard ROI Sistem Operasional',
+            'content_html' => <<<'HTML'
+                <p>Contoh perhitungan: ROI = manfaat bersih dibagi biaya lalu dikali 100%.</p>
+                <table><tr><td>Biaya</td><td>Manfaat</td></tr></table>
+                HTML,
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $this->assertSame(Article::EDITORIAL_PENDING, $article->fresh()->editorial_status);
+    }
+
+    public function test_percentage_certainty_claim_is_still_flagged(): void
+    {
+        $article = $this->article([
+            'title' => 'Evaluasi Sistem Operasional',
+            'content_html' => <<<'HTML'
+                <p>Metode ini 100% berhasil untuk semua perusahaan.</p>
+                <table><tr><td>Proses</td><td>Hasil</td></tr></table>
+                HTML,
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+        $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
+    }
+
     private function article(array $overrides = []): Article
     {
         $site = Site::query()->create([

@@ -107,9 +107,12 @@ class AuditEditorialQueue extends Command
             'sertifikasi', 'izin ', 'pbg', 'slf', 'gacc', 'haccp',
         ]);
         $riskPhrases = $this->matchedPhrases($plainText, [
-            'dijamin', 'jaminan pasti', '100%', 'tanpa risiko', 'pasti lolos',
+            'dijamin', 'jaminan pasti', 'tanpa risiko', 'pasti lolos',
             'dipastikan lancar', 'legal dan aman', 'harga premium',
         ]);
+        if (preg_match('/100%\s+(aman|berhasil|akurat|lolos|legal|lancar|terjamin|bebas risiko)/u', $plainText)) {
+            $riskPhrases[] = '100% certainty claim';
+        }
         $evidenceSignals = $this->matchedPhrases($plainText, [
             'studi kasus', 'contoh perhitungan', 'simulasi', 'checklist',
             'data internal', 'pengalaman kami', 'berdasarkan pengalaman',
