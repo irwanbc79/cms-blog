@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 54 | 2,007 | 0 | 70% | Pass | Editorial hold |
+| dira.co.id | 54 | 2,007 | 0 | 63% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -138,6 +138,14 @@ directly to the undername pillar. All five URLs remain `200`, stay published,
 and are marked `needs_revision` without a reviewer identity. The fresh audit
 reports zero indexable Dira articles with a risky claim.
 
+Four articles that then failed only the generic-title check (IDs 46, 107, 168,
+and 262) received synchronized title, Open Graph title, meta description, and
+excerpt updates. Clickbait, stale years, and absolute marketing language were
+replaced with the article's actual search intent. Slugs stayed unchanged. All
+four public HTML titles are verified live and now pass the mechanical audit;
+their database editorial status intentionally remains `needs_revision` until a
+human reviewer approves them. Dira's generic-title ratio fell from 70% to 63%.
+
 The Dira published-content audit now reports 43 of 54 indexable articles with
 at least one remaining finding, down from 54 of 59 before remediation. Thin
 Dira articles fell from six to zero. The remaining problem is primarily
@@ -148,7 +156,7 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 43/54 indexable | Templated titles and regulated claims; no thin articles remain |
+| dira.co.id | 39/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
