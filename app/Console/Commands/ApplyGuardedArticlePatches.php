@@ -16,7 +16,7 @@ class ApplyGuardedArticlePatches extends Command
         {--dry-run : Validate without changing any article}
         {--allow-published : Explicitly allow patches whose manifest also permits published articles}';
 
-    protected $description = 'Apply exact, checksum-bound article text replacements without auto-approval';
+    protected $description = 'Apply checksum-bound article text or metadata patches without auto-approval';
 
     public function handle(): int
     {
@@ -50,7 +50,7 @@ class ApplyGuardedArticlePatches extends Command
 
             DB::transaction(function () use ($patches, $manifest): void {
                 $patches->each(function (array $patch) use ($manifest): void {
-                    $patch['article']->forceFill([
+                    $patch['article']->forceFill(array_merge($patch['changes'], [
                         'content_html' => $patch['content_html'],
                         'word_count' => $patch['word_count'],
                         'estimated_read_time' => max(1, (int) ceil($patch['word_count'] / 220)),
@@ -58,7 +58,7 @@ class ApplyGuardedArticlePatches extends Command
                         'editorial_reviewer_id' => null,
                         'editorial_reviewed_at' => null,
                         'editorial_review_notes' => (string) ($manifest['review_notes'] ?? 'Guarded claim remediation; awaiting human editorial re-review.'),
-                    ])->save();
+                    ]))->save();
                 });
             });
 
@@ -128,9 +128,33 @@ class ApplyGuardedArticlePatches extends Command
             throw new RuntimeException('Published articles require manifest allow_published=true and --allow-published.');
         }
 
-        $replacements = $patch['replacements'] ?? null;
-        if (! is_array($replacements) || $replacements === []) {
-            throw new RuntimeException("Article {$article->id} has no replacements.");
+        $replacements = $patch['replacements'] ?? [];
+        $changes = $patch['changes'] ?? [];
+        if (! is_array($replacements) || ! is_array($changes) || ($replacements === [] && $changes === [])) {
+            throw new RuntimeException("Article {$article->id} has no text or metadata changes.");
+        }
+
+        $allowedChanges = ['title', 'og_title', 'meta_description', 'excerpt', 'focus_keyword'];
+        $unsupportedChanges = array_diff(array_keys($changes), $allowedChanges);
+        if ($unsupportedChanges !== []) {
+            throw new RuntimeException('Unsupported metadata fields: '.implode(', ', $unsupportedChanges));
+        }
+
+        foreach ($changes as $field => $value) {
+            if (! is_string($value) || trim($value) === '') {
+                throw new RuntimeException("Article {$article->id} metadata cannot be blank: {$field}.");
+            }
+        }
+
+        if (
+            isset($changes['title'])
+            && Article::query()
+                ->where('site_id', $site->id)
+                ->where('title', $changes['title'])
+                ->whereKeyNot($article->id)
+                ->exists()
+        ) {
+            throw new RuntimeException("Article {$article->id} title already exists on this site.");
         }
 
         $content = (string) $article->content_html;
@@ -166,6 +190,7 @@ class ApplyGuardedArticlePatches extends Command
             'content_html' => $content,
             'word_count' => $wordCount,
             'replacement_count' => $replacementCount,
+            'changes' => $changes,
         ];
     }
 }

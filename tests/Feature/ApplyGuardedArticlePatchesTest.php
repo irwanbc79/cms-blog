@@ -76,6 +76,36 @@ class ApplyGuardedArticlePatchesTest extends TestCase
         $this->assertStringContainsString('legal dan aman', $article->fresh()->content_html);
     }
 
+    public function test_metadata_only_patch_preserves_slug_and_published_status(): void
+    {
+        $article = $this->article();
+        $oldSlug = $article->slug;
+        $oldContent = $article->content_html;
+        $this->writeManifest(
+            $article,
+            true,
+            changes: [
+                'title' => 'Specific operational title',
+                'og_title' => 'Specific operational title',
+                'meta_description' => 'Specific description grounded in the article content.',
+                'excerpt' => 'Specific excerpt grounded in the article content.',
+            ],
+            includeReplacement: false
+        );
+
+        $this->artisan('articles:apply-guarded-patches', [
+            'manifest' => $this->manifestFilename,
+            '--allow-published' => true,
+        ])->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame('Specific operational title', $article->title);
+        $this->assertSame($oldSlug, $article->slug);
+        $this->assertSame($oldContent, $article->content_html);
+        $this->assertSame('published', $article->status);
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+    }
+
     private function article(): Article
     {
         $site = Site::query()->create([
@@ -102,26 +132,39 @@ class ApplyGuardedArticlePatchesTest extends TestCase
         return $article->refresh();
     }
 
-    private function writeManifest(Article $article, bool $allowPublished, int $occurrences = 1): void
+    private function writeManifest(
+        Article $article,
+        bool $allowPublished,
+        int $occurrences = 1,
+        array $changes = [],
+        bool $includeReplacement = true
+    ): void
     {
+        $articlePatch = [
+            'article_id' => $article->id,
+            'expected' => [
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'status' => $article->status,
+                'editorial_status' => $article->editorial_status,
+                'content_sha256' => hash('sha256', (string) $article->content_html),
+            ],
+        ];
+        if ($includeReplacement) {
+            $articlePatch['replacements'] = [[
+                'old' => 'legal dan aman',
+                'new' => 'perlu diverifikasi',
+                'expected_occurrences' => $occurrences,
+            ]];
+        }
+        if ($changes !== []) {
+            $articlePatch['changes'] = $changes;
+        }
+
         $manifest = [
             'site_domain' => 'dira.co.id',
             'allow_published' => $allowPublished,
-            'articles' => [[
-                'article_id' => $article->id,
-                'expected' => [
-                    'title' => $article->title,
-                    'slug' => $article->slug,
-                    'status' => $article->status,
-                    'editorial_status' => $article->editorial_status,
-                    'content_sha256' => hash('sha256', (string) $article->content_html),
-                ],
-                'replacements' => [[
-                    'old' => 'legal dan aman',
-                    'new' => 'perlu diverifikasi',
-                    'expected_occurrences' => $occurrences,
-                ]],
-            ]],
+            'articles' => [$articlePatch],
         ];
 
         File::put(
