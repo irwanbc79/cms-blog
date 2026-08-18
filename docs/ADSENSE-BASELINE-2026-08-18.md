@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 59 | 2,040 | 1 | 73% | Pass | Editorial hold |
+| dira.co.id | 59 | 2,043 | 0 | 71% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -105,7 +105,7 @@ publish or impersonate a human reviewer. Publication counts remain unchanged.
 
 ## Dira live-content recovery progress
 
-Five thin, unsupported live articles were rewritten through guarded,
+Six thin or high-risk live articles were rewritten through guarded,
 checksum-bound revision manifests. Each database change had its own SQLite
 backup, integrity check, dry-run, public HTTP verification, and post-change
 portfolio audit.
@@ -117,9 +117,10 @@ portfolio audit.
 | 32 | 346 | 1,292 | Malaysia importer, ATIGA, and shipment gates | Pass |
 | 34 | 356 | 1,263 | UMKM export-readiness scorecard | Pass |
 | 31 | 357 | 1,335 | Undername versus PPJK pillar guide | Pass |
+| 161 | 1,158 | 1,305 | Palm-product HS classification dossier | Pass |
 
-The Dira published-content audit now reports 49 of 59 articles with at least
-one remaining finding, down from 54. Thin Dira articles fell from six to one.
+The Dira published-content audit now reports 48 of 59 articles with at least
+one remaining finding, down from 54. Thin Dira articles fell from six to zero.
 The remaining problem is primarily templated titles and unsupported regulated
 claims, not article count.
 
@@ -128,7 +129,7 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 49/59 | Templated titles and regulated claims; one thin article remains |
+| dira.co.id | 48/59 | Templated titles and regulated claims; no thin articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
@@ -137,7 +138,7 @@ Current portfolio-level published audit:
 - Review the 12 currently scheduled articles before releasing any of them.
 - Reduce the generic-title ratio below 35% by rewriting priority titles and
   consolidating weak or overlapping pages.
-- Improve or consolidate the 28 articles below 1,200 words.
+- Improve or consolidate the 27 articles below 1,200 words.
 - Complete human editorial preview and approval for article IDs 270–273.
 - Release only the strongest approved article per domain; verify page, schema,
   canonical, indexability, internal links, and mobile rendering.
