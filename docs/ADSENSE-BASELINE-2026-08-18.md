@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 54 | 1,977 | 0 | 43% | Pass | Editorial hold |
+| dira.co.id | 54 | 1,961 | 0 | 41% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -203,7 +203,17 @@ contains the three former source domains. It mechanically passes with two
 official source domains, two evidence signals, and no risky claim. Dira's
 generic-title ratio is now 43%.
 
-The Dira published-content audit now reports 28 of 54 indexable articles with
+Article 207 previously used coffee-market and export news to support an import
+permit guide. It was replaced with a green-coffee readiness matrix covering
+product identity, NIB/API, HS/INTR, plant quarantine, Phyto-req and PTK service
+checks, supplier documents, pre-shipment reconciliation, arrival exceptions,
+and landed-cost scenarios. A checksum-bound follow-up patch removed ambiguous
+guarantee wording without weakening the global scanner. The public HTML no
+longer contains the former news domains, and the article mechanically passes
+with four official sources, three evidence signals, and zero risky claims.
+Dira's generic-title ratio is now 41%.
+
+The Dira published-content audit now reports 27 of 54 indexable articles with
 at least one remaining finding, down from 54 of 59 before remediation. Thin
 Dira articles fell from six to zero. The remaining problem is primarily
 templated titles and unsupported regulated claims, not article count.
@@ -213,7 +223,7 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 28/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
+| dira.co.id | 27/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
