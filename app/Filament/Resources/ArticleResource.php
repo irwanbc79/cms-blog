@@ -43,7 +43,9 @@ class ArticleResource extends Resource
                             }
                         }),
                     Forms\Components\Select::make('status')
-                        ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'published' => 'Published'])
+                        ->options(fn (?Article $record): array => $record?->status === 'published'
+                            ? ['published' => 'Published']
+                            : ['draft' => 'Draft', 'scheduled' => 'Scheduled'])
                         ->required()
                         ->default('draft'),
                     Forms\Components\Select::make('pillar')
@@ -59,6 +61,28 @@ class ArticleResource extends Resource
                         ->required(),
                     Forms\Components\DateTimePicker::make('published_at')->label('Published At'),
                     Forms\Components\DateTimePicker::make('scheduled_at')->label('Scheduled At'),
+                ])
+                ->columns(2),
+
+            Forms\Components\Section::make('Editorial Review')
+                ->schema([
+                    Forms\Components\Placeholder::make('editorial_status_display')
+                        ->label('Review Status')
+                        ->content(fn (?Article $record): string => match ($record?->editorial_status) {
+                            Article::EDITORIAL_APPROVED => 'Approved',
+                            Article::EDITORIAL_NEEDS_REVISION => 'Needs Revision',
+                            Article::EDITORIAL_LEGACY => 'Legacy Published',
+                            default => 'Pending Review',
+                        }),
+                    Forms\Components\DateTimePicker::make('editorial_reviewed_at')
+                        ->label('Reviewed At')
+                        ->disabled()
+                        ->dehydrated(false),
+                    Forms\Components\Textarea::make('editorial_review_notes')
+                        ->label('Review Notes')
+                        ->disabled()
+                        ->dehydrated(false)
+                        ->columnSpanFull(),
                 ])
                 ->columns(2),
 
@@ -142,6 +166,15 @@ class ArticleResource extends Resource
                         'published' => 'success',
                         default     => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('editorial_status')
+                    ->label('Editorial')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        Article::EDITORIAL_APPROVED => 'success',
+                        Article::EDITORIAL_NEEDS_REVISION => 'danger',
+                        Article::EDITORIAL_LEGACY => 'gray',
+                        default => 'warning',
+                    }),
                 Tables\Columns\TextColumn::make('language')->badge()->color('gray'),
                 Tables\Columns\TextColumn::make('word_count')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('estimated_read_time')
@@ -162,18 +195,42 @@ class ArticleResource extends Resource
                     ->relationship('site', 'name'),
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'published' => 'Published']),
+                Tables\Filters\SelectFilter::make('editorial_status')
+                    ->label('Editorial')
+                    ->options([
+                        Article::EDITORIAL_PENDING => 'Pending Review',
+                        Article::EDITORIAL_NEEDS_REVISION => 'Needs Revision',
+                        Article::EDITORIAL_APPROVED => 'Approved',
+                        Article::EDITORIAL_LEGACY => 'Legacy Published',
+                    ]),
                 Tables\Filters\SelectFilter::make('pillar')
                     ->options(fn () => \App\Models\Site::all()->flatMap(fn ($s) => $s->getPillarOptions())->toArray()),
                 Tables\Filters\SelectFilter::make('language')
                     ->options(['id' => 'Indonesia', 'en' => 'English']),
             ])
             ->actions([
+                Tables\Actions\Action::make('approve_editorial')
+                    ->label('Approve Editorial')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('notes')
+                            ->label('Review Notes')
+                            ->required()
+                            ->maxLength(1000),
+                    ])
+                    ->visible(fn (Article $record) => $record->status !== 'published' && ! $record->isEditoriallyApproved())
+                    ->action(function (Article $record, array $data) {
+                        $record->approveEditorially(auth()->id(), $data['notes']);
+                        Notification::make()->title('Editorial review approved')->success()->send();
+                    }),
                 Tables\Actions\Action::make('publish')
                     ->label('Publish')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (Article $record) => $record->status !== 'published')
+                    ->visible(fn (Article $record) => $record->status !== 'published' && $record->isEditoriallyApproved())
                     ->action(function (Article $record) {
                         $record->update(['status' => 'published', 'published_at' => now()]);
                         Notification::make()->title('✅ Article published')->success()->send();
@@ -227,15 +284,18 @@ class ArticleResource extends Resource
                         ->requiresConfirmation()
                         ->action(function (Collection $records) {
                             $count = 0;
+                            $skipped = 0;
                             foreach ($records as $record) {
-                                if ($record->status !== 'published') {
+                                if ($record->status !== 'published' && $record->isEditoriallyApproved()) {
                                     $record->update(['status' => 'published', 'published_at' => now()]);
                                     $count++;
+                                } elseif ($record->status !== 'published') {
+                                    $skipped++;
                                 }
                             }
                             Notification::make()
-                                ->title("✅ {$count} article(s) published")
-                                ->success()
+                                ->title("{$count} published, {$skipped} skipped pending editorial review")
+                                ->color($skipped > 0 ? 'warning' : 'success')
                                 ->send();
                         }),
                     BulkAction::make('auto_tag_bulk')

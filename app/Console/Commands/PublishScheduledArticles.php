@@ -15,6 +15,7 @@ class PublishScheduledArticles extends Command
     {
         $articles = Article::with('site')
             ->scheduled()
+            ->editoriallyApproved()
             ->where('scheduled_at', '<=', now())
             ->get();
 

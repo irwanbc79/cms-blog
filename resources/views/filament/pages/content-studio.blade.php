@@ -146,8 +146,7 @@
                 <div>
                     <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Publish</label>
                     <select wire:model="publishMode" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                        <option value="published">⚡ Langsung Tayang</option>
-                        <option value="draft">📝 Draft Dulu</option>
+                        <option value="draft">📝 Draft — Wajib Review Editorial</option>
                     </select>
                 </div>
             </div>
@@ -219,8 +218,7 @@
                     <div>
                         <label style="display:block;font-size:.875rem;font-weight:600;color:#374151;margin-bottom:.3rem;">Publish</label>
                         <select wire:model="publishMode" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;padding:.5rem .75rem;font-size:.875rem;color:#111827;background:#fff;box-sizing:border-box;">
-                            <option value="published">⚡ Langsung Tayang</option>
-                            <option value="draft">📝 Draft</option>
+                            <option value="draft">📝 Draft — Wajib Review Editorial</option>
                         </select>
                     </div>
                     <div>
