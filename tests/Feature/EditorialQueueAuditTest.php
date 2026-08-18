@@ -12,6 +12,53 @@ class EditorialQueueAuditTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_published_audit_can_be_limited_to_one_site_without_mutating_review_state(): void
+    {
+        $article = $this->article([
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+            'editorial_status' => Article::EDITORIAL_LEGACY,
+            'word_count' => 300,
+        ], 'dira.co.id');
+
+        $this->artisan('adsense:audit-queue', [
+            '--status' => 'published',
+            '--site' => 'dira.co.id',
+        ])->expectsTable(
+            ['ID', 'Domain', 'Title', 'Words', 'Sources', 'Official', 'Evidence', 'Risk', 'Decision'],
+            [[
+                $article->id,
+                'dira.co.id',
+                $article->title,
+                300,
+                0,
+                0,
+                0,
+                0,
+                Article::EDITORIAL_NEEDS_REVISION,
+            ]]
+        )->assertSuccessful();
+
+        $this->assertSame(Article::EDITORIAL_LEGACY, $article->fresh()->editorial_status);
+    }
+
+    public function test_published_audit_rejects_mark_review_mutation(): void
+    {
+        $article = $this->article([
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+            'editorial_status' => Article::EDITORIAL_LEGACY,
+        ]);
+
+        $this->artisan('adsense:audit-queue', [
+            '--status' => 'published',
+            '--mark-review' => true,
+        ])->expectsOutput('--mark-review is restricted to scheduled articles.')
+            ->assertFailed();
+
+        $this->assertSame(Article::EDITORIAL_LEGACY, $article->fresh()->editorial_status);
+    }
+
     public function test_pre_review_marks_templated_regulated_content_for_revision(): void
     {
         $article = $this->article([
@@ -93,17 +140,22 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
     }
 
-    private function article(array $overrides = []): Article
+    private function article(array $overrides = [], string $domain = 'queue-audit.test'): Article
     {
         $site = Site::query()->create([
             'name' => 'Queue Audit',
             'slug' => 'queue-audit-'.fake()->unique()->numerify('####'),
-            'domain' => 'queue-audit.test',
+            'domain' => $domain,
             'is_active' => true,
         ]);
         $user = User::factory()->create();
 
-        return Article::query()->create(array_merge([
+        $requestedEditorialStatus = $overrides['editorial_status'] ?? Article::EDITORIAL_PENDING;
+        if (($overrides['status'] ?? 'scheduled') === 'published') {
+            $overrides['editorial_status'] = Article::EDITORIAL_APPROVED;
+        }
+
+        $article = Article::query()->create(array_merge([
             'site_id' => $site->id,
             'user_id' => $user->id,
             'title' => 'Scheduled article',
@@ -113,5 +165,13 @@ class EditorialQueueAuditTest extends TestCase
             'scheduled_at' => now()->addDay(),
             'word_count' => 1500,
         ], $overrides));
+
+        if ($article->status === 'published' && $requestedEditorialStatus !== Article::EDITORIAL_APPROVED) {
+            Article::query()->whereKey($article->id)->update([
+                'editorial_status' => $requestedEditorialStatus,
+            ]);
+        }
+
+        return $article->refresh();
     }
 }

@@ -14,6 +14,8 @@ class AuditEditorialQueue extends Command
      * @var string
      */
     protected $signature = 'adsense:audit-queue
+        {--status=scheduled : Article status to audit: scheduled or published}
+        {--site= : Limit the audit to one site domain}
         {--json : Output the full report as JSON}
         {--store : Store the report under storage/app/private/adsense-audits}
         {--mark-review : Mark scheduled articles that fail pre-review as needs_revision}';
@@ -23,17 +25,35 @@ class AuditEditorialQueue extends Command
      *
      * @var string
      */
-    protected $description = 'Pre-review scheduled articles for source quality, risky claims, and templated content';
+    protected $description = 'Audit scheduled or published articles for source quality, risky claims, and templated content';
 
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
+        $status = (string) $this->option('status');
+        if (! in_array($status, ['scheduled', 'published'], true)) {
+            $this->error('Status must be scheduled or published.');
+
+            return self::FAILURE;
+        }
+
+        if ($status === 'published' && $this->option('mark-review')) {
+            $this->error('--mark-review is restricted to scheduled articles.');
+
+            return self::FAILURE;
+        }
+
+        $siteDomain = trim((string) $this->option('site'));
         $articles = Article::query()
             ->with('site:id,domain')
-            ->scheduled()
-            ->orderBy('scheduled_at')
+            ->where('status', $status)
+            ->when($siteDomain !== '', fn ($query) => $query->whereHas(
+                'site',
+                fn ($siteQuery) => $siteQuery->where('domain', $siteDomain)
+            ))
+            ->orderBy($status === 'scheduled' ? 'scheduled_at' : 'published_at')
             ->get();
 
         $reports = $articles->map(fn (Article $article): array => $this->review($article))->all();
@@ -55,7 +75,12 @@ class AuditEditorialQueue extends Command
 
         $payload = [
             'generated_at' => now()->toIso8601String(),
-            'scheduled_count' => count($reports),
+            'scope' => [
+                'status' => $status,
+                'site_domain' => $siteDomain !== '' ? $siteDomain : null,
+            ],
+            'article_count' => count($reports),
+            'scheduled_count' => $status === 'scheduled' ? count($reports) : null,
             'needs_revision_count' => collect($reports)
                 ->where('decision', Article::EDITORIAL_NEEDS_REVISION)
                 ->count(),
@@ -65,8 +90,9 @@ class AuditEditorialQueue extends Command
         if ($this->option('store')) {
             $directory = storage_path('app/private/adsense-audits');
             File::ensureDirectoryExists($directory);
+            $scope = $status.($siteDomain !== '' ? '-'.str_replace('.', '-', $siteDomain) : '');
             File::put(
-                $directory.'/editorial-queue-latest.json',
+                $directory.'/editorial-'.$scope.'-latest.json',
                 json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
             );
         }
@@ -144,6 +170,7 @@ class AuditEditorialQueue extends Command
             'title' => $title,
             'slug' => $article->slug,
             'scheduled_at' => optional($article->scheduled_at)?->toIso8601String(),
+            'published_at' => optional($article->published_at)?->toIso8601String(),
             'word_count' => (int) $article->word_count,
             'external_source_count' => count($sourceDomains),
             'official_source_count' => count($officialSources),
