@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 54 | 2,019 | 0 | 50% | Pass | Editorial hold |
+| dira.co.id | 54 | 2,017 | 0 | 48% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -166,7 +166,17 @@ The original slug remains live, the article mechanically passes with three
 official sources and four evidence signals, and Dira's generic-title ratio is
 now 50%.
 
-The Dira published-content audit now reports 32 of 54 indexable articles with
+Article 105 contained a second cluster of fabricated tariff content: “HS
+2026”, a nonexistent PMK 26/2026 reference, invented commodity rates, CEISA
+version claims, unsupported testimonials, and inaccurate tax calculations.
+It was fully replaced with a PMK 26/PMK.010/2022 and PMK 50 Tahun 2026
+workflow covering product dossiers, HS classification, MFN, FTA origin gates,
+trade remedies, customs value, lartas, auditable landed-cost scenarios, and
+post-clearance variance review. The original slug remains live; the article
+mechanically passes with two official sources and three evidence signals.
+Dira's generic-title ratio is now 48%.
+
+The Dira published-content audit now reports 31 of 54 indexable articles with
 at least one remaining finding, down from 54 of 59 before remediation. Thin
 Dira articles fell from six to zero. The remaining problem is primarily
 templated titles and unsupported regulated claims, not article count.
@@ -176,7 +186,7 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 32/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
+| dira.co.id | 31/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
