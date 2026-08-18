@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 54 | 1,961 | 0 | 41% | Pass | Editorial hold |
+| dira.co.id | 52 | 1,920 | 0 | 35% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -213,8 +213,35 @@ longer contains the former news domains, and the article mechanically passes
 with four official sources, three evidence signals, and zero risky claims.
 Dira's generic-title ratio is now 41%.
 
-The Dira published-content audit now reports 27 of 54 indexable articles with
-at least one remaining finding, down from 54 of 59 before remediation. Thin
+Article 44 was rebuilt as the canonical spice-export pillar. It now connects
+buyer specification, product dossiers, quality and contaminants, phytosanitary
+requirements, PEB, e-SKA, shipment documents, costing, and release gates using
+four official source domains. IDs 60 and 109 were then consolidated into ID 44
+with permanent same-domain redirects. Their records, publication statuses, and
+comments remain intact; both alternates were verified as `301`, the target as
+`200`, and only the target appeared in `/blog/sitemap.xml`.
+
+Article 59 was rebuilt from ICC Incoterms 2020, IMO VGM, and DJBC export
+sources. It separates delivery, risk, cost, control, freight, insurance,
+container suitability, contract wording, document, quotation, and variance
+review. A guarded follow-up removed a quoted legacy promotional phrase. The
+mechanical audit reports three official sources, two evidence signals, and zero
+risky claims. The last fully verified portfolio audit after this change reports
+52 indexable Dira articles, 23 needing revision, zero thin articles, and a 35%
+generic-title ratio.
+
+ID 163 was subsequently consolidated into the stronger HS-classification
+pillar ID 204 because its stale “HS Code 2025” page duplicated the same intent
+while making unsupported tariff, lartas, and automation claims. The database
+write, canonical target, preserved published status, and SQLite integrity were
+verified. The external HTTP/sitemap smoke check and post-change portfolio audit
+remain pending because the workspace network-execution quota was exhausted
+immediately after deployment; do not count this consolidation in the verified
+baseline table until those checks are rerun.
+
+The last fully verified Dira published-content audit reports 23 of 52 indexable
+articles with at least one remaining finding, down from 54 of 59 before
+remediation. Thin
 Dira articles fell from six to zero. The remaining problem is primarily
 templated titles and unsupported regulated claims, not article count.
 
@@ -223,12 +250,14 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 27/54 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
+| dira.co.id | 23/52 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
 ## Next gates
 
+- Rerun the ID 163 external redirect, sitemap, and post-change portfolio audit
+  as soon as network execution is available.
 - Review the 12 currently scheduled articles before releasing any of them.
 - Reduce the generic-title ratio below 35% by rewriting priority titles and
   consolidating weak or overlapping pages.
