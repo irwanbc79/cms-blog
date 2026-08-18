@@ -136,7 +136,8 @@ class AuditEditorialQueue extends Command
         $genericTitle = str_contains(mb_strtolower($title), 'panduan lengkap');
         $regulated = $this->containsAny(mb_strtolower($title), [
             'ekspor', 'impor', 'bea cukai', 'kepabeanan', 'bpom', 'fitosanitari',
-            'sertifikasi', 'izin ', 'pbg', 'slf', 'gacc', 'haccp',
+            'sertifikasi', 'izin ', 'pbg', 'slf', 'gacc', 'haccp', 'hs code',
+            'bea masuk', 'barang kiriman', 'lartas', 'undername', 'ppjk',
         ]);
         $riskPhrases = $this->matchedPhrases($plainText, [
             'dijamin', 'jaminan pasti', 'pasti lolos',

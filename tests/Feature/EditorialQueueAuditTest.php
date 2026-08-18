@@ -108,6 +108,20 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertNull($article->editorial_review_notes);
     }
 
+    public function test_hs_code_and_import_duty_titles_require_primary_sources(): void
+    {
+        $article = $this->article([
+            'title' => 'Perubahan HS Code dan Bea Masuk Barang Kiriman',
+            'content_html' => '<p>Simulasi klasifikasi dan tarif untuk pelaku usaha.</p>',
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+        $this->assertStringContainsString('regulated_claims_without_primary_source', $article->editorial_review_notes);
+    }
+
     public function test_percentage_in_formula_is_not_treated_as_a_promissory_claim(): void
     {
         $article = $this->article([
