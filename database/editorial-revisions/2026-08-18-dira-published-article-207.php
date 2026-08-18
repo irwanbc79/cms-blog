@@ -154,7 +154,7 @@ return [
 
 <h2>Arrival and exception plan</h2>
 
-<p>Siapkan PIC, akses sistem, original atau electronic documents, jadwal kedatangan, lokasi pemeriksaan, sampling support, laboratorium bila relevan, transportasi setelah release, dan komunikasi dengan gudang. Catat bahwa tindakan karantina atau pabean dapat bergantung pada hasil penelitian dan kondisi fisik, sehingga waktu serta hasil tidak boleh dijamin.</p>
+<p>Siapkan PIC, akses sistem, original atau electronic documents, jadwal kedatangan, lokasi pemeriksaan, sampling support, laboratorium bila relevan, transportasi setelah release, dan komunikasi dengan gudang. Catat bahwa tindakan karantina atau pabean bergantung pada hasil penelitian dan kondisi fisik; waktu serta hasil mengikuti keputusan instansi.</p>
 
 <p>Buat skenario untuk dokumen terlambat, certificate mismatch, seal atau quantity berbeda, kontaminasi, hasil sampling, treatment tambahan, penolakan, re-ekspor, pemusnahan, atau klaim ke supplier. Kontrak harus menjelaskan siapa menanggung biaya dan bukti apa yang diperlukan; keputusan instansi tetap tidak dapat dialihkan ke kontrak privat.</p>
 
@@ -162,13 +162,13 @@ return [
 
 <p>Hitung harga barang, freight, insurance, bea masuk, pajak impor, trade remedies bila ada, jasa carrier, terminal, PPJK, karantina, sampling, laboratorium, treatment, storage, transportasi lokal, pembiayaan, susut, dan buffer exception. Setiap angka diberi sumber, tanggal, status aktual/estimasi, serta owner.</p>
 
-<p>Bandingkan sedikitnya skenario normal, dokumen terlambat, pemeriksaan/sampling, dan treatment tambahan. Simulasi adalah alat keputusan pembelian, bukan jaminan jumlah pungutan atau waktu release.</p>
+<p>Bandingkan sedikitnya skenario normal, dokumen terlambat, pemeriksaan/sampling, dan treatment tambahan. Simulasi adalah alat keputusan pembelian; jumlah pungutan dan waktu release ditentukan dari kondisi serta proses aktual.</p>
 
 <h2>Pembagian tanggung jawab</h2>
 
 <p>Importir mengunci model transaksi dan kebenaran data. Supplier bertanggung jawab atas produk serta dokumen asal sesuai kontrak. Customs compliance memeriksa HS, lartas, dan dokumen. PPJK menyiapkan pemberitahuan berdasarkan kuasa dan data. Freight forwarder mengelola pengangkutan sesuai ruang lingkup. Pejabat Karantina dan Bea Cukai menjalankan kewenangan masing-masing.</p>
 
-<p>Dira dapat membantu readiness matrix, product dossier, document reconciliation, dan koordinasi shipment. Dira tidak dapat menjamin izin, hasil tindakan karantina, klasifikasi, tarif, jalur pemeriksaan, release, atau kondisi barang tertentu.</p>
+<p>Dira dapat membantu readiness matrix, product dossier, document reconciliation, dan koordinasi shipment. Bantuan tersebut tidak mengubah kewenangan instansi atas izin, tindakan karantina, klasifikasi, tarif, jalur pemeriksaan, release, atau kondisi barang tertentu.</p>
 
 <h2>Post-clearance review</h2>
 
