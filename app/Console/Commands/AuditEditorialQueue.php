@@ -171,12 +171,20 @@ class AuditEditorialQueue extends Command
 
     private function isOfficialSource(string $domain): bool
     {
-        return str_ends_with($domain, '.go.id')
-            || in_array($domain, [
-                'beacukai.go.id', 'bpom.go.id', 'bps.go.id', 'bi.go.id', 'ojk.go.id',
-                'europa.eu', 'ec.europa.eu', 'wto.org', 'fao.org', 'who.int',
-                'imo.org', 'iso.org', 'jdih.kemenkeu.go.id',
-            ], true);
+        if (str_ends_with($domain, '.go.id')) {
+            return true;
+        }
+
+        $officialDomains = [
+            'beacukai.go.id', 'bpom.go.id', 'bps.go.id', 'bi.go.id', 'ojk.go.id',
+            'europa.eu', 'ec.europa.eu', 'wto.org', 'fao.org', 'who.int',
+            'imo.org', 'iso.org', 'ippc.int', 'jdih.kemenkeu.go.id',
+        ];
+
+        return collect($officialDomains)->contains(
+            fn (string $officialDomain): bool => $domain === $officialDomain
+                || str_ends_with($domain, '.'.$officialDomain)
+        );
     }
 
     private function containsAny(string $text, array $phrases): bool

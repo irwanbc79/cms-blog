@@ -43,6 +43,24 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertSame(Article::EDITORIAL_PENDING, $article->fresh()->editorial_status);
     }
 
+    public function test_subdomains_of_primary_authorities_count_as_official_sources(): void
+    {
+        $article = $this->article([
+            'title' => 'Checklist Fitosanitari Ekspor Rimpang',
+            'content_html' => <<<'HTML'
+                <p>Checklist pemeriksaan disusun dari persyaratan negara tujuan.</p>
+                <table><tr><td>Produk</td><td>Dokumen</td></tr></table>
+                <p><a href="https://food.ec.europa.eu/plants/plant-health-and-biosecurity/plant-health-rules_en">European Commission</a></p>
+                HTML,
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame(Article::EDITORIAL_PENDING, $article->editorial_status);
+        $this->assertNull($article->editorial_review_notes);
+    }
+
     private function article(array $overrides = []): Article
     {
         $site = Site::query()->create([
