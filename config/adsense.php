@@ -13,11 +13,11 @@ return [
             '/privacy-policy', '/disclaimer', '/ketentuan-layanan',
         ],
         'dira.co.id' => [
-            '/', '/ads.txt', '/blog/', '/blog/sitemap.xml', '/blog/feed',
+            '/', '/ads.txt', '/blog/', '/blog/sitemap.xml', '/blog/feed.xml',
             '/blog/privacy-policy', '/blog/terms-of-service', '/about', '/contact',
         ],
         'gma-world.id' => [
-            '/', '/ads.txt', '/blog/', '/blog/sitemap.xml', '/blog/feed',
+            '/', '/ads.txt', '/blog/', '/blog/sitemap.xml', '/blog/feed.xml',
             '/blog/privacy-policy', '/blog/terms-of-service', '/about', '/contact',
         ],
         'morabangun.com' => [
