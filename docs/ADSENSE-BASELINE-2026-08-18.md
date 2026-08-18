@@ -65,6 +65,15 @@ account-level serving restriction.
 `ebook.m2b.co.id` must not be added as a separate site. It is a subdomain of
 the already-ready `m2b.co.id` property and is covered by the parent domain.
 
+Offline Comic Hub hardening is committed separately as `06f0790` on branch
+`codex/comic-monetization`. It adds indexable About and Contact pages, links
+them from the story/trust navigation, includes them in the sitemap, and
+replaces a non-functional newsletter form that only simulated registration
+with a transparent email action. Static validation confirms two ad slots on
+`stories.html` and each published episode 01–11, with no AdSense code on the
+sales landing page or trust pages. This commit is **not yet deployed or live
+verified** because server/network execution quota was unavailable.
+
 ## Revenue baseline
 
 Authenticated AdSense report:
