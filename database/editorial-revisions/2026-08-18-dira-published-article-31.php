@@ -9,7 +9,7 @@ return [
         'slug' => 'panduan-lengkap-jasa-undername-untuk-eksportir-pemula-di-indonesia',
         'status' => 'published',
         'editorial_status' => 'legacy',
-        'content_sha256' => 'a19733274fefecf22d72d7a9c10d793547653fac8416e0082aa0a6b626ca16cb',
+        'content_sha256' => 'a1970c45591e8b623782a75dd734f06b696264982d2c7c6f86cf5e31f8a616cb',
     ],
     'review_notes' => 'Live low-value remediation on 2026-08-18. Reframed undername as a commercial principal structure rather than a shortcut, separated it from PPJK, added current registration sources, due diligence, responsibility matrix, and decision gates. Requires human editorial re-review and later cluster consolidation.',
     'changes' => [
