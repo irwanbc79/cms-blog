@@ -96,7 +96,7 @@ class AuditAdSensePortfolio extends Command
 
     private function contentMetrics(Site $site): array
     {
-        $published = $site->articles()->published();
+        $published = $site->articles()->published()->indexable();
         $publishedCount = (clone $published)->count();
         $genericTitles = (clone $published)->where('title', 'like', '%Panduan Lengkap%')->count();
         $thinWordCount = (int) config('adsense.quality.thin_word_count', 1200);

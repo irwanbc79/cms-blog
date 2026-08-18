@@ -124,6 +124,14 @@ class Article extends Model
         return $query->where('status', 'published');
     }
 
+    public function scopeIndexable(Builder $query): Builder
+    {
+        return $query->where(function (Builder $query): void {
+            $query->whereNull('canonical_url')
+                ->orWhere('canonical_url', '');
+        });
+    }
+
     public function scopeForSite(Builder $query, int $siteId): Builder
     {
         return $query->where('site_id', $siteId);

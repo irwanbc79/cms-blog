@@ -31,6 +31,7 @@ class BlogController extends Controller
 
         $query = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->latest('published_at');
 
         if ($pillar) {
@@ -51,6 +52,7 @@ class BlogController extends Controller
         // Get pillar counts for filter sidebar (single query)
         $pillarCounts = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->selectRaw('pillar, count(*) as count')
             ->whereNotNull('pillar')
             ->groupBy('pillar')
@@ -80,6 +82,10 @@ class BlogController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        if ($redirect = $this->sameSiteCanonicalRedirect($article, $site)) {
+            return $redirect;
+        }
+
         // Auto-tag if tags are empty
         if (empty($article->tags)) {
             $autoTag = new AutoTagService();
@@ -94,6 +100,7 @@ class BlogController extends Controller
         // Get related articles with smart fallback (single query)
         $relatedArticles = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->where('id', '!=', $article->id)
             ->orderByRaw("CASE WHEN pillar = ? THEN 0 ELSE 1 END", [$article->pillar])
             ->latest('published_at')
@@ -107,6 +114,7 @@ class BlogController extends Controller
         if ($article->published_at) {
             $navArticles = Article::forSite($site->id)
                 ->published()
+                ->indexable()
                 ->select(['id', 'title', 'slug', 'published_at'])
                 ->where('published_at', '<', $article->published_at)
                 ->latest('published_at')
@@ -114,6 +122,7 @@ class BlogController extends Controller
                 ->union(
                     Article::forSite($site->id)
                         ->published()
+                        ->indexable()
                         ->select(['id', 'title', 'slug', 'published_at'])
                         ->where('published_at', '>', $article->published_at)
                         ->oldest('published_at')
@@ -153,6 +162,34 @@ class BlogController extends Controller
             'site', 'article', 'toc', 'relatedArticles',
             'prevArticle', 'nextArticle', 'breadcrumbs', 'seo'
         ))->header('Cache-Control', 'public, max-age=300, s-maxage=600');
+    }
+
+    private function sameSiteCanonicalRedirect(Article $article, Site $site)
+    {
+        $canonical = trim((string) $article->canonical_url);
+        if ($canonical === '') {
+            return null;
+        }
+
+        $parts = parse_url($canonical);
+        if (! is_array($parts) || ! in_array($parts['scheme'] ?? null, ['http', 'https'], true)) {
+            return null;
+        }
+
+        if (mb_strtolower((string) ($parts['host'] ?? '')) !== mb_strtolower((string) $site->domain)) {
+            return null;
+        }
+
+        $canonicalPath = '/'.ltrim((string) ($parts['path'] ?? ''), '/');
+        $currentPath = '/blog/'.$article->slug;
+        if (
+            ! str_starts_with($canonicalPath, '/blog/')
+            || rtrim($canonicalPath, '/') === rtrim($currentPath, '/')
+        ) {
+            return null;
+        }
+
+        return redirect()->away($canonical, 301);
     }
 
     /**
@@ -255,4 +292,3 @@ class BlogController extends Controller
             ->header('Cache-Control', 'public, max-age=3600');
     }
 }
-

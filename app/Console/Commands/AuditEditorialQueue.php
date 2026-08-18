@@ -16,6 +16,7 @@ class AuditEditorialQueue extends Command
     protected $signature = 'adsense:audit-queue
         {--status=scheduled : Article status to audit: scheduled or published}
         {--site= : Limit the audit to one site domain}
+        {--include-alternates : Include articles consolidated to another canonical URL}
         {--json : Output the full report as JSON}
         {--store : Store the report under storage/app/private/adsense-audits}
         {--mark-review : Mark scheduled articles that fail pre-review as needs_revision}';
@@ -49,6 +50,10 @@ class AuditEditorialQueue extends Command
         $articles = Article::query()
             ->with('site:id,domain')
             ->where('status', $status)
+            ->when(
+                $status === 'published' && ! $this->option('include-alternates'),
+                fn ($query) => $query->indexable()
+            )
             ->when($siteDomain !== '', fn ($query) => $query->whereHas(
                 'site',
                 fn ($siteQuery) => $siteQuery->where('domain', $siteDomain)
@@ -78,6 +83,7 @@ class AuditEditorialQueue extends Command
             'scope' => [
                 'status' => $status,
                 'site_domain' => $siteDomain !== '' ? $siteDomain : null,
+                'include_alternates' => (bool) $this->option('include-alternates'),
             ],
             'article_count' => count($reports),
             'scheduled_count' => $status === 'scheduled' ? count($reports) : null,

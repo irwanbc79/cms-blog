@@ -25,6 +25,7 @@ class SitemapController extends Controller
         $articles = Cache::remember("sitemap_{$site->slug}", 3600, function () use ($site) {
             return Article::where('site_id', $site->id)
                 ->where('status', 'published')
+                ->indexable()
                 ->whereNotNull('published_at')
                 ->select('slug', 'updated_at', 'published_at', 'pillar')
                 ->orderBy('published_at', 'desc')
