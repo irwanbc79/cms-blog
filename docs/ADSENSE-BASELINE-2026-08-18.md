@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 54 | 1,997 | 0 | 70% | Pass | Editorial hold |
+| dira.co.id | 54 | 2,007 | 0 | 70% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -127,6 +127,16 @@ and `/blog/sitemap.xml`. The database still contains 59 published Dira records;
 54 are now indexable. Deployment `b77a9d3` was preceded by the verified backup
 `backups/20260818-before-undername-canonical-b77a9d3`; the backup and live
 SQLite integrity checks both returned `ok`.
+
+The six remaining risky-language signals were also cleared. One was a scanner
+false positive in a warning sentence; the rule now distinguishes cautions from
+unqualified `tanpa risiko` promises. Five published articles (IDs 46, 107,
+160, 168, and 262) received checksum-bound exact-text patches: absolute L/C
+and undername claims were replaced with conditional language, ICC UCP 600 and
+INSW sources were added where relevant, and one stale internal link now points
+directly to the undername pillar. All five URLs remain `200`, stay published,
+and are marked `needs_revision` without a reviewer identity. The fresh audit
+reports zero indexable Dira articles with a risky claim.
 
 The Dira published-content audit now reports 43 of 54 indexable articles with
 at least one remaining finding, down from 54 of 59 before remediation. Thin
