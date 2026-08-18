@@ -139,9 +139,12 @@ class AuditEditorialQueue extends Command
             'sertifikasi', 'izin ', 'pbg', 'slf', 'gacc', 'haccp',
         ]);
         $riskPhrases = $this->matchedPhrases($plainText, [
-            'dijamin', 'jaminan pasti', 'tanpa risiko', 'pasti lolos',
+            'dijamin', 'jaminan pasti', 'pasti lolos',
             'dipastikan lancar', 'legal dan aman',
         ]);
+        if ($this->containsUnqualifiedNoRiskClaim($plainText)) {
+            $riskPhrases[] = 'tanpa risiko';
+        }
         if (preg_match('/100%\s+(aman|berhasil|akurat|lolos|legal|lancar|terjamin|bebas risiko)/u', $plainText)) {
             $riskPhrases[] = '100% certainty claim';
         }
@@ -220,7 +223,7 @@ class AuditEditorialQueue extends Command
         $officialDomains = [
             'beacukai.go.id', 'bpom.go.id', 'bps.go.id', 'bi.go.id', 'ojk.go.id',
             'europa.eu', 'ec.europa.eu', 'wto.org', 'fao.org', 'who.int',
-            'imo.org', 'iso.org', 'ippc.int', 'jdih.kemenkeu.go.id',
+            'imo.org', 'iso.org', 'ippc.int', 'iccwbo.org', 'jdih.kemenkeu.go.id',
         ];
 
         return collect($officialDomains)->contains(
@@ -232,6 +235,21 @@ class AuditEditorialQueue extends Command
     private function containsAny(string $text, array $phrases): bool
     {
         return $this->matchedPhrases($text, $phrases) !== [];
+    }
+
+    private function containsUnqualifiedNoRiskClaim(string $text): bool
+    {
+        preg_match_all('/tanpa risiko/u', $text, $matches, PREG_OFFSET_CAPTURE);
+
+        foreach ($matches[0] ?? [] as $match) {
+            $start = max(0, $match[1] - 100);
+            $prefix = substr($text, $start, $match[1] - $start);
+            if (! preg_match('/(?:jangan|tidak|bukan)[^.!?]{0,80}$/u', $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function matchedPhrases(string $text, array $phrases): array

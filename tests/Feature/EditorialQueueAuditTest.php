@@ -140,6 +140,35 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
     }
 
+    public function test_no_risk_warning_is_not_treated_as_a_promise(): void
+    {
+        $article = $this->article([
+            'title' => 'Evaluasi Kesiapan Administrasi Perusahaan',
+            'content_html' => <<<'HTML'
+                <p>Jangan menganggap izin teknis bisa menyusul tanpa risiko.</p>
+                <table><tr><td>Dokumen</td><td>Status</td></tr></table>
+                HTML,
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $this->assertSame(Article::EDITORIAL_PENDING, $article->fresh()->editorial_status);
+    }
+
+    public function test_unqualified_no_risk_claim_is_still_flagged(): void
+    {
+        $article = $this->article([
+            'title' => 'Evaluasi Kesiapan Administrasi Perusahaan',
+            'content_html' => '<p>Layanan ini menyelesaikan proses tanpa risiko.</p>',
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+        $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
+    }
+
     public function test_premium_price_warning_is_not_treated_as_a_promise(): void
     {
         $article = $this->article([
