@@ -140,6 +140,35 @@ class EditorialQueueAuditTest extends TestCase
         $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
     }
 
+    public function test_premium_price_warning_is_not_treated_as_a_promise(): void
+    {
+        $article = $this->article([
+            'title' => 'Scorecard Harga Produk Organik',
+            'content_html' => <<<'HTML'
+                <p>Harga premium tidak boleh dijadikan asumsi. Gunakan simulasi biaya dan kontrak buyer.</p>
+                <table><tr><td>Skenario</td><td>Margin</td></tr></table>
+                HTML,
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $this->assertSame(Article::EDITORIAL_PENDING, $article->fresh()->editorial_status);
+    }
+
+    public function test_unsupported_premium_multiplier_is_flagged(): void
+    {
+        $article = $this->article([
+            'title' => 'Harga Produk Organik',
+            'content_html' => '<p>Kopi organik bisa dijual 3-5x lebih mahal di pasar ekspor.</p>',
+        ]);
+
+        $this->artisan('adsense:audit-queue --mark-review')->assertSuccessful();
+
+        $article->refresh();
+        $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
+        $this->assertStringContainsString('risky_or_promissory_language', $article->editorial_review_notes);
+    }
+
     private function article(array $overrides = [], string $domain = 'queue-audit.test'): Article
     {
         $site = Site::query()->create([

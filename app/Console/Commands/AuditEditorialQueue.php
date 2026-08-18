@@ -134,10 +134,16 @@ class AuditEditorialQueue extends Command
         ]);
         $riskPhrases = $this->matchedPhrases($plainText, [
             'dijamin', 'jaminan pasti', 'tanpa risiko', 'pasti lolos',
-            'dipastikan lancar', 'legal dan aman', 'harga premium',
+            'dipastikan lancar', 'legal dan aman',
         ]);
         if (preg_match('/100%\s+(aman|berhasil|akurat|lolos|legal|lancar|terjamin|bebas risiko)/u', $plainText)) {
             $riskPhrases[] = '100% certainty claim';
+        }
+        if (preg_match('/(?:dijual|terjual|mendapatkan|meraih)\s+(?:\d+(?:[.,]\d+)?\s*-\s*\d+(?:[.,]\d+)?x\s+lebih\s+mahal|(?:dengan\s+)?harga premium)/u', $plainText)) {
+            $riskPhrases[] = 'unsupported premium price claim';
+        }
+        if (preg_match('/\+\d+(?:[.,]\d+)?(?:\s*-\s*\d+(?:[.,]\d+)?)?%\s+premium/u', $plainText)) {
+            $riskPhrases[] = 'unsupported premium percentage claim';
         }
         $evidenceSignals = $this->matchedPhrases($plainText, [
             'studi kasus', 'contoh perhitungan', 'simulasi', 'checklist',
