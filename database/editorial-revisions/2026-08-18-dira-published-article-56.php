@@ -175,6 +175,12 @@ return [
 <li>Semua gap memiliki penanggung jawab dan tenggat sebelum pickup.</li>
 </ul>
 
+<h2>Monitoring setelah paket diserahkan</h2>
+
+<p>Simpan nomor resi, versi invoice final, bukti pembayaran, hasil klasifikasi, dan dokumen izin dalam satu folder shipment. Pantau status melalui kanal resmi penyelenggara pos atau fasilitas pelacakan Bea Cukai. Bila muncul permintaan data, catat waktu, nama kanal, dokumen yang diminta, siapa yang merespons, dan versi file yang dikirim. Jangan mengirim dokumen berbeda melalui beberapa kanal tanpa rekonsiliasi.</p>
+
+<p>Setelah barang diterima, bandingkan simulasi dengan tagihan aktual. Pisahkan selisih akibat nilai pabean, kurs, HS Code, tarif, pajak, biaya operator, storage, atau pemeriksaan. Hasil perbandingan menjadi data internal untuk kiriman berikutnya, bukan dasar untuk menganggap setiap paket serupa akan memperoleh penetapan yang sama. Bila ada keberatan terhadap penetapan, gunakan prosedur dan tenggat resmi; jangan menunda hanya karena supplier atau kurir memberi penjelasan informal.</p>
+
 <p><strong>Catatan editorial:</strong> artikel ini ditinjau pada 18 Agustus 2026. Sumber utama adalah PMK 4 Tahun 2025 dan FAQ Barang Kiriman DJBC yang diakses pada tanggal tersebut. Artikel ini bukan penetapan tarif, klasifikasi, nilai pabean, atau izin untuk kiriman tertentu. Gunakan data barang aktual dan sumber resmi pada tanggal transaksi.</p>
 HTML,
     ],
