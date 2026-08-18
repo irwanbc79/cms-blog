@@ -17,3 +17,8 @@ if (config('adsense.automation.auto_publish')) {
 if (config('adsense.automation.auto_topup')) {
     Schedule::command('pipeline:topup')->dailyAt('01:00');
 }
+
+// Read-only operational report. It never publishes or edits content.
+Schedule::command('adsense:audit --live --store')
+    ->dailyAt('06:30')
+    ->withoutOverlapping();
