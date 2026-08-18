@@ -8,10 +8,10 @@ constraint; templated content patterns are.
 
 ## Production baseline
 
-| Property | Published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
+| Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 59 | 2,043 | 0 | 71% | Pass | Editorial hold |
+| dira.co.id | 54 | 1,997 | 0 | 70% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -119,17 +119,26 @@ portfolio audit.
 | 31 | 357 | 1,335 | Undername versus PPJK pillar guide | Pass |
 | 161 | 1,158 | 1,305 | Palm-product HS classification dossier | Pass |
 
-The Dira published-content audit now reports 48 of 59 articles with at least
-one remaining finding, down from 54. Thin Dira articles fell from six to zero.
-The remaining problem is primarily templated titles and unsupported regulated
-claims, not article count.
+Five direct undername-intent duplicates (IDs 50, 55, 205, 206, and 210) were
+then consolidated into article 31 with same-domain permanent redirects. The
+records, publication statuses, and comments were preserved, while alternate
+URLs were removed from the blog index, related navigation, feed, API listing,
+and `/blog/sitemap.xml`. The database still contains 59 published Dira records;
+54 are now indexable. Deployment `b77a9d3` was preceded by the verified backup
+`backups/20260818-before-undername-canonical-b77a9d3`; the backup and live
+SQLite integrity checks both returned `ok`.
+
+The Dira published-content audit now reports 43 of 54 indexable articles with
+at least one remaining finding, down from 54 of 59 before remediation. Thin
+Dira articles fell from six to zero. The remaining problem is primarily
+templated titles and unsupported regulated claims, not article count.
 
 Current portfolio-level published audit:
 
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 48/59 | Templated titles and regulated claims; no thin articles remain |
+| dira.co.id | 43/54 indexable | Templated titles and regulated claims; no thin articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
