@@ -272,34 +272,43 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 14/44 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
+| dira.co.id | 12/43 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
-## Prepared release — not live
+## Production release — live 24 August 2026
 
-The next Dira remediation package was prepared locally on 24 August 2026 but
-has **not** been uploaded or applied to production:
+The Dira sawit and portfolio trust package was deployed on 24 August 2026:
 
-- Article 209 is rebuilt as a 1,398-word Permendag 16/2026 transition pillar.
+- Article 209 is live as a 1,390-word Permendag 16/2026 transition pillar.
   It uses four official-source domains, an exporter-role matrix, shipment
   checklist, cost scenario, and no detected risky language.
-- Duplicate beginner-sawit article 155 is checksum-bound for permanent
-  consolidation into article 209 after the target rewrite succeeds.
+- Duplicate beginner-sawit article 155 permanently redirects to article 209.
+  The alternate returns `301`, the target returns `200`, and only the target
+  appears in the sitemap.
 - Public article attribution changes from the CMS login name to the transparent
   organization byline `Tim Editorial {company}`.
 - A new indexable `/blog/about` page documents publisher identity, sourcing,
   AI assistance, human review, corrections, limitations, and ad independence.
   About, Privacy, and Terms are included in the sitemap.
-- Local visual review passed for the trust page and article header. Dates now
+- Production visual review passed for the Dira article and Morabangun trust
+  page. Dates now
   render in Indonesian and public comment copy refers to moderation, not an
   admin identity.
-- The relevant regression suite passes: 30 tests and 111 assertions.
+- The CMS regression suite passes locally: 40 tests and 136 assertions. The
+  Morabangun regression suite passes locally: 6 tests and 25 assertions.
+- The CMS deployment backup is
+  `backups/20260824-before-sawit-trust-ddd68a6`; its SQLite checksum matches the
+  pre-deploy database and both integrity checks returned `ok`.
+- Morabangun uses a separate Laravel application. Its scoped trust-page patch
+  is commit `faa1959`, with production rollback archive at
+  `backups/20260824-before-blog-about-faa1959/code-before.tar.gz`. `/blog/about`,
+  `/blog`, `/blog/sitemap.xml`, and `/privacy-policy` all returned `200` after
+  deployment.
 
-If the article rewrite and canonical consolidation both pass their production
-dry-runs and are applied in that order, the expected Dira audit changes from
-14/44 to 12/43 indexable articles needing revision. This projection is not a
-production result and must be confirmed by a fresh post-deploy audit.
+Both guarded database operations passed their production dry-runs before being
+applied. A fresh post-deploy audit confirms Dira at 12 of 43 indexable articles
+needing revision.
 
 ## Next gates
 
