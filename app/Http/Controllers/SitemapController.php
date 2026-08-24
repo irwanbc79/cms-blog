@@ -32,35 +32,44 @@ class SitemapController extends Controller
                 ->get();
         });
 
-        $content = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+        $content = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
+        $content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
         // Homepage / blog index
-        $content .= '  <url>' . "\n";
-        $content .= '    <loc>' . url('/blog') . '</loc>' . "\n";
-        $content .= '    <lastmod>' . ($articles->first()?->updated_at?->toAtomString() ?? now()->toAtomString()) . '</lastmod>' . "\n";
-        $content .= '    <changefreq>daily</changefreq>' . "\n";
-        $content .= '    <priority>1.0</priority>' . "\n";
-        $content .= '  </url>' . "\n";
+        $content .= '  <url>'."\n";
+        $content .= '    <loc>'.url('/blog').'</loc>'."\n";
+        $content .= '    <lastmod>'.($articles->first()?->updated_at?->toAtomString() ?? now()->toAtomString()).'</lastmod>'."\n";
+        $content .= '    <changefreq>daily</changefreq>'."\n";
+        $content .= '    <priority>1.0</priority>'."\n";
+        $content .= '  </url>'."\n";
+
+        // Indexable trust pages shared by every portfolio blog.
+        foreach (['about', 'privacy-policy', 'terms-of-service'] as $trustPage) {
+            $content .= '  <url>'."\n";
+            $content .= '    <loc>'.url('/blog/'.$trustPage).'</loc>'."\n";
+            $content .= '    <changefreq>yearly</changefreq>'."\n";
+            $content .= '    <priority>0.4</priority>'."\n";
+            $content .= '  </url>'."\n";
+        }
 
         // Pillar pages
         $pillars = $articles->pluck('pillar')->unique()->filter();
         foreach ($pillars as $pillar) {
-            $content .= '  <url>' . "\n";
-            $content .= '    <loc>' . url('/blog?pillar=' . $pillar) . '</loc>' . "\n";
-            $content .= '    <changefreq>daily</changefreq>' . "\n";
-            $content .= '    <priority>0.8</priority>' . "\n";
-            $content .= '  </url>' . "\n";
+            $content .= '  <url>'."\n";
+            $content .= '    <loc>'.url('/blog?pillar='.$pillar).'</loc>'."\n";
+            $content .= '    <changefreq>daily</changefreq>'."\n";
+            $content .= '    <priority>0.8</priority>'."\n";
+            $content .= '  </url>'."\n";
         }
 
         // Articles
         foreach ($articles as $article) {
-            $content .= '  <url>' . "\n";
-            $content .= '    <loc>' . url('/blog/' . $article->slug) . '</loc>' . "\n";
-            $content .= '    <lastmod>' . $article->updated_at->toAtomString() . '</lastmod>' . "\n";
-            $content .= '    <changefreq>monthly</changefreq>' . "\n";
-            $content .= '    <priority>0.6</priority>' . "\n";
-            $content .= '  </url>' . "\n";
+            $content .= '  <url>'."\n";
+            $content .= '    <loc>'.url('/blog/'.$article->slug).'</loc>'."\n";
+            $content .= '    <lastmod>'.$article->updated_at->toAtomString().'</lastmod>'."\n";
+            $content .= '    <changefreq>monthly</changefreq>'."\n";
+            $content .= '    <priority>0.6</priority>'."\n";
+            $content .= '  </url>'."\n";
         }
 
         $content .= '</urlset>';

@@ -276,6 +276,31 @@ Current portfolio-level published audit:
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
+## Prepared release — not live
+
+The next Dira remediation package was prepared locally on 24 August 2026 but
+has **not** been uploaded or applied to production:
+
+- Article 209 is rebuilt as a 1,398-word Permendag 16/2026 transition pillar.
+  It uses four official-source domains, an exporter-role matrix, shipment
+  checklist, cost scenario, and no detected risky language.
+- Duplicate beginner-sawit article 155 is checksum-bound for permanent
+  consolidation into article 209 after the target rewrite succeeds.
+- Public article attribution changes from the CMS login name to the transparent
+  organization byline `Tim Editorial {company}`.
+- A new indexable `/blog/about` page documents publisher identity, sourcing,
+  AI assistance, human review, corrections, limitations, and ad independence.
+  About, Privacy, and Terms are included in the sitemap.
+- Local visual review passed for the trust page and article header. Dates now
+  render in Indonesian and public comment copy refers to moderation, not an
+  admin identity.
+- The relevant regression suite passes: 30 tests and 111 assertions.
+
+If the article rewrite and canonical consolidation both pass their production
+dry-runs and are applied in that order, the expected Dira audit changes from
+14/44 to 12/43 indexable articles needing revision. This projection is not a
+production result and must be confirmed by a fresh post-deploy audit.
+
 ## Next gates
 
 - Review the 12 currently scheduled articles before releasing any of them.

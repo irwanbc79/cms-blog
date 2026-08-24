@@ -175,12 +175,23 @@ document.addEventListener('scroll',function(){
 
     {{-- Meta Info --}}
     <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
+        <a href="{{ route('blog.about') }}" rel="author" class="flex items-center gap-1.5 font-semibold text-teal-dark hover:text-teal transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            {{ $seo['author'] }}
+        </a>
         <span class="flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            {{ $article->published_at?->isoFormat('dddd, D MMMM YYYY') }}
+            {{ $article->published_at?->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
         </span>
+        @if($article->updated_at && $article->published_at && $article->updated_at->gt($article->published_at->copy()->addDay()))
+        <span class="flex items-center gap-1.5" title="Tanggal pembaruan isi atau metadata">
+            Diperbarui {{ $article->updated_at->locale('id')->isoFormat('D MMMM YYYY') }}
+        </span>
+        @endif
         @if($article->estimated_read_time)
         <span class="flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -397,7 +408,7 @@ document.addEventListener('scroll',function(){
             </svg>
             Tinggalkan Komentar
         </h2>
-        <p class="text-xs text-gray-400 mb-6">Komentar Anda akan ditampilkan setelah disetujui admin.</p>
+        <p class="text-xs text-gray-400 mb-6">Komentar Anda akan ditampilkan setelah ditinjau moderator.</p>
 
         <form action="{{ route('blog.comments.store', $article->slug) }}" method="POST" class="space-y-4" id="comment-form">
             @csrf

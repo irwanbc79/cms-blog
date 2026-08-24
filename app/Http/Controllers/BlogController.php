@@ -42,8 +42,8 @@ class BlogController extends Controller
             $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
             $query->where(function ($q) use ($escaped) {
                 $q->where('title', 'like', "%{$escaped}%")
-                  ->orWhere('excerpt', 'like', "%{$escaped}%")
-                  ->orWhere('focus_keyword', 'like', "%{$escaped}%");
+                    ->orWhere('excerpt', 'like', "%{$escaped}%")
+                    ->orWhere('focus_keyword', 'like', "%{$escaped}%");
             });
         }
 
@@ -59,9 +59,9 @@ class BlogController extends Controller
             ->pluck('count', 'pillar');
 
         $seo = [
-            'title'       => $site->company_name . ' - Blog',
-            'description' => 'Blog dan artikel terbaru dari ' . $site->company_name . '. Temukan informasi menarik seputar bisnis dan industri kami.',
-            'canonical'   => url('/blog'),
+            'title' => $site->company_name.' - Blog',
+            'description' => 'Blog dan artikel terbaru dari '.$site->company_name.'. Temukan informasi menarik seputar bisnis dan industri kami.',
+            'canonical' => url('/blog'),
         ];
 
         return response()->view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
@@ -88,7 +88,7 @@ class BlogController extends Controller
 
         // Auto-tag if tags are empty
         if (empty($article->tags)) {
-            $autoTag = new AutoTagService();
+            $autoTag = new AutoTagService;
             $tags = $autoTag->generateTags($article);
             $article->updateQuietly(['tags' => $tags]);
             $article->refresh();
@@ -102,7 +102,7 @@ class BlogController extends Controller
             ->published()
             ->indexable()
             ->where('id', '!=', $article->id)
-            ->orderByRaw("CASE WHEN pillar = ? THEN 0 ELSE 1 END", [$article->pillar])
+            ->orderByRaw('CASE WHEN pillar = ? THEN 0 ELSE 1 END', [$article->pillar])
             ->latest('published_at')
             ->take(3)
             ->get(['id', 'title', 'slug', 'excerpt', 'content_html', 'pillar', 'featured_image_url', 'published_at', 'estimated_read_time', 'image_alt_texts']);
@@ -142,20 +142,20 @@ class BlogController extends Controller
         // Build breadcrumbs
         $breadcrumbs = [
             ['label' => 'Blog', 'url' => url('/blog')],
-            ['label' => $article->pillar ? ucfirst($article->pillar) : 'Artikel', 'url' => $article->pillar ? url('/blog?pillar=' . $article->pillar) : null],
+            ['label' => $article->pillar ? ucfirst($article->pillar) : 'Artikel', 'url' => $article->pillar ? url('/blog?pillar='.$article->pillar) : null],
             ['label' => $article->title, 'url' => null],
         ];
 
         $seo = [
-            'title'          => $article->og_title ?: $article->title,
-            'description'    => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
-            'image'          => $article->featured_image_url,
-            'canonical'      => $article->canonical_url ?: url('/blog/' . $article->slug),
+            'title' => $article->og_title ?: $article->title,
+            'description' => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
+            'image' => $article->featured_image_url,
+            'canonical' => $article->canonical_url ?: url('/blog/'.$article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
-            'modified_time'  => $article->updated_at->toIso8601String(),
-            'author'         => $article->user?->name ?? $site->company_name,
-            'tags'           => $article->tags,
-            'focus_keyword'  => $article->focus_keyword,
+            'modified_time' => $article->updated_at->toIso8601String(),
+            'author' => $site->editorial_author_name,
+            'tags' => $article->tags,
+            'focus_keyword' => $article->focus_keyword,
         ];
 
         return response()->view('blog.show', compact(
@@ -207,8 +207,8 @@ class BlogController extends Controller
         preg_match_all('/<h([2-6])(\s+[^>]*)?>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $level    = (int) $match[1];
-            $attrs    = $match[2] ?? '';
+            $level = (int) $match[1];
+            $attrs = $match[2] ?? '';
             $innerHtml = $match[3];
 
             // Extract id attribute if present
@@ -222,7 +222,7 @@ class BlogController extends Controller
 
             $toc[] = [
                 'level' => $level,
-                'id'    => $id,
+                'id' => $id,
                 'title' => strip_tags($innerHtml),
             ];
         }
@@ -255,7 +255,7 @@ class BlogController extends Controller
             'is_approved' => false,
         ]);
 
-        return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu persetujuan admin.');
+        return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu moderasi.');
     }
 
     /**
@@ -264,14 +264,32 @@ class BlogController extends Controller
     public function privacyPolicy()
     {
         $site = $this->siteResolver->resolveOrFail();
-        
+
         $seo = [
-            'title'       => 'Kebijakan Privasi — ' . $site->company_name,
-            'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog ' . $site->company_name,
-            'canonical'   => url('/blog/privacy-policy'),
+            'title' => 'Kebijakan Privasi — '.$site->company_name,
+            'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog '.$site->company_name,
+            'canonical' => url('/blog/privacy-policy'),
         ];
 
         return response()->view('blog.privacy', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the editorial identity, sourcing, corrections, and advertising policy.
+     */
+    public function aboutEditorial()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Tentang Blog & Standar Editorial — '.$site->company_name,
+            'description' => 'Identitas penerbit, proses riset, penggunaan sumber, koreksi, dan kebijakan iklan blog '.$site->company_name.'.',
+            'canonical' => url('/blog/about'),
+            'author' => $site->editorial_author_name,
+        ];
+
+        return response()->view('blog.about', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
 
@@ -283,9 +301,9 @@ class BlogController extends Controller
         $site = $this->siteResolver->resolveOrFail();
 
         $seo = [
-            'title'       => 'Syarat & Ketentuan — ' . $site->company_name,
-            'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog ' . $site->company_name,
-            'canonical'   => url('/blog/terms-of-service'),
+            'title' => 'Syarat & Ketentuan — '.$site->company_name,
+            'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog '.$site->company_name,
+            'canonical' => url('/blog/terms-of-service'),
         ];
 
         return response()->view('blog.terms', compact('site', 'seo'))

@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
-use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\SitemapController;
+use App\Services\SiteResolver;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,13 +27,15 @@ Route::prefix('blog')->group(function () {
     Route::get('/feed.xml', [FeedController::class, 'index']);
     // ads.txt mirror for subdirectory mode (e.g. dira.co.id/blog/ads.txt)
     Route::get('/ads.txt', function () {
-        $site = app(\App\Services\SiteResolver::class)->resolve();
+        $site = app(SiteResolver::class)->resolve();
         $content = $site?->ads_txt_content
             ?: 'google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0';
+
         return response($content, 200, ['Content-Type' => 'text/plain']);
     });
     Route::get('/privacy-policy', [BlogController::class, 'privacyPolicy'])->name('blog.privacy');
     Route::get('/terms-of-service', [BlogController::class, 'termsOfService'])->name('blog.terms');
+    Route::get('/about', [BlogController::class, 'aboutEditorial'])->name('blog.about');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
     Route::post('/{slug}/comments', [BlogController::class, 'storeComment'])->name('blog.comments.store');
 });
@@ -43,9 +46,10 @@ Route::get('/feed.xml', [FeedController::class, 'index'])->name('feed');
 
 // ads.txt for AdSense verification (auto-served per site)
 Route::get('/ads.txt', function () {
-    $site = app(\App\Services\SiteResolver::class)->resolve();
+    $site = app(SiteResolver::class)->resolve();
     $content = $site?->ads_txt_content
         ?: 'google.com, pub-5616961797801657, DIRECT, f08c47fec0942fa0';
+
     return response($content, 200, ['Content-Type' => 'text/plain']);
 });
 

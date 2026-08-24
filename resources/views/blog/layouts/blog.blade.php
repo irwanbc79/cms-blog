@@ -324,6 +324,7 @@
                 {{-- Nav links --}}
                 <nav class="flex items-center gap-6 text-sm font-semibold text-teal-deep">
                     <a href="{{ url('/blog') }}" class="hover:text-teal transition-colors {{ request()->is('blog') ? 'text-teal border-b-2 border-teal pb-1' : '' }}">Blog</a>
+                    <a href="{{ route('blog.about') }}" class="hidden sm:inline hover:text-teal transition-colors {{ request()->is('blog/about') ? 'text-teal border-b-2 border-teal pb-1' : '' }}">Tentang</a>
                     @if($site->domain)
                     <a href="{{ 'https://' . $site->domain }}" class="hover:text-teal transition-colors">Website</a>
                     @endif
@@ -439,6 +440,7 @@
                     <h3 class="font-serif text-gold-light text-base mb-5 font-bold">Blog</h3>
                     <ul class="space-y-3 text-sm">
                         <li><a href="{{ url('/blog') }}" class="text-white/75 hover:text-gold-light transition-colors">Semua Artikel</a></li>
+                        <li><a href="{{ route('blog.about') }}" class="text-white/75 hover:text-gold-light transition-colors">Tentang & Standar Editorial</a></li>
                         <li><a href="{{ route('blog.privacy') }}" class="text-white/75 hover:text-gold-light transition-colors">Kebijakan Privasi</a></li>
                         <li><a href="{{ route('blog.terms') }}" class="text-white/75 hover:text-gold-light transition-colors">Syarat & Ketentuan</a></li>
                         <li><a href="{{ url('/blog/sitemap.xml') }}" class="text-white/75 hover:text-gold-light transition-colors">Sitemap SEO</a></li>
