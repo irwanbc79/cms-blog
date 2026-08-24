@@ -11,7 +11,7 @@ constraint; templated content patterns are.
 | Property | Indexable published | Average words | Thin articles | `Panduan Lengkap` titles | Live checks | Decision |
 |---|---:|---:|---:|---:|---|---|
 | m2b.co.id | 56 | 2,048 | 1 | 89% | Pass | Editorial hold |
-| dira.co.id | 51 | 1,918 | 0 | 33% | Pass | Editorial hold |
+| dira.co.id | 44 | 1,896 | 0 | 27% | Pass | Editorial hold |
 | gma-world.id | 62 | 1,661 | 16 | 68% | Pass | Editorial hold |
 | morabangun.com | 49 | 1,825 | 10 | 63% | Pass | Editorial hold |
 | ebook.m2b.co.id | Static comic hub | — | — | — | Pass | Covered by approved parent domain |
@@ -45,18 +45,21 @@ An article may be released only when it has:
 
 ## Authenticated AdSense state
 
-Verified in the publisher account on 18 August 2026.
+Initially verified in the publisher account on 18 August 2026 and refreshed on
+24 August 2026.
 
 | Site | Approval | Detail | AdSense ads.txt state | Independent HTTP check |
 |---|---|---|---|---|
 | m2b.co.id | Ready | — | Authorized | `200`, correct publisher record |
 | dira.co.id | Needs attention | Low value content | Authorized | `200`, correct publisher record |
-| gma-world.id | Getting ready | Review requested | Not found in stale account view | `200`, correct publisher record |
-| morabangun.com | Getting ready | Review requested | Not found in stale account view | `200`, correct publisher record |
+| gma-world.id | Getting ready | Review requested | Authorized | `200`, correct publisher record |
+| morabangun.com | Getting ready | Review requested | Not found in account view | `200`, correct publisher record |
 
 Dira cannot request another review before **24 August 2026** because the
 account has reached its site-review attempt limit. Do not resubmit merely
 because the button becomes available; perform the release audit first.
+The 24 August account refresh still displayed the throttle notice and exposed
+no review-request action, so no submission was made.
 
 The AdSense Policy Center reported no active issue that stops or limits ad
 serving. The site-level Dira rejection is a readiness issue, not an
@@ -249,7 +252,16 @@ verified. On 24 August 2026, the alternate URL returned `301` to ID 204, only
 the canonical target appeared in `/blog/sitemap.xml`, and the post-change live
 audit passed.
 
-The latest verified Dira published-content audit reports 22 of 51 indexable
+Six additional overlapping guides were consolidated into stronger coffee,
+undername, and sawit pillars with checksum-bound manifests. Each alternate
+returned `301`, all four targets returned `200`, and only the targets remained
+in the sitemap. Article 49 was then rebuilt as a 1,325-word HPP export-coffee
+worksheet using DJBC, JDIH Kemenkeu, Bank Indonesia, and ICC sources. After a
+guarded language patch, it reported four official sources, three evidence
+signals, and zero risky claims. Duplicate HPP article 110 was consolidated
+into article 49 and verified as `301`.
+
+The latest verified Dira published-content audit reports 14 of 44 indexable
 articles with at least one remaining finding, down from 54 of 59 before
 remediation. Thin
 Dira articles fell from six to zero. The remaining problem is primarily
@@ -260,14 +272,14 @@ Current portfolio-level published audit:
 | Site | Articles needing revision | Main findings |
 |---|---:|---|
 | m2b.co.id | 56/56 | 50 templated titles; 43 regulated articles without primary sources |
-| dira.co.id | 22/51 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
+| dira.co.id | 14/44 indexable | Templated titles and regulated claims; no thin or risky-claim articles remain |
 | gma-world.id | 58/62 | 42 templated titles; 18 without original evidence; 16 thin |
 | morabangun.com | 41/49 | 31 templated titles; 10 thin; 9 without original evidence |
 
 ## Next gates
 
 - Review the 12 currently scheduled articles before releasing any of them.
-- Continue reducing Dira's 33% generic-title ratio by rewriting priority titles
+- Continue reducing Dira's 27% generic-title ratio by rewriting priority titles
   and consolidating weak or overlapping pages.
 - Improve or consolidate the 27 articles below 1,200 words.
 - Complete human editorial preview and approval for article IDs 270–273.
@@ -275,7 +287,8 @@ Current portfolio-level published audit:
   canonical, indexability, internal links, and mobile rendering.
 - Wait for the existing GMA and Morabangun AdSense reviews; do not submit a
   duplicate request.
-- Re-audit Dira and request review no earlier than 24 August 2026.
+- Request Dira review only after the throttle clears and the release audit plus
+  human editorial preview are complete.
 - Grant the operating Google account access to Search Console. The currently
   signed-in account `irwanbc79@gmail.com` has no access to the `m2b.co.id`
   domain property, so query and index coverage cannot yet be verified.
