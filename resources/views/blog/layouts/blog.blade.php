@@ -35,6 +35,15 @@
     @if($adsensePublisherId)
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsensePublisherId }}"
             crossorigin="anonymous"></script>
+    <style>
+        ins.adsbygoogle[data-ad-status="unfilled"] {
+            display: none !important;
+        }
+
+        .adsense-slot:has(> ins.adsbygoogle[data-ad-status="unfilled"]) {
+            display: none !important;
+        }
+    </style>
     @endif
 
     {{-- Google Analytics 4 --}}

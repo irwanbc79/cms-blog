@@ -140,7 +140,7 @@ document.addEventListener('scroll',function(){
 
 {{-- Display Ad — Above Article --}}
 @if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+<div class="adsense-slot max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
     <ins class="adsbygoogle"
          style="display:block"
          data-ad-client="{{ $site->getAdsensePublisher() }}"
@@ -250,7 +250,7 @@ document.addEventListener('scroll',function(){
 
             {{-- In-Article Ad (after content) --}}
             @if($site->getAdsensePublisher() && $site->getAdSlot('in_article'))
-            <div class="my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
+            <div class="adsense-slot my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
                 <ins class="adsbygoogle"
                      style="display:block; text-align:center;"
                      data-ad-layout="in-article"
@@ -275,7 +275,7 @@ document.addEventListener('scroll',function(){
 
             {{-- Below Article Display Ad --}}
             @if($site->getAdsensePublisher() && $site->getAdSlot('display_bottom'))
-            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+            <div class="adsense-slot mt-8 pt-6 border-t border-gray-100 flex justify-center">
                 <ins class="adsbygoogle"
                      style="display:block"
                      data-ad-client="{{ $site->getAdsensePublisher() }}"
@@ -292,7 +292,7 @@ document.addEventListener('scroll',function(){
 
     {{-- Multiplex Ad — Before FAQ --}}
     @if($site->getAdsensePublisher() && $site->getAdSlot('multiplex'))
-    <div class="mt-12 pt-8">
+    <div class="adsense-slot mt-12 pt-8">
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-format="autorelaxed"
@@ -462,7 +462,7 @@ document.addEventListener('scroll',function(){
 
                 {{-- In-Feed Ad after 2nd related article --}}
                 @if($index === 1 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed'))
-                <div class="flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
+                <div class="adsense-slot flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"

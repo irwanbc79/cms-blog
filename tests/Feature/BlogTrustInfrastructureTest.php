@@ -58,6 +58,37 @@ class BlogTrustInfrastructureTest extends TestCase
         $sitemap->assertSee('https://dira.co.id/blog/terms-of-service', false);
     }
 
+    public function test_ad_slots_include_unfilled_collapse_styles_and_wrapper(): void
+    {
+        $site = $this->site();
+        $site->update([
+            'adsense_publisher_id' => 'ca-pub-1234567890123456',
+            'adsense_ad_slots' => [
+                'display_top' => '1234567890',
+            ],
+        ]);
+        $admin = User::factory()->create();
+
+        Article::query()->forceCreate([
+            'site_id' => $site->id,
+            'user_id' => $admin->id,
+            'title' => 'Artikel Uji Slot Iklan',
+            'slug' => 'artikel-uji-slot-iklan',
+            'excerpt' => 'Ringkasan artikel uji slot iklan.',
+            'content_html' => '<p>Isi artikel uji slot iklan.</p>',
+            'status' => 'published',
+            'published_at' => now()->subDays(2),
+            'editorial_status' => Article::EDITORIAL_APPROVED,
+            'word_count' => 1500,
+        ]);
+
+        $response = $this->get('https://dira.co.id/blog/artikel-uji-slot-iklan')->assertOk();
+
+        $response->assertSee('ins.adsbygoogle[data-ad-status="unfilled"]', false);
+        $response->assertSee('.adsense-slot:has(> ins.adsbygoogle[data-ad-status="unfilled"])', false);
+        $response->assertSee('class="adsense-slot max-w-4xl', false);
+    }
+
     private function site(): Site
     {
         return Site::query()->create([
