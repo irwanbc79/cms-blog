@@ -240,8 +240,8 @@ return [
             ],
             'replacements' => [
                 [
-                    'search' => '<h1 id="erp-kontraktor-panduan-lengkap-project-costing-efisien-2026">ERP Kontraktor: Panduan Lengkap Project Costing Efisien 2026</h1>',
-                    'replace' => '<h1 id="erp-kontraktor-project-costing-efisien">ERP Kontraktor Konstruksi: Project Costing, WBS Real-Time, dan Kontrol Margin Proyek</h1>
+                    'old' => '<h1 id="erp-kontraktor-panduan-lengkap-project-costing-efisien-2026">ERP Kontraktor: Panduan Lengkap Project Costing Efisien 2026</h1>',
+                    'new' => '<h1 id="erp-kontraktor-project-costing-efisien">ERP Kontraktor Konstruksi: Project Costing, WBS Real-Time, dan Kontrol Margin Proyek</h1>
 <p><strong>Checklist studi kasus dan simulasi:</strong> Pelaksanaan estimasi biaya proyek (RAB) dan kontrol realisasi pengeluaran lapangan memerlukan pencatatan berkala berbasis Work Breakdown Structure (WBS) terpadu.</p>',
                 ],
             ],
