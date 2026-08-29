@@ -65,7 +65,7 @@ return [
         [
             'article_id' => 74,
             'expected' => [
-                'title' => 'Panduan Lengkap Mengurus Izin Impor API-U 2026',
+                'title' => 'Panduan Lengkap Mengurus Izin Impor Umum API-U 2026',
                 'slug' => 'panduan-lengkap-mengurus-izin-impor-api-u-2026',
                 'status' => 'published',
                 'editorial_status' => 'legacy',
