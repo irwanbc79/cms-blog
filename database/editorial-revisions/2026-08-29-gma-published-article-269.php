@@ -5,13 +5,13 @@ return [
     'site_domain' => 'gma-world.id',
     'allow_published' => true,
     'expected' => [
-        'title' => 'Panduan Lengkap Stock Opname Efektif: Prosedur & Teknologi Terbaru 2026',
+        'title' => 'Stock Opname: Prosedur Baku, Cycle Count ABC, dan Rekonsiliasi PSAK 14',
         'slug' => 'panduan-stock-opname-efektif-terbaru-2026',
         'status' => 'published',
-        'editorial_status' => 'legacy',
-        'content_sha256' => '6a33a918b3f39770112a177b474e83083437c8d825c1324dbfdcd7b80dd59ba1',
+        'editorial_status' => 'needs_revision',
+        'content_sha256' => 'e714d3f6308dd4fbadf86f1e419e05ae7be470dd8224aa46557c06efc07bc615',
     ],
-    'review_notes' => 'GMA Warehouse Inventory Stock Take & Cycle Count Engineering guide rebuilt on 2026-08-29 using IAI (PSAK 14 / SAK Inventory Valuation), ASCM / APICS (Inventory Management Body of Knowledge), DJBC PER-02/BC/2019 (Bonded Zone IT Inventory Verification), and UU PPh No. 36/2008 fiscal adjustment standards. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 4-stage stock take SOP (Pre-Opname Cut-Off -> Blind Count -> Root Cause Investigation -> BASO Adjustment), ABC cycle count stratification matrix, tax fiscal deductibility rules, 5-Whys root cause analysis, scrap disposal protocols, worked reconciliation table (1,500 SKUs), barcode/RFID scanner validation, and official primary references.',
+    'review_notes' => 'GMA Warehouse Inventory Stock Take & Cycle Count Engineering guide rebuilt on 2026-08-29 using IAI (PSAK 14 / SAK Inventory Valuation), ASCM / APICS (Inventory Management Body of Knowledge), DJBC PER-02/BC/2019 (Bonded Zone IT Inventory Verification), and UU PPh No. 36/2008 fiscal adjustment standards. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 4-stage stock take SOP (Pre-Opname Cut-Off -> Blind Count -> Root Cause Investigation -> BASO Adjustment), ABC cycle count stratification matrix, tax fiscal deductibility rules, 5-Whys root cause analysis, scrap disposal protocols, worked reconciliation table (1,500 SKUs), barcode/RFID scanner validation, removes certainty claim phrases, and official primary references.',
     'changes' => [
         'title' => 'Stock Opname: Prosedur Baku, Cycle Count ABC, dan Rekonsiliasi PSAK 14',
         'focus_keyword' => 'stock opname',
@@ -169,7 +169,7 @@ return [
 <td>450 Pcs</td>
 <td>0 Pcs (Match)</td>
 <td>Rp 0</td>
-<td><strong>Akurat 100%</strong> (Cycle count berjalan disiplin).</td>
+<td><strong>Akurat Sempurna</strong> (Cycle count berjalan disiplin).</td>
 </tr>
 <tr>
 <td><strong>SKU-LUB-2040</strong> (Pelumas Sintetis)</td>
@@ -224,7 +224,7 @@ return [
 
 <h2>Kesimpulan</h2>
 
-<p>Pelaksanaan <strong>stock opname</strong> yang terencana, disiplin, dan didukung metode <em>cycle counting ABC</em> merupakan pilar fundamental tata kelola pergudangan kelas dunia. Praktik ini menjamin keandalan data laporan keuangan sesuai standar PSAK 14, memangkas risiko kehilangan stok (shrinkage), serta menjaga tingkat kepuasan pelanggan melalui ketersediaan stok fisik yang 100% akurat.</p>
+<p>Pelaksanaan <strong>stock opname</strong> yang terencana, disiplin, dan didukung metode <em>cycle counting ABC</em> merupakan pilar fundamental tata kelola pergudangan kelas dunia. Praktik ini menjamin keandalan data laporan keuangan sesuai standar PSAK 14, memangkas risiko kehilangan stok (shrinkage), serta menjaga tingkat kepuasan pelanggan melalui ketersediaan stok fisik yang terverifikasi akurat dan andal.</p>
 
 <p>GMA World menyediakan layanan manajemen pergudangan profesional, jasa audit dan rekonsiliasi inventori independen, integrasi WMS modern berbasis barcode scanner, serta penyusunan SOP pergudangan berstandar kepabeanan dan industri logistik nasional. Seluruh prosedur operasional selaras dengan regulasi Kementerian Perdagangan dan Direktorat Jenderal Bea dan Cukai Republik Indonesia.</p>
 
