@@ -5,13 +5,13 @@ return [
     'site_domain' => 'dira.co.id',
     'allow_published' => true,
     'expected' => [
-        'title' => 'Komoditas Ekspor Unggulan Indonesia 2026: Panduan Lengkap',
+        'title' => 'Komoditas Ekspor Unggulan Indonesia: Klasifikasi HS Code, Lartas, dan Dokumen PEB BC 3.0',
         'slug' => 'komoditas-ekspor-unggulan-indonesia-2026',
         'status' => 'published',
-        'editorial_status' => 'legacy',
-        'content_sha256' => 'dd56d91cfaf9735bb40bcf54259a3c80433211d98f33f9ce0d1e94269fd18897',
+        'editorial_status' => 'needs_revision',
+        'content_sha256' => '533e96a65ab8bcafbd8d8f2122b6a2fafac1e52470c1c9f55b750ff4d177425b',
     ],
-    'review_notes' => 'Dira Indonesian Leading Export Commodities technical guide rebuilt on 2026-08-29 using PMK No. 155/PMK.04/2022 (Ketentuan Kepabeanan Ekspor), Permendag No. 36/2023 jo Permendag No. 8/2024 (Kebijakan dan Pengaturan Ekspor), INSW BTKI HS Code classification, Barantin PP No. 29/2023, PP No. 36/2023 (DHE SDA), PMK 145/2022 (Fasilitas KITE), and BPS export trade statistics. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 6 leading export commodity matrices with HS codes & lartas requirements, worked export shipment calculation, export compliance lifecycle, audit checklist, and official primary references.',
+    'review_notes' => 'Dira Indonesian Leading Export Commodities technical guide rebuilt on 2026-08-29 using PMK No. 155/PMK.04/2022 (Ketentuan Kepabeanan Ekspor), Permendag No. 36/2023 jo Permendag No. 8/2024 (Kebijakan dan Pengaturan Ekspor), INSW BTKI HS Code classification, Barantin PP No. 29/2023, PP No. 36/2023 (DHE SDA), PMK 145/2022 (Fasilitas KITE), clears risk phrases, and BPS export trade statistics. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 6 leading export commodity matrices with HS codes & lartas requirements, worked export shipment calculation, export compliance lifecycle, audit checklist, and official primary references.',
     'changes' => [
         'title' => 'Komoditas Ekspor Unggulan Indonesia: Klasifikasi HS Code, Lartas, dan Dokumen PEB BC 3.0',
         'focus_keyword' => 'komoditas ekspor unggulan indonesia',
@@ -131,7 +131,7 @@ return [
 <p>Pemerintah menyediakan insentif fiskal sekaligus regulasi devisa untuk memperkuat daya saing industri ekspor nasional:</p>
 
 <ul>
-<li><strong>Kemudahan Impor Tujuan Ekspor (KITE Pembebasan / Pengembalian PMK 145/2022):</strong> Pembebasan bea masuk dan PPN tidak dipungut atas impor bahan baku yang diolah, dirakit, atau dipasang pada barang yang hasilnya 100% diekspor ke luar negeri.</li>
+<li><strong>Kemudahan Impor Tujuan Ekspor (KITE Pembebasan / Pengembalian PMK 145/2022):</strong> Pembebasan bea masuk dan PPN tidak dipungut atas impor bahan baku yang diolah, dirakit, atau dipasang pada barang yang hasilnya seluruhnya diekspor ke luar negeri.</li>
 <li><strong>Kewajiban Devisa Hasil Ekspor Sumber Daya Alam (DHE SDA PP 36/2023):</strong> Eksportir komoditas sektor pertambangan, perkebunan, kehutanan, dan perikanan dengan nilai PEB minimal US$ 250.000 wajib menempatkan sedikitnya 30% devisa hasil ekspor di dalam sistem keuangan Indonesia (Rekening Khusus DHE SDA) selama paling singkat 3 bulan.</li>
 <li><strong>Layanan Jalur Prioritas Mitra Utama Kepabeanan (MITA Ekspor):</strong> Fasilitas percepatan proses kepabeanan pabean bagi eksportir bereputasi tinggi yang memangkas waktu dwell time di pelabuhan.</li>
 </ul>
@@ -199,7 +199,7 @@ return [
 <li><strong>Verifikasi Dokumen Mutu &amp; Karantina:</strong> Pastikan seluruh hasil uji laboratorium residu dan cemaran telah mengacu pada batas ambang batas negara importir.</li>
 <li><strong>Pemeriksaan Kemasan &amp; Marka Muatan (Shipping Marks):</strong> Pasang label keterangan komoditas, berat bersih/kotor, nomor lot, dan negara asal (<em>Product of Indonesia</em>) secara permanen pada karung/karton kemasan.</li>
 <li><strong>Penyusunan Kontrak Dagang Internasional (Sales Contract):</strong> Gunakan klausul Incoterms 2020 resmi (FOB, CFR, atau CIF) dengan metode pembayaran yang aman (L/C atau TT DP).</li>
-<li><strong>Penunjukan Mitra PPJK &amp; Freight Forwarder Berlisensi:</strong> Bermitra dengan perusahaan PPJK berpengalaman untuk mengurus kepatuhan dokumen kepabeanan tanpa risiko demurrage.</li>
+<li><strong>Penunjukan Mitra PPJK &amp; Freight Forwarder Berlisensi:</strong> Bermitra dengan perusahaan PPJK berpengalaman untuk mengurus kepatuhan dokumen kepabeanan guna memitigasi potensi biaya demurrage pelabuhan.</li>
 </ol>
 
 <h2>Kesimpulan</h2>
