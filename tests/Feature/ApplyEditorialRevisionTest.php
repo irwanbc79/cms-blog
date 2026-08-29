@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
@@ -100,6 +101,8 @@ class ApplyEditorialRevisionTest extends TestCase
     {
         $this->publishedRevision();
         $article = $this->publishedSourceArticle();
+        Cache::forever('sitemap_dira', 'stale sitemap');
+        Cache::forever('feed_dira', 'stale feed');
 
         $this->artisan('articles:apply-editorial-revision', [
             'revision' => $this->revisionFilename,
@@ -111,6 +114,8 @@ class ApplyEditorialRevisionTest extends TestCase
         $this->assertSame(Article::EDITORIAL_NEEDS_REVISION, $article->editorial_status);
         $this->assertSame('Checklist Fitosanitari Ekspor Jahe dan Kunyit Sebelum Pengiriman', $article->title);
         $this->assertNotNull($article->published_at);
+        $this->assertNull(Cache::get('sitemap_dira'));
+        $this->assertNull(Cache::get('feed_dira'));
     }
 
     private function sourceArticle(array $overrides = []): Article

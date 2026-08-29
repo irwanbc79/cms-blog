@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Article;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
@@ -21,7 +22,7 @@ class ApplyEditorialRevision extends Command
     {
         try {
             $revision = $this->loadRevision((string) $this->argument('revision'));
-            $article = Article::query()->with('site:id,domain')->findOrFail($revision['article_id']);
+            $article = Article::query()->with('site:id,domain,slug')->findOrFail($revision['article_id']);
             $this->validateSourceState($article, $revision);
             $changes = $this->changes($revision);
 
@@ -47,6 +48,9 @@ class ApplyEditorialRevision extends Command
                 $article->fill($changes);
                 $article->save();
             });
+
+            Cache::forget("sitemap_{$article->site->slug}");
+            Cache::forget("feed_{$article->site->slug}");
 
             $this->info(
                 $article->status === 'published'
