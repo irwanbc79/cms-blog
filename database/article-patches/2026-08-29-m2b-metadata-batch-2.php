@@ -51,7 +51,7 @@ return [
             ],
             'replacements' => [
                 [
-                    'old' => '<h1 id="panduan-lengkap-ekspor-ikan-beku-dari-belawan-ke-jepang-2026">Panduan Lengkap Ekspor Ikan Beku dari Belawan ke Jepang 2026</h1>',
+                    'old' => '<h1 id="panduan-lengkap-ekspor-ikan-beku-belawan-jepang-2026">Panduan Lengkap Ekspor Ikan Beku dari Belawan ke Jepang 2026</h1>',
                     'new' => '<h1 id="ekspor-ikan-beku-belawan-jepang">Ekspor Ikan Beku via Pelabuhan Belawan ke Jepang: Standar HACCP dan Health Certificate</h1>
 <p><strong>Checklist simulasi studi kasus:</strong> Validasi sertifikat fitosanitari dan pengujian mikrobiologi laboratorium terakreditasi Barantin sebelum stuffing kontainer reefer.</p>',
                 ],
