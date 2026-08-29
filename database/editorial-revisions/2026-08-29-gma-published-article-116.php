@@ -5,13 +5,13 @@ return [
     'site_domain' => 'gma-world.id',
     'allow_published' => true,
     'expected' => [
-        'title' => 'Panduan Lengkap Studi Kelayakan Proyek Konstruksi Pabrik 2026',
+        'title' => 'Studi Kelayakan Pabrik: 5 Pilar Analisis, Perhitungan NPV/IRR, dan AMDAL PP 22/2021',
         'slug' => 'panduan-studi-kelayakan-konstruksi-pabrik-2026',
         'status' => 'published',
-        'editorial_status' => 'legacy',
-        'content_sha256' => '877036f4f46eb111b2385d33f72418fff5992565b33442fbdf9999d191f961eb',
+        'editorial_status' => 'needs_revision',
+        'content_sha256' => '7be0dd2e50d925edc2996441f11c6df3ea7f31830cba9cd08fd4f1c4574895d3',
     ],
-    'review_notes' => 'GMA Industrial Plant Feasibility Study & Project Investment Engineering guide rebuilt on 2026-08-29 using BKPM Peraturan No. 4/2021 (OSS RBA Investment Licensing), PP No. 22/2021 (AMDAL Environmental Approvals), Permenperin No. 40/2016 (Industrial Estates Standards), and Financial Discounted Cash Flow (DCF) modeling. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 5-pillar feasibility framework, geotechnical soil test (N-SPT), 10-year DCF financial modeling (NPV, IRR, Payback, DSCR), sensitivity analysis (+10% raw material / +15% CAPEX), worked Rp35B plant simulation, and official primary references.',
+    'review_notes' => 'GMA Industrial Plant Feasibility Study & Project Investment Engineering guide rebuilt on 2026-08-29 using BKPM Peraturan No. 4/2021 (OSS RBA Investment Licensing), PP No. 22/2021 (AMDAL Environmental Approvals), Permenperin No. 40/2016 (Industrial Estates Standards), and Financial Discounted Cash Flow (DCF) modeling. Removes generic conversational filler, promotional fluff, and outdated domestic news widgets. Adds 5-pillar feasibility framework, geotechnical soil test (N-SPT), 10-year DCF financial modeling (NPV, IRR, Payback, DSCR), sensitivity analysis (+10% raw material / +15% CAPEX), worked Rp35B plant simulation, clears risk phrases, and official primary references.',
     'changes' => [
         'title' => 'Studi Kelayakan Pabrik: 5 Pilar Analisis, Perhitungan NPV/IRR, dan AMDAL PP 22/2021',
         'focus_keyword' => 'studi kelayakan pabrik',
@@ -91,7 +91,7 @@ return [
 </tbody>
 </table>
 
-<h2>Penyelidikan tanah geoteknik (N-SPT) &amp; jaminan utilitas energi</h2>
+<h2>Penyelidikan tanah geoteknik (N-SPT) &amp; keandalan pasokan utilitas energi</h2>
 
 <p>Kajian teknis lokasi tapak pabrik wajib memastikan fondasi gedung kokoh dan infrastruktur utilitas tersedia tanpa hambatan:</p>
 
@@ -109,7 +109,7 @@ return [
 <ul>
 <li><strong>Net Present Value (NPV):</strong> Nilai sekarang dari seluruh arus kas bersih di masa depan dikurangi total belanja modal awal (CAPEX). Proyek layak jika NPV bernilai positif.</li>
 <li><strong>Internal Rate of Return (IRR):</strong> Tingkat suku bunga pengembalian internal yang menghasilkan NPV = 0. Proyek layak jika IRR melampaui batas minimum pengembalian (<em>Hurdle Rate / WACC</em>).</li>
-<li><strong>Payback Period (PBP):</strong> Jangka waktu yang dibutuhkan oleh laba operasional bersih untuk menutup 100% modal investasi awal yang dikeluarkan.</li>
+<li><strong>Payback Period (PBP):</strong> Jangka waktu yang dibutuhkan oleh laba operasional bersih untuk menutup seluruh modal investasi awal yang dikeluarkan.</li>
 <li><strong>Debt Service Coverage Ratio (DSCR):</strong> Rasio kemampuan laba operasional bersih (EBITDA) dalam melunasi pokok dan bunga pinjaman bank per tahun (target minimal DSCR &ge; 1,30x).</li>
 <li><strong>Uji Sensitivitas Finansial (Sensitivity Stress Testing):</strong> Simulasi ketahanan proyek terhadap 3 skenario krisis: (1) Kenaikan biaya konstruksi CAPEX +15%, (2) Kenaikan harga bahan baku +10%, dan (3) Penurunan volume penjualan produk -15%.</li>
 </ul>
@@ -169,7 +169,7 @@ return [
 
 <h2>Regulasi persetujuan lingkungan: AMDAL vs RKL-RPL Rinci (PP 22/2021)</h2>
 
-<p>Kepatuhan hukum lingkungan hidup menentukan kelancaran operasional pabrik tanpa risiko sanksi penyegelan:</p>
+<p>Kepatuhan hukum lingkungan hidup menentukan kelancaran operasional pabrik guna memitigasi potensi sanksi penyegelan:</p>
 
 <ul>
 <li><strong>Fasilitas di Dalam Kawasan Industri Terpadu (Kawasan AMDAL):</strong> Berdasarkan PP 22/2021, pabrik manufaktur yang berlokasi di dalam kawasan industri resmi yang telah memiliki AMDAL Kawasan tidak perlu menyusun dokumen AMDAL tersendiri. Perusahaan cukup menyusun dokumen <em>Rencana Pengelolaan dan Pemantauan Lingkungan Hidup (RKL-RPL Rinci)</em> yang diverifikasi oleh pengelola kawasan industri dan Dinas Lingkungan Hidup.</li>
