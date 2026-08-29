@@ -143,8 +143,8 @@ return [
                     'new' => '<tr><td>Impor Sementara (ITE)</td><td>❌ Wajib Jaminan Pabean</td><td>❌ Tidak</td><td>✅ Boleh</td><td>6 bulan</td></tr>',
                 ],
                 [
-                    'old' => 'Pelabuhan Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, dan Balikpapan. 🤝</p>',
-                    'new' => "Pelabuhan Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, dan Balikpapan. 🤝</p>\n".$officialReferencesBlock,
+                    'old' => 'pelabuhan Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, dan Balikpapan. 🤝</p>',
+                    'new' => "pelabuhan Belawan, Kualanamu, Tanjung Priok, Tanjung Perak, Makassar, dan Balikpapan. 🤝</p>\n".$officialReferencesBlock,
                 ],
             ],
             'changes' => [
