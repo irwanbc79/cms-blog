@@ -250,7 +250,7 @@ return [
             ],
             'replacements' => [
                 [
-                    'old' => '<h1 id="cara-impor-sparepart-panduan-lengkap-untuk-pemula-wajib-tahu">Cara Impor Sparepart: Panduan Lengkap untuk Pemula (Wajib Tahu!)</h1>',
+                    'old' => '<h1 id="cara-impor-sparepart-panduan-lengkap">Cara Impor Sparepart: Panduan Lengkap untuk Pemula (Wajib Tahu!)</h1>',
                     'new' => '<h1 id="cara-impor-sparepart-otomotif-mesin">Impor Sparepart Otomotif & Mesin: Klasifikasi Pos Tarif HS Code dan Regulasi SNI</h1>
 <p><strong>Checklist simulasi studi kasus:</strong> Identifikasi nomor pos tarif HS Code dan verifikasi Lartas suku cadang otomotif serta komponen mesin industri sebelum pengapalan kargo.</p>',
                 ],
