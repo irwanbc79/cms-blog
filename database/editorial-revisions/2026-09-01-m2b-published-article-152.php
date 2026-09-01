@@ -7,103 +7,105 @@ $contentHtml = <<<'HTML'
     </div>
     <ul class="space-y-1 list-disc pl-5">
         <li><strong>Dasar Hukum Utama:</strong> UU No. 17 Tahun 2006 tentang Perubahan atas UU No. 10 Tahun 1995 tentang Kepabeanan (Pasal 18 s.d. 23B).</li>
-        <li><strong>Regulasi Pelaksana:</strong> PP No. 34 Tahun 2011 tentang Tindakan Anti-Dumping, Tindakan Imbalan, dan Tindakan Pengamanan Perdagangan.</li>
-        <li><strong>Otoritas Penyelidik & Penetap:</strong> Komite Anti Dumping Indonesia (KADI) Kementerian Perdagangan RI dan Kementerian Keuangan RI (Badan Kebijakan Fiskal / DJBC).</li>
-        <li><strong>Objek Verifikasi:</strong> Pos Tarif HS Code 8 Digit BTKI, Certificate of Origin (COO/SKA), dan eksportir produsen tertentu.</li>
-        <li><strong>Status Verifikasi:</strong> Diverifikasi berdasarkan Buku Tarif Kepabeanan Indonesia (BTKI) dan Portal INSW.</li>
+        <li><strong>Regulasi Pelaksana:</strong> Peraturan Pemerintah (PP) No. 34 Tahun 2011 tentang Tindakan Anti-Dumping, Tindakan Imbalan, dan Tindakan Pengamanan Perdagangan.</li>
+        <li><strong>Otoritas Penyelidik & Penetap:</strong> Komite Anti Dumping Indonesia (KADI) Kementerian Perdagangan RI dan Kementerian Keuangan RI (Badan Kebijakan Fiskal serta DJBC).</li>
+        <li><strong>Objek Verifikasi Pabean:</strong> Pos Tarif HS Code 8 Digit Buku Tarif Kepabeanan Indonesia (BTKI), Certificate of Origin (COO / SKA), dan identitas eksportir produsen terdaftar.</li>
+        <li><strong>Ketentuan Penegakan:</strong> Penerbitan Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP) atas kekurangan bea masuk dan BMAD sesuai PMK No. 190/PMK.04/2022.</li>
+        <li><strong>Status Verifikasi:</strong> Diverifikasi berdasarkan Buku Tarif Kepabeanan Indonesia (BTKI) dan Portal Indonesia National Single Window (INSW).</li>
     </ul>
 </div>
 
 <h1 id="tarif-bmad-barang-elektronik-impor">Tarif Bea Masuk Anti-Dumping (BMAD) Elektronik: Regulasi KADI, PMK, dan Kepatuhan Impor</h1>
 
-<p>Dalam tata kelola perdagangan internasional dan kepabeanan Republik Indonesia, pengenaan <strong>Bea Masuk Anti-Dumping (BMAD)</strong> merupakan instrumen trade remedy resmi untuk memulihkan kerugian material (<em>material injury</em>) industri dalam negeri akibat praktik penetapan harga ekspor yang lebih rendah daripada nilai normal di negara pengekspor (<em>dumping</em>). Bagi importir, distributor komponen industri, dan Perusahaan Pengurusan Jasa Kepabeanan (PPJK), kepatuhan terhadap penetapan BMAD sangat krusial untuk mencegah sanksi administrasi berupa denda Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP) serta kendala pengeluaran kargo di pelabuhan.</p>
+<p>Dalam lanskap perdagangan internasional dan kepabeanan Republik Indonesia, pengenaan <strong>Bea Masuk Anti-Dumping (BMAD)</strong> merupakan instrumen perlindungan perdagangan (<em>trade remedy</em>) resmi yang diatur secara ketat oleh hukum nasional dan konvensi World Trade Organization (WTO). Tujuan utamanya adalah memulihkan kerugian material (<em>material injury</em>) industri manufaktur dalam negeri akibat praktik penetapan harga ekspor yang sengaja ditekan lebih rendah daripada nilai normal di negara pengekspor (<em>dumping</em>). Bagi importir, distributor komponen industri, dan Perusahaan Pengurusan Jasa Kepabeanan (PPJK), penguasaan regulasi BMAD adalah pilar kepatuhan wajib untuk menghindari denda Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP), pemblokiran Nomor Induk Berusaha (NIB) kepabeanan, serta pembengkakan biaya penumpukan di pelabuhan.</p>
 
-<p><strong>Checklist simulasi studi kasus:</strong> Validasi pos tarif 8 digit HS Code pada portal INSW, pencocokan eksportir produsen dalam lampiran Peraturan Menteri Keuangan (PMK), dan kalkulasi beban BMAD sebelum pendaftaran dokumen Pemberitahuan Impor Barang (PIB BC 2.0).</p>
+<p><strong>Checklist simulasi studi kasus:</strong> Validasi pos tarif 8 digit HS Code pada portal INSW, audit kesesuaian eksportir produsen pada lampiran Peraturan Menteri Keuangan (PMK), kalkulasi simulasi beban BMAD terhadap Nilai Impor (CIF IDR), dan penyusunan dokumen PIB BC 2.0.</p>
 
-<h2 id="dasar-hukum-dan-definisi-yuridis">1. Dasar Hukum dan Definisi Yuridis Anti-Dumping di Indonesia</h2>
-<p>Berdasarkan <strong>Pasal 18 Undang-Undang Nomor 17 Tahun 2006 tentang Kepabeanan</strong>, Bea Masuk Anti-Dumping dikenakan terhadap barang impor dalam hal:</p>
+<h2 id="dasar-hukum-dan-definisi-yuridis">1. Dasar Hukum dan Definisi Yuridis Tindakan Anti-Dumping</h2>
+<p>Berdasarkan <strong>Pasal 18 Undang-Undang Nomor 17 Tahun 2006 tentang Kepabeanan</strong>, Bea Masuk Anti-Dumping dikenakan terhadap barang impor dalam kondisi:</p>
 <ol>
-    <li>Harga ekspor dari barang tersebut lebih rendah dari nilai normalnya di pasar domestik negara asal (terbukti terjadi <em>dumping</em>); dan</li>
-    <li>Impor barang tersebut menyebabkan kerugian (<em>injury</em>) terhadap industri dalam negeri yang memproduksi barang sejenis, mengancam terjadinya kerugian, atau menghalangi pengembangan industri barang sejenis di dalam negeri.</li>
+    <li>Harga ekspor dari barang tersebut lebih rendah dari nilai normalnya di pasar domestik negara pengekspor (terbukti memenuhi kualifikasi yuridis <em>dumping</em>); dan</li>
+    <li>Impor barang tersebut menyebabkan kerugian nyata (<em>injury</em>) terhadap industri dalam negeri yang memproduksi barang sejenis, menimbulkan ancaman terjadinya kerugian (<em>threat of material injury</em>), atau menghalangi pendirian serta pengembangan industri barang sejenis di tanah air.</li>
 </ol>
-<p>Besaran tarif BMAD ditetapkan setinggi-tingginya sebesar <strong>marjin dumping</strong>, yaitu selisih antara nilai normal barang di negara asal dengan harga ekspor barang yang bersangkutan. Pungutan BMAD bersifat kumulatif, artinya dikenakan sebagai tambahan atas Bea Masuk umum (MFN) atau tarif preferensi skema perjanjian perdagangan internasional (FTA).</p>
+<p>Ketetapan tarif BMAD ditetapkan setinggi-tingginya sebesar <strong>marjin dumping</strong>, yaitu selisih matematis antara nilai normal barang di pasar domestik negara asal dengan harga ekspor barang yang ditransaksikan ke wilayah pabean Indonesia. Pungutan BMAD bersifat kumulatif murni, yang berarti ditagihkan sebagai tambahan atas Bea Masuk umum (<em>Most Favoured Nation / MFN</em>) atau tarif preferensi skema perjanjian perdagangan internasional (<em>Free Trade Agreement / FTA</em>).</p>
 
-<h2 id="alur-penyelidikan-kadi">2. Alur Penyelidikan KADI dan Penetapan Tarif oleh Menteri Keuangan</h2>
-<p>Penetapan tarif BMAD di Indonesia tidak dilakukan secara sepihak, melainkan melalui proses audit dan pembuktian hukum perdagangan internasional yang ketat di bawah koordinasi <strong>Komite Anti Dumping Indonesia (KADI)</strong>:</p>
+<h2 id="alur-penyelidikan-kadi">2. Alur Penyelidikan KADI: Dari Inisiasi Petisi hingga Penerbitan PMK</h2>
+<p>Penetapan tarif BMAD di Indonesia tunduk pada <strong>Peraturan Pemerintah No. 34 Tahun 2011</strong> melalui investigasi komprehensif oleh <strong>Komite Anti Dumping Indonesia (KADI)</strong> Kementerian Perdagangan. Alur penyelidikan resmi meliputi tahapan berikut:</p>
 <ul>
-    <li><strong>Tahap 1: Pengajuan Permohonan (Petisi):</strong> Asosiasi produsen atau industri dalam negeri mengajukan permohonan penyelidikan dengan melampirkan bukti awal adanya dumping, kerugian riil, dan hubungan sebab-akibat (<em>causal link</em>).</li>
-    <li><strong>Tahap 2: Inisiasi Penyelidikan & Kuesioner:</strong> KADI mengumumkan inisiasi penyelidikan secara resmi di media massa dan mengirimkan kuesioner kepada importir terdaftar, eksportir produsen di negara mitra, serta pemerintah negara pengekspor.</li>
-    <li><strong>Tahap 3: Verifikasi Lapangan (On-the-spot Investigation):</strong> Tim auditor KADI melakukan verifikasi langsung ke pabrik eksportir di negara asal untuk memeriksa struktur biaya produksi, harga jual domestik, dan laporan keuangan audit.</li>
-    <li><strong>Tahap 4: Laporan Akhir & Rekomendasi:</strong> KADI menyusun <em>Final Disclosure</em> yang memuat perhitungan marjin dumping per eksportir produsen, lalu menyampaikan rekomendasi besaran tarif BMAD kepada Menteri Perdagangan.</li>
-    <li><strong>Tahap 5: Penerbitan PMK Pengenaan BMAD:</strong> Menteri Keuangan menetapkan Peraturan Menteri Keuangan (PMK) yang memuat nomor HS Code, daftar nama eksportir produsen, besaran tarif persentase (ad valorem) atau nominal (spesifik), dan masa berlaku ketetapan (umumnya 5 tahun).</li>
+    <li><strong>1. Pengajuan Permohonan (Petisi Industri Domestik):</strong> Produsen dalam negeri yang mewakili minimal 25% dari total produksi nasional mengajukan permohonan tertulis kepada KADI dengan menyertakan bukti awal margin dumping, kerugian finansial perusahaan, dan hubungan sebab-akibat (<em>causal link</em>).</li>
+    <li><strong>2. Inisiasi Penyelidikan dan Notifikasi Resmi:</strong> Setelah berkas dinyatakan lengkap, KADI mengumumkan dimulainya penyelidikan resmi melalui Warta Perdagangan dan mengirimkan kuesioner audit kepada para pihak berkepentingan (importir terdaftar, eksportir produsen, dan perwakilan kedutaan negara mitra).</li>
+    <li><strong>3. Verifikasi Lapangan (On-the-spot Verification):</strong> Tim investigator KADI melakukan audit forensik biaya ke pabrik eksportir di negara asal untuk memeriksa pembukuan akuntansi, struktur biaya bahan baku, harga energi, dan faktur penjualan lokal.</li>
+    <li><strong>4. Rapat Dengar Pendapat (Public Hearing):</strong> KADI memfasilitasi forum resmi di mana importir, asosiasi pengguna, dan eksportir dapat menyampaikan bukti sanggahan dan argumen ekonomi.</li>
+    <li><strong>5. Laporan Akhir (Final Determination) & Rekomendasi:</strong> KADI menyusun laporan akhir hasil penyelidikan yang menetapkan marjin dumping spesifik per produsen, kemudian meneruskan rekomendasi pengenaan tarif kepada Menteri Perdagangan.</li>
+    <li><strong>6. Penetapan Regulasi Fiskal oleh Menteri Keuangan:</strong> Menteri Keuangan menerbitkan Peraturan Menteri Keuangan (PMK) yang merinci daftar nomor HS Code 8 digit, nama eksportir produsen yang dikenakan tarif khusus, besaran tarif ad valorem (%) atau spesifik (Rp/Kg/Unit), serta masa berlaku pengenaan (standar 5 tahun).</li>
 </ul>
 
 <h2 id="komparasi-instrumen-pungutan">3. Komparasi Instrumen Pengamanan Dagang (Trade Remedies)</h2>
-<p>Berikut adalah perbandingan karakteristik instrumen pungutan kepabeanan khusus di Indonesia:</p>
+<p>Dalam sistem tarif kepabeanan Indonesia, terdapat tiga instrumen perlindungan perdagangan dengan mekanisme pengenaan yang berbeda:</p>
 
 <table class="min-w-full border-collapse border border-gray-300 my-4">
     <thead>
         <tr class="bg-gray-100">
             <th class="border border-gray-300 px-4 py-2 text-left">Instrumen Pabean</th>
-            <th class="border border-gray-300 px-4 py-2 text-left">Dasar Pertimbangan</th>
-            <th class="border border-gray-300 px-4 py-2 text-left">Lembaga Penyelidik</th>
-            <th class="border border-gray-300 px-4 py-2 text-left">Sifat Pengenaan</th>
+            <th class="border border-gray-300 px-4 py-2 text-left">Kondisi Pemicu</th>
+            <th class="border border-gray-300 px-4 py-2 text-left">Lembaga Otoritas</th>
+            <th class="border border-gray-300 px-4 py-2 text-left">Sifat Ruang Lingkup</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td class="border border-gray-300 px-4 py-2 font-medium">Bea Masuk Anti-Dumping (BMAD)</td>
-            <td class="border border-gray-300 px-4 py-2">Harga ekspor lebih rendah dari nilai normal (unfair trade).</td>
+            <td class="border border-gray-300 px-4 py-2">Harga ekspor lebih rendah dari nilai normal pasar asal (unfair pricing).</td>
             <td class="border border-gray-300 px-4 py-2">Komite Anti Dumping Indonesia (KADI)</td>
             <td class="border border-gray-300 px-4 py-2">Spesifik per negara asal dan per eksportir produsen terdaftar.</td>
         </tr>
         <tr>
             <td class="border border-gray-300 px-4 py-2 font-medium">Bea Masuk Tindakan Pengamanan (BMTP / Safeguard)</td>
-            <td class="border border-gray-300 px-4 py-2">Lonjakan volume impor secara absolut atau relatif yang mengancam industri dalam negeri (fair trade).</td>
+            <td class="border border-gray-300 px-4 py-2">Lonjakan kuantitas impor secara masif yang merugikan produsen lokal (surge in imports).</td>
             <td class="border border-gray-300 px-4 py-2">Komite Pengamanan Perdagangan Indonesia (KPPI)</td>
-            <td class="border border-gray-300 px-4 py-2">Berlaku global untuk seluruh negara pengekspor (kecuali negara berkembang tertentu).</td>
+            <td class="border border-gray-300 px-4 py-2">Berlaku universal untuk semua negara asal (kecuali negara berkembang tertentu).</td>
         </tr>
         <tr>
             <td class="border border-gray-300 px-4 py-2 font-medium">Bea Masuk Imbalan (BMI / Countervailing)</td>
-            <td class="border border-gray-300 px-4 py-2">Barang impor menerima subsidi finansial langsung dari pemerintah negara pengekspor.</td>
+            <td class="border border-gray-300 px-4 py-2">Barang impor terbukti menerima subsidi finansial terlarang dari pemerintah negara asal.</td>
             <td class="border border-gray-300 px-4 py-2">Komite Anti Dumping Indonesia (KADI)</td>
-            <td class="border border-gray-300 px-4 py-2">Spesifik per negara pengekspor dan program subsidi terkait.</td>
+            <td class="border border-gray-300 px-4 py-2">Spesifik terhadap negara pengekspor dan program subsidi terkait.</td>
         </tr>
     </tbody>
 </table>
 
 <h2 id="simulasi-perhitungan-bmad">4. Simulasi Kalkulasi Pungutan Impor dengan Komponen BMAD</h2>
-<p>Untuk memahami dampak finansial BMAD pada dokumen PIB, mari pelajari contoh simulasi perhitungan impor kargo komoditas elektronik/industri dengan data asumsi sebagai berikut:</p>
+<p>Penambahan komponen BMAD mempengaruhi total kewajiban perpajakan impor karena BMAD masuk ke dalam pembentukan <strong>Nilai Impor</strong>. Mari cermati simulasi perhitungan berikut:</p>
 
 <div class="bg-gray-50 border-l-4 border-blue-600 p-4 my-4 font-mono text-sm">
-    <p><strong>Contoh Kasus Impor:</strong></p>
+    <p><strong>Parameter Transaksi Impor:</strong></p>
     <p>• Nilai Pabean (CIF): USD 50,000</p>
-    <p>• Kurs Pajak Mingguan Menkeu (NDBM): Rp 16.000 / USD</p>
-    <p>• Nilai Pabean dalam Rupiah (CIF IDR): 50,000 × Rp 16.000 = <strong>Rp 800.000.000</strong></p>
-    <p>• Tarif Bea Masuk MFN: 5%</p>
+    <p>• Nilai Dasar Penghitungan Bea Masuk (NDBM / Kurs Pajak Kemenkeu): Rp 16.000 / USD</p>
+    <p>• Nilai Pabean dalam Rupiah (CIF IDR): USD 50,000 × Rp 16.000 = <strong>Rp 800.000.000</strong></p>
+    <p>• Tarif Bea Masuk Umum (MFN): 5%</p>
     <p>• Tarif Bea Masuk Anti-Dumping (BMAD): 15% (sesuai lampiran PMK berlaku)</p>
-    <p>• Tarif PPN Impor: 11%</p>
-    <p>• Tarif PPh Pasal 22 Impor (Memiliki API-U / NIB): 2.5%</p>
+    <p>• Tarif Pajak Pertambahan Nilai (PPN Impor): 11%</p>
+    <p>• Tarif Pajak Penghasilan (PPh Pasal 22 Impor): 2.5% (memiliki NIB / API aktif)</p>
 </div>
 
-<h3 id="rincian-kalkulasi-pajak-impor">Rincian Perhitungan Pungutan Pabean:</h3>
+<h3 id="rincian-kalkulasi-pajak-impor">Rincian Perhitungan Pajak dan Bea Masuk:</h3>
 <ol>
-    <li><strong>Bea Masuk (MFN):</strong> 5% × Rp 800.000.000 = <strong>Rp 40.000.000</strong></li>
+    <li><strong>Bea Masuk MFN:</strong> 5% × Rp 800.000.000 = <strong>Rp 40.000.000</strong></li>
     <li><strong>Bea Masuk Anti-Dumping (BMAD):</strong> 15% × Rp 800.000.000 = <strong>Rp 120.000.000</strong></li>
     <li><strong>Nilai Impor:</strong> CIF IDR + Bea Masuk MFN + BMAD = Rp 800.000.000 + Rp 40.000.000 + Rp 120.000.000 = <strong>Rp 960.000.000</strong></li>
     <li><strong>PPN Impor (11%):</strong> 11% × Nilai Impor (Rp 960.000.000) = <strong>Rp 105.600.000</strong></li>
     <li><strong>PPh Pasal 22 Impor (2.5%):</strong> 2.5% × Nilai Impor (Rp 960.000.000) = <strong>Rp 24.000.000</strong></li>
-    <li><strong>Total Pungutan Impor yang Wajib Disetor (Billing Pabean):</strong> Rp 40.000.000 + Rp 120.000.000 + Rp 105.600.000 + Rp 24.000.000 = <strong>Rp 289.600.000</strong></li>
+    <li><strong>Total Tagihan Billing Perbendaharaan Pabean:</strong> Rp 40.000.000 + Rp 120.000.000 + Rp 105.600.000 + Rp 24.000.000 = <strong>Rp 289.600.000</strong></li>
 </ol>
-<p><em>Catatan:</em> Penambahan BMAD secara otomatis menaikkan dasar pengenaan Nilai Impor, sehingga porsi setoran PPN dan PPh Pasal 22 turut mengalami kenaikan proporsional.</p>
+<p><em>Analisis Finansial:</em> Apabila barang tersebut tidak dikenakan BMAD, Nilai Impor hanya sebesar Rp 840.000.000 dengan total pungutan pabean Rp 153.400.000. Pengenaan BMAD 15% menambah beban tunai sebesar Rp 136.200.000 (akibat akumulasi BMAD, PPN, dan PPh 22).</p>
 
-<h2 id="prosedur-kepatuhan-importir">5. Prosedur Kepatuhan dan Mitigasi Risiko bagi Importir & PPJK</h2>
-<p>Untuk menghindari penetapan tarif BMAD yang keliru atau denda administrasi kepabeanan, importir wajib menerapkan langkah-langkah mitigasi berikut:</p>
+<h2 id="prosedur-kepatuhan-importir">5. Prosedur Kepatuhan, Verifikasi Dokumen, dan Mitigasi Risiko</h2>
+<p>Agar proses customs clearance di pelabuhan berjalan lancar tanpa terbitnya nota pembetulan (SPTNP) dari Pejabat Pemeriksa Dokumen Bea Cukai, importir dan PPJK wajib menjalankan langkah verifikasi berikut:</p>
 <ul>
-    <li><strong>Verifikasi Kode HS di INSW:</strong> Lakukan pemeriksaan pos tarif 8 digit pada Buku Tarif Kepabeanan Indonesia (BTKI) di portal resmi <a href="https://insw.go.id" target="_blank" rel="noopener noreferrer">insw.go.id</a> untuk memastikan apakah komoditas yang diimpor tercantum dalam lampiran keputusan pengenaan BMAD.</li>
-    <li><strong>Audit Certificate of Origin (COO / SKA):</strong> Pastikan identitas pabrik pembuat (<em>manufacturer / exporter</em>) pada dokumen SKA dan Commercial Invoice tercantum secara tepat sesuai nama entitas yang terdaftar pada lampiran tarif PMK terkait.</li>
-    <li><strong>Pemisahan Pos Barang (Split HS Code):</strong> Jika dalam satu kontainer terdapat barang yang terkena BMAD dan barang yang tidak terkena BMAD, buat uraian perincian pos barang secara terpisah dan detail pada dokumen PIB BC 2.0 untuk mencegah penetapan tarif tertinggi atas seluruh isi kontainer.</li>
-    <li><strong>Simulasi Landed Cost Pra-Pengapalan:</strong> Selalu hitung estimasi total beban bea dan pajak sebelum menandatangani kontrak pembelian luar negeri (Incoterms FOB/CIF) agar margin keuntungan bisnis tetap terlindungi.</li>
+    <li><strong>1. Penelusuran Pos Tarif 8 Digit di Portal INSW:</strong> Lakukan validasi nomor HS Code barang pada sistem Buku Tarif Kepabeanan Indonesia di <a href="https://insw.go.id" target="_blank" rel="noopener noreferrer">insw.go.id</a>. Cermati kolom fasilitas dan ketentuan khusus untuk melihat apakah pos tarif tersebut terikat PMK BMAD yang aktif.</li>
+    <li><strong>2. Audit Certificate of Origin (COO / SKA):</strong> Periksa nama eksportir produsen yang tercantum pada Form SKA (seperti Form E, Form D, atau Form AK) serta Commercial Invoice. Jika nama produsen tercantum dalam lampiran PMK dengan tarif BMAD khusus (misal 5%), pastikan entitas tersebut cocok persis agar tidak dikenakan tarif residual tertinggi (misal 25%).</li>
+    <li><strong>3. Pemisahan Uraian Pos Barang (Split Declaration):</strong> Jangan menggabungkan barang yang terkena BMAD dan barang non-BMAD ke dalam satu pos baris PIB. Cantumkan uraian spesifikasi teknis, merek, tipe, dan pos tarif secara terpisah pada modul PIB CEISA 4.0.</li>
+    <li><strong>4. Tata Cara Keberatan Pabean:</strong> Apabila terdapat perbedaan penetapan klasifikasi pos tarif oleh Pejabat Bea Cukai yang mengakibatkan terbitnya tagihan SPTNP BMAD, importir berhak mengajukan permohonan <strong>Keberatan Pabean</strong> secara tertulis kepada Direktur Jenderal Bea dan Cukai dalam jangka waktu maksimal 60 hari sejak tanggal penetapan, dengan menyerahkan jaminan pabean senilai tagihan sesuai Pasal 93 UU No. 17 Tahun 2006.</li>
 </ul>
 
 <div class="mt-8 pt-4 border-t border-gray-200">
