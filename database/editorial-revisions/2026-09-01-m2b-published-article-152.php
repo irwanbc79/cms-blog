@@ -159,6 +159,6 @@ return [
                 'answer' => 'Importir dapat melakukan pengecekan nomor pos tarif 8 digit HS Code pada portal Indonesia National Single Window (insw.go.id) pada menu BTKI atau meneliti lampiran Peraturan Menteri Keuangan (PMK) terkait yang memuat rincian pos tarif serta daftar nama eksportir produsen yang dikenai BMAD.',
             ],
         ],
+        'content_html' => $contentHtml,
     ],
-    'content_html' => $contentHtml,
 ];
