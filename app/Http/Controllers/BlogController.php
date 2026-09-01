@@ -360,4 +360,21 @@ class BlogController extends Controller
         return response()->view('blog.kalkulator_roi_erp', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
+
+    /**
+     * Display the interactive international buyer risk & payment method assessment tool.
+     */
+    public function kalkulatorRisikoBuyer()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Skor Risiko Buyer & Skema Pembayaran Ekspor 2026 — '.$site->company_name,
+            'description' => 'Evaluasi profil kredibilitas buyer internasional, analisa tingkat risiko wanprestasi pembayaran ekspor, dan panduan pemilihan metode pembayaran aman (L/C vs T/T).',
+            'canonical' => url('/blog/kalkulator-risiko-buyer'),
+        ];
+
+        return response()->view('blog.kalkulator_risiko_buyer', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }
