@@ -45,7 +45,7 @@ class SitemapController extends Controller
         $content .= '  </url>'."\n";
 
         // Indexable trust & interactive tool pages shared by portfolio blogs.
-        foreach (['about', 'privacy-policy', 'terms-of-service', 'kalkulator-bea-masuk', 'kalkulator-ekspor-umkm'] as $trustPage) {
+        foreach (['about', 'privacy-policy', 'terms-of-service', 'kalkulator-bea-masuk', 'kalkulator-ekspor-umkm', 'kalkulator-roi-erp'] as $trustPage) {
             $content .= '  <url>'."\n";
             $content .= '    <loc>'.url('/blog/'.$trustPage).'</loc>'."\n";
             $content .= '    <changefreq>monthly</changefreq>'."\n";

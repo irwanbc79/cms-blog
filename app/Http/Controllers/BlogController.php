@@ -343,4 +343,21 @@ class BlogController extends Controller
         return response()->view('blog.kalkulator_ekspor', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
+
+    /**
+     * Display the interactive ERP ROI and cost estimation calculator.
+     */
+    public function kalkulatorRoiErp()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator ROI & Biaya Implementasi ERP Bisnis 2026 — '.$site->company_name,
+            'description' => 'Simulasi perhitungan potensi penghematan biaya operasional, efisiensi jam kerja, titik impas payback period, dan ROI implementasi sistem ERP enterprise.',
+            'canonical' => url('/blog/kalkulator-roi-erp'),
+        ];
+
+        return response()->view('blog.kalkulator_roi_erp', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }

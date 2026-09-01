@@ -38,6 +38,7 @@ Route::prefix('blog')->group(function () {
     Route::get('/about', [BlogController::class, 'aboutEditorial'])->name('blog.about');
     Route::get('/kalkulator-bea-masuk', [BlogController::class, 'kalkulatorBeaMasuk'])->name('blog.kalkulator');
     Route::get('/kalkulator-ekspor-umkm', [BlogController::class, 'kalkulatorEkspor'])->name('blog.kalkulator.ekspor');
+    Route::get('/kalkulator-roi-erp', [BlogController::class, 'kalkulatorRoiErp'])->name('blog.kalkulator.erp');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
     Route::post('/{slug}/comments', [BlogController::class, 'storeComment'])->name('blog.comments.store');
 });
