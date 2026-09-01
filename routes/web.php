@@ -36,6 +36,7 @@ Route::prefix('blog')->group(function () {
     Route::get('/privacy-policy', [BlogController::class, 'privacyPolicy'])->name('blog.privacy');
     Route::get('/terms-of-service', [BlogController::class, 'termsOfService'])->name('blog.terms');
     Route::get('/about', [BlogController::class, 'aboutEditorial'])->name('blog.about');
+    Route::get('/kalkulator-bea-masuk', [BlogController::class, 'kalkulatorBeaMasuk'])->name('blog.kalkulator');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('blog.show');
     Route::post('/{slug}/comments', [BlogController::class, 'storeComment'])->name('blog.comments.store');
 });
@@ -52,6 +53,12 @@ Route::get('/ads.txt', function () {
 
     return response($content, 200, ['Content-Type' => 'text/plain']);
 });
+
+// 410 Gone for legacy dead archives (tags, categories, deprecated scripts)
+Route::get('/tag/{any}', fn () => response('Resource permanently removed.', 410))->where('any', '.*');
+Route::get('/tags/{any}', fn () => response('Resource permanently removed.', 410))->where('any', '.*');
+Route::get('/category/{any}', fn () => response('Resource permanently removed.', 410))->where('any', '.*');
+Route::get('/out_ebook_v2.html', fn () => response('Resource permanently removed.', 410));
 
 // Root redirect to admin panel
 Route::get('/', function () {

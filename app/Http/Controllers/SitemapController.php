@@ -43,12 +43,12 @@ class SitemapController extends Controller
         $content .= '    <priority>1.0</priority>'."\n";
         $content .= '  </url>'."\n";
 
-        // Indexable trust pages shared by every portfolio blog.
-        foreach (['about', 'privacy-policy', 'terms-of-service'] as $trustPage) {
+        // Indexable trust & interactive tool pages shared by portfolio blogs.
+        foreach (['about', 'privacy-policy', 'terms-of-service', 'kalkulator-bea-masuk'] as $trustPage) {
             $content .= '  <url>'."\n";
             $content .= '    <loc>'.url('/blog/'.$trustPage).'</loc>'."\n";
-            $content .= '    <changefreq>yearly</changefreq>'."\n";
-            $content .= '    <priority>0.4</priority>'."\n";
+            $content .= '    <changefreq>monthly</changefreq>'."\n";
+            $content .= '    <priority>0.7</priority>'."\n";
             $content .= '  </url>'."\n";
         }
 

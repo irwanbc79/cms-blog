@@ -309,4 +309,21 @@ class BlogController extends Controller
         return response()->view('blog.terms', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
+
+    /**
+     * Display the interactive Customs Duty and Landed Cost calculator.
+     */
+    public function kalkulatorBeaMasuk()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Bea Masuk dan Simulasi Pajak Impor 2026 — '.$site->company_name,
+            'description' => 'Simulasi perhitungan bea masuk, PPN 11%, PPh 22, dan nilai pabean CIF secara online dan instan sesuai regulasi Kementerian Keuangan & CEISA 4.0.',
+            'canonical' => url('/blog/kalkulator-bea-masuk'),
+        ];
+
+        return response()->view('blog.kalkulator', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }
