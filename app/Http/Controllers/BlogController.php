@@ -326,4 +326,21 @@ class BlogController extends Controller
         return response()->view('blog.kalkulator', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
+
+    /**
+     * Display the interactive SME Export Readiness assessment tool.
+     */
+    public function kalkulatorEkspor()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Kesiapan Ekspor UMKM 2026 — '.$site->company_name,
+            'description' => 'Self-assessment kesiapan ekspor UMKM: periksa kelayakan legalitas (NIB RBA), sertifikasi mutu internasional, kapasitas pasokan, dan dokumen pabean secara instan.',
+            'canonical' => url('/blog/kalkulator-ekspor-umkm'),
+        ];
+
+        return response()->view('blog.kalkulator_ekspor', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
 }
