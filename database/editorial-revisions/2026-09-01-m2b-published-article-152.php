@@ -8,7 +8,7 @@ $contentHtml = <<<'HTML'
     <ul class="space-y-1 list-disc pl-5">
         <li><strong>Dasar Hukum Utama:</strong> UU No. 17 Tahun 2006 tentang Perubahan atas UU No. 10 Tahun 1995 tentang Kepabeanan (Pasal 18 s.d. 23B).</li>
         <li><strong>Regulasi Pelaksana:</strong> Peraturan Pemerintah (PP) No. 34 Tahun 2011 tentang Tindakan Anti-Dumping, Tindakan Imbalan, dan Tindakan Pengamanan Perdagangan.</li>
-        <li><strong>Otoritas Penyelidik & Penetap:</strong> Komite Anti Dumping Indonesia (KADI) Kementerian Perdagangan RI dan Kementerian Keuangan RI (Badan Kebijakan Fiskal serta DJBC).</li>
+        <li><strong>Otoritas Penyelidik & Penetap:</strong> Komite Anti Dumping Indonesia (KADI) Kementerian Perdagangan RI dan Kementerian Keuangan RI (Badan Kebijakan Fiskal serta Direktorat Jenderal Bea dan Cukai).</li>
         <li><strong>Objek Verifikasi Pabean:</strong> Pos Tarif HS Code 8 Digit Buku Tarif Kepabeanan Indonesia (BTKI), Certificate of Origin (COO / SKA), dan identitas eksportir produsen terdaftar.</li>
         <li><strong>Ketentuan Penegakan:</strong> Penerbitan Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP) atas kekurangan bea masuk dan BMAD sesuai PMK No. 190/PMK.04/2022.</li>
         <li><strong>Status Verifikasi:</strong> Diverifikasi berdasarkan Buku Tarif Kepabeanan Indonesia (BTKI) dan Portal Indonesia National Single Window (INSW).</li>
@@ -17,7 +17,7 @@ $contentHtml = <<<'HTML'
 
 <h1 id="tarif-bmad-barang-elektronik-impor">Tarif Bea Masuk Anti-Dumping (BMAD) Elektronik: Regulasi KADI, PMK, dan Kepatuhan Impor</h1>
 
-<p>Dalam lanskap perdagangan internasional dan kepabeanan Republik Indonesia, pengenaan <strong>Bea Masuk Anti-Dumping (BMAD)</strong> merupakan instrumen perlindungan perdagangan (<em>trade remedy</em>) resmi yang diatur secara ketat oleh hukum nasional dan konvensi World Trade Organization (WTO). Tujuan utamanya adalah memulihkan kerugian material (<em>material injury</em>) industri manufaktur dalam negeri akibat praktik penetapan harga ekspor yang sengaja ditekan lebih rendah daripada nilai normal di negara pengekspor (<em>dumping</em>). Bagi importir, distributor komponen industri, dan Perusahaan Pengurusan Jasa Kepabeanan (PPJK), penguasaan regulasi BMAD adalah pilar kepatuhan wajib untuk menghindari denda Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP), pemblokiran Nomor Induk Berusaha (NIB) kepabeanan, serta pembengkakan biaya penumpukan di pelabuhan.</p>
+<p>Dalam lanskap tata kelola perdagangan internasional dan kepabeanan Republik Indonesia, pengenaan <strong>Bea Masuk Anti-Dumping (BMAD)</strong> merupakan instrumen perlindungan perdagangan (<em>trade remedy</em>) resmi yang diatur secara ketat oleh hukum nasional dan konvensi World Trade Organization (WTO). Tujuan utamanya adalah memulihkan kerugian material (<em>material injury</em>) industri manufaktur dalam negeri akibat praktik penetapan harga ekspor yang sengaja ditekan lebih rendah daripada nilai normal di negara pengekspor (<em>dumping</em>). Bagi importir, distributor komponen industri, dan Perusahaan Pengurusan Jasa Kepabeanan (PPJK), penguasaan regulasi BMAD adalah pilar kepatuhan wajib untuk menghindari denda Surat Penetapan Tarif dan/atau Nilai Pabean (SPTNP), pemblokiran Nomor Induk Berusaha (NIB) kepabeanan, serta pembengkakan biaya penumpukan di pelabuhan.</p>
 
 <p><strong>Checklist simulasi studi kasus:</strong> Validasi pos tarif 8 digit HS Code pada portal INSW, audit kesesuaian eksportir produsen pada lampiran Peraturan Menteri Keuangan (PMK), kalkulasi simulasi beban BMAD terhadap Nilai Impor (CIF IDR), dan penyusunan dokumen PIB BC 2.0.</p>
 
@@ -99,7 +99,15 @@ $contentHtml = <<<'HTML'
 </ol>
 <p><em>Analisis Finansial:</em> Apabila barang tersebut tidak dikenakan BMAD, Nilai Impor hanya sebesar Rp 840.000.000 dengan total pungutan pabean Rp 153.400.000. Pengenaan BMAD 15% menambah beban tunai sebesar Rp 136.200.000 (akibat akumulasi BMAD, PPN, dan PPh 22).</p>
 
-<h2 id="prosedur-kepatuhan-importir">5. Prosedur Kepatuhan, Verifikasi Dokumen, dan Mitigasi Risiko</h2>
+<h2 id="sunset-review-dan-masa-berlaku">5. Mekanisme Sunset Review dan Masa Berlaku Ketetapan BMAD</h2>
+<p>Sesuai dengan Article 11.3 WTO Anti-Dumping Agreement dan Pasal 39 PP No. 34 Tahun 2011, pengenaan BMAD memiliki batasan durasi:</p>
+<ul>
+    <li><strong>Durasi Standar:</strong> Ketetapan PMK BMAD berlaku paling lama 5 (lima) tahun sejak tanggal diundangkan.</li>
+    <li><strong>Tinjauan Kembali Menjelang Berakhir (Sunset Review):</strong> Paling lambat 6 (enam) bulan sebelum berakhirnya masa pengenaan, KADI dapat menginisiasi peninjauan kembali (<em>Sunset Review</em>) atas inisiatif sendiri atau permohonan industri dalam negeri. Peninjauan ini menguji apakah pencabutan BMAD berpotensi menimbulkan keberlanjutan atau keberulangan praktik dumping dan kerugian (<em>continuation or recurrence of dumping and injury</em>).</li>
+    <li><strong>Pemberhentian BMAD:</strong> Apabila hasil Sunset Review menunjukkan bahwa industri dalam negeri telah pulih secara kompetitif atau praktik dumping tidak lagi terbukti, Menteri Keuangan akan mencabut pengenaan BMAD dan tarif bea masuk kembali ke struktur tarif MFN normal.</li>
+</ul>
+
+<h2 id="prosedur-kepatuhan-importir">6. Prosedur Kepatuhan, Verifikasi Dokumen, dan Mitigasi Risiko</h2>
 <p>Agar proses customs clearance di pelabuhan berjalan lancar tanpa terbitnya nota pembetulan (SPTNP) dari Pejabat Pemeriksa Dokumen Bea Cukai, importir dan PPJK wajib menjalankan langkah verifikasi berikut:</p>
 <ul>
     <li><strong>1. Penelusuran Pos Tarif 8 Digit di Portal INSW:</strong> Lakukan validasi nomor HS Code barang pada sistem Buku Tarif Kepabeanan Indonesia di <a href="https://insw.go.id" target="_blank" rel="noopener noreferrer">insw.go.id</a>. Cermati kolom fasilitas dan ketentuan khusus untuk melihat apakah pos tarif tersebut terikat PMK BMAD yang aktif.</li>
