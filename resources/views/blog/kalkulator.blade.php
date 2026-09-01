@@ -6,15 +6,15 @@
 @push('head')
 <script type="application/ld+json">
 {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
+    "@@context": "https://schema.org",
+    "@@type": "WebApplication",
     "name": "Kalkulator Bea Masuk dan Simulasi Pajak Impor",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "All",
     "url": "{{ $seo['canonical'] }}",
     "description": "{{ $seo['description'] }}",
     "publisher": {
-        "@type": "Organization",
+        "@@type": "Organization",
         "name": "{{ $site->company_name }}"
     }
 }
