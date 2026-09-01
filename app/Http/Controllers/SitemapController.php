@@ -52,15 +52,7 @@ class SitemapController extends Controller
             $content .= '  </url>'."\n";
         }
 
-        // Pillar pages
-        $pillars = $articles->pluck('pillar')->unique()->filter();
-        foreach ($pillars as $pillar) {
-            $content .= '  <url>'."\n";
-            $content .= '    <loc>'.url('/blog?pillar='.$pillar).'</loc>'."\n";
-            $content .= '    <changefreq>daily</changefreq>'."\n";
-            $content .= '    <priority>0.8</priority>'."\n";
-            $content .= '  </url>'."\n";
-        }
+
 
         // Articles
         foreach ($articles as $article) {
