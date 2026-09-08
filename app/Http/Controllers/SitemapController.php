@@ -44,8 +44,21 @@ class SitemapController extends Controller
         $content .= '    <priority>1.0</priority>'."\n";
         $content .= '  </url>'."\n";
 
-        // Indexable trust & interactive tool pages shared by portfolio blogs.
-        foreach (['about', 'privacy-policy', 'terms-of-service', 'kalkulator-bea-masuk', 'kalkulator-ekspor-umkm', 'kalkulator-roi-erp', 'kalkulator-risiko-buyer'] as $trustPage) {
+        // Legal & editorial trust pages are genuinely per-site, so every blog
+        // lists its own.
+        $indexablePages = ['about', 'privacy-policy', 'terms-of-service'];
+
+        // Interactive tool pages are served by every portfolio blog but only
+        // indexed by their owning domain (config/adsense.php); the others
+        // canonicalise across to the owner and stay out of their own sitemap.
+        $host = rtrim(url('/'), '/');
+        foreach (config('adsense.tool_page_owners', []) as $slug => $owner) {
+            if (rtrim($owner, '/') === $host) {
+                $indexablePages[] = $slug;
+            }
+        }
+
+        foreach ($indexablePages as $trustPage) {
             $content .= '  <url>'."\n";
             $content .= '    <loc>'.url('/blog/'.$trustPage).'</loc>'."\n";
             $content .= '    <changefreq>monthly</changefreq>'."\n";

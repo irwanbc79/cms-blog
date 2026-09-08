@@ -311,6 +311,20 @@ class BlogController extends Controller
     }
 
     /**
+     * Canonical URL for a shared interactive tool page.
+     *
+     * Every portfolio blog serves the same tool pages, so the non-owning
+     * domains canonicalise across to the one owner in config/adsense.php
+     * instead of self-canonicalising duplicate content.
+     */
+    protected function toolPageCanonical(string $slug): string
+    {
+        $owner = config('adsense.tool_page_owners.'.$slug);
+
+        return $owner ? $owner.'/blog/'.$slug : url('/blog/'.$slug);
+    }
+
+    /**
      * Display the interactive Customs Duty and Landed Cost calculator.
      */
     public function kalkulatorBeaMasuk()
@@ -320,7 +334,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Kalkulator Bea Masuk dan Simulasi Pajak Impor 2026 — '.$site->company_name,
             'description' => 'Simulasi perhitungan bea masuk, PPN 11%, PPh 22, dan nilai pabean CIF secara online dan instan sesuai regulasi Kementerian Keuangan & CEISA 4.0.',
-            'canonical' => url('/blog/kalkulator-bea-masuk'),
+            'canonical' => $this->toolPageCanonical('kalkulator-bea-masuk'),
         ];
 
         return response()->view('blog.kalkulator', compact('site', 'seo'))
@@ -337,7 +351,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Kalkulator Kesiapan Ekspor UMKM 2026 — '.$site->company_name,
             'description' => 'Self-assessment kesiapan ekspor UMKM: periksa kelayakan legalitas (NIB RBA), sertifikasi mutu internasional, kapasitas pasokan, dan dokumen pabean secara instan.',
-            'canonical' => url('/blog/kalkulator-ekspor-umkm'),
+            'canonical' => $this->toolPageCanonical('kalkulator-ekspor-umkm'),
         ];
 
         return response()->view('blog.kalkulator_ekspor', compact('site', 'seo'))
@@ -354,7 +368,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Kalkulator ROI & Biaya Implementasi ERP Bisnis 2026 — '.$site->company_name,
             'description' => 'Simulasi perhitungan potensi penghematan biaya operasional, efisiensi jam kerja, titik impas payback period, dan ROI implementasi sistem ERP enterprise.',
-            'canonical' => url('/blog/kalkulator-roi-erp'),
+            'canonical' => $this->toolPageCanonical('kalkulator-roi-erp'),
         ];
 
         return response()->view('blog.kalkulator_roi_erp', compact('site', 'seo'))
@@ -371,7 +385,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Kalkulator Skor Risiko Buyer & Skema Pembayaran Ekspor 2026 — '.$site->company_name,
             'description' => 'Evaluasi profil kredibilitas buyer internasional, analisa tingkat risiko wanprestasi pembayaran ekspor, dan panduan pemilihan metode pembayaran aman (L/C vs T/T).',
-            'canonical' => url('/blog/kalkulator-risiko-buyer'),
+            'canonical' => $this->toolPageCanonical('kalkulator-risiko-buyer'),
         ];
 
         return response()->view('blog.kalkulator_risiko_buyer', compact('site', 'seo'))
