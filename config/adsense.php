@@ -38,13 +38,15 @@ return [
      * every other domain canonicalises across to the owner and drops the page
      * from its own sitemap. The tool stays reachable and usable everywhere.
      *
-     * Owner must be a host that actually serves the page with HTTP 200.
-     * kalkulator-roi-erp topically belongs to morabangun.com, but that blog
-     * runs a separate deployment that does not serve the tool pages, so
-     * gma-world.id owns it until morabangun.com serves them too.
+     * Owner must be a host that serves this exact page: a canonical pointing at
+     * a merely equivalent page tends to be ignored. m2b.co.id and
+     * morabangun.com both run separate blog apps -- m2b.co.id has its own,
+     * differently built bea masuk calculator and morabangun.com serves no tool
+     * pages at all -- so ownership stays inside the two blogs this CMS renders,
+     * even where the niche table in CLAUDE.md would suggest otherwise.
      */
     'tool_page_owners' => [
-        'kalkulator-bea-masuk' => 'https://m2b.co.id',
+        'kalkulator-bea-masuk' => 'https://dira.co.id',
         'kalkulator-ekspor-umkm' => 'https://dira.co.id',
         'kalkulator-risiko-buyer' => 'https://dira.co.id',
         'kalkulator-roi-erp' => 'https://gma-world.id',
