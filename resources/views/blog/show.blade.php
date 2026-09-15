@@ -138,18 +138,7 @@ document.addEventListener('scroll',function(){
     </ol>
 </nav>
 
-{{-- Display Ad — Above Article --}}
-@if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
-<div class="adsense-slot max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="{{ $site->getAdsensePublisher() }}"
-         data-ad-slot="{{ $site->getAdSlot('display_top') }}"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
-@endif
+
 
 {{-- Article Header --}}
 <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -237,19 +226,59 @@ document.addEventListener('scroll',function(){
     </div>
     @endif
 
+    {{-- Display Ad — Below Featured Image / Header (clean above-the-fold) --}}
+    @if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
+    <div class="adsense-slot max-w-4xl mx-auto mb-8 text-center">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="{{$site->getAdsensePublisher()}}"
+             data-ad-slot="{{$site->getAdSlot('display_top')}}"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+    @endif
+
     {{-- Article + optional sticky ad (TOC dihapus utk tampilan bersih) --}}
     <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {{-- Article Content --}}
         <div class="w-full lg:flex-1 lg:min-w-0">
+            @php
+                $contentHtml = $article->content_html;
+                $hasInArticleAd = $site->getAdsensePublisher() && $site->getAdSlot('in_article');
+                $inArticleAdInjected = false;
+
+                if ($hasInArticleAd && $contentHtml) {
+                    $pCount = substr_count(strtolower($contentHtml), '</p>');
+                    if ($pCount >= 4) {
+                        $adSlotHtml = '<div class="adsense-slot my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">'
+                            . '<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="' . e($site->getAdsensePublisher()) . '" data-ad-slot="' . e($site->getAdSlot('in_article')) . '"></ins>'
+                            . '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+                            . '</div>';
+
+                        $targetP = 3;
+                        $offset = 0;
+                        for ($i = 0; $i < $targetP; $i++) {
+                            $pPos = stripos($contentHtml, '</p>', $offset);
+                            if ($pPos === false) break;
+                            $offset = $pPos + 4;
+                        }
+                        if ($offset > 0) {
+                            $contentHtml = substr_replace($contentHtml, '</p>' . $adSlotHtml, $offset - 4, 4);
+                            $inArticleAdInjected = true;
+                        }
+                    }
+                }
+            @endphp
             {{-- Article body (typography via .article-body di layout) --}}
             <div class="article-body">
                 <!-- google_ad_section_start -->
-                {!! $article->content_html !!}
+                {!! $contentHtml !!}
                 <!-- google_ad_section_end -->
             </div>
 
-            {{-- In-Article Ad (after content) --}}
-            @if($site->getAdsensePublisher() && $site->getAdSlot('in_article'))
+            {{-- Fallback In-Article Ad (if content has fewer than 4 paragraphs) --}}
+            @if($hasInArticleAd && !$inArticleAdInjected)
             <div class="adsense-slot my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
                 <ins class="adsbygoogle"
                      style="display:block; text-align:center;"

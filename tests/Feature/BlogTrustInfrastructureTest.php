@@ -89,6 +89,41 @@ class BlogTrustInfrastructureTest extends TestCase
         $response->assertSee('class="adsense-slot max-w-4xl', false);
     }
 
+    public function test_in_article_ad_is_injected_after_third_paragraph_when_sufficient_content(): void
+    {
+        $site = $this->site();
+        $site->update([
+            'adsense_publisher_id' => 'ca-pub-1234567890123456',
+            'adsense_ad_slots' => [
+                'in_article' => '9876543210',
+            ],
+        ]);
+        $admin = User::factory()->create();
+
+        Article::query()->forceCreate([
+            'site_id' => $site->id,
+            'user_id' => $admin->id,
+            'title' => 'Artikel Uji Injeksi Paragraf',
+            'slug' => 'artikel-uji-injeksi-paragraf',
+            'excerpt' => 'Ringkasan uji injeksi iklan.',
+            'content_html' => '<p>Paragraf Satu</p><p>Paragraf Dua</p><p>Paragraf Tiga</p><p>Paragraf Empat</p><p>Paragraf Lima</p>',
+            'status' => 'published',
+            'published_at' => now()->subDays(1),
+            'editorial_status' => Article::EDITORIAL_APPROVED,
+            'word_count' => 1500,
+        ]);
+
+        $response = $this->get('https://dira.co.id/blog/artikel-uji-injeksi-paragraf')->assertOk();
+
+        $response->assertSee('data-ad-slot="9876543210"', false);
+        $response->assertSee('data-ad-layout="in-article"', false);
+        $body = $response->getContent();
+        $p3Pos = strpos($body, '<p>Paragraf Tiga</p>');
+        $adPos = strpos($body, 'data-ad-slot="9876543210"');
+        $p4Pos = strpos($body, '<p>Paragraf Empat</p>');
+        $this->assertTrue($p3Pos < $adPos && $adPos < $p4Pos, 'In-article ad must be injected between paragraph 3 and paragraph 4');
+    }
+
     private function site(): Site
     {
         return Site::query()->create([
