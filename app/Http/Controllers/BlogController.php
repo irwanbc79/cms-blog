@@ -61,7 +61,7 @@ class BlogController extends Controller
         $seo = [
             'title' => $site->company_name.' - Blog',
             'description' => 'Blog dan artikel terbaru dari '.$site->company_name.'. Temukan informasi menarik seputar bisnis dan industri kami.',
-            'canonical' => url('/blog'),
+            'canonical' => $this->canonicalUrl($site, '/blog'),
         ];
 
         return response()->view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
@@ -150,7 +150,7 @@ class BlogController extends Controller
             'title' => $article->og_title ?: $article->title,
             'description' => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
             'image' => $article->featured_image_url,
-            'canonical' => $article->canonical_url ?: url('/blog/'.$article->slug),
+            'canonical' => $article->canonical_url ?: $this->canonicalUrl($site, '/blog/'.$article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
             'modified_time' => $article->updated_at->toIso8601String(),
             'author' => $site->editorial_author_name,
@@ -268,7 +268,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Kebijakan Privasi — '.$site->company_name,
             'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog '.$site->company_name,
-            'canonical' => url('/blog/privacy-policy'),
+            'canonical' => $this->canonicalUrl($site, '/blog/privacy-policy'),
         ];
 
         return response()->view('blog.privacy', compact('site', 'seo'))
@@ -285,7 +285,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Tentang Blog & Standar Editorial — '.$site->company_name,
             'description' => 'Identitas penerbit, proses riset, penggunaan sumber, koreksi, dan kebijakan iklan blog '.$site->company_name.'.',
-            'canonical' => url('/blog/about'),
+            'canonical' => $this->canonicalUrl($site, '/blog/about'),
             'author' => $site->editorial_author_name,
         ];
 
@@ -303,7 +303,7 @@ class BlogController extends Controller
         $seo = [
             'title' => 'Syarat & Ketentuan — '.$site->company_name,
             'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog '.$site->company_name,
-            'canonical' => url('/blog/terms-of-service'),
+            'canonical' => $this->canonicalUrl($site, '/blog/terms-of-service'),
         ];
 
         return response()->view('blog.terms', compact('site', 'seo'))
@@ -322,6 +322,19 @@ class BlogController extends Controller
         $owner = config('adsense.tool_page_owners.'.$slug);
 
         return $owner ? $owner.'/blog/'.$slug : url('/blog/'.$slug);
+    }
+
+    /**
+     * Build a stable canonical URL from the configured site domain instead of
+     * the incoming Host header, so www aliases do not create duplicate owners.
+     */
+    private function canonicalUrl(Site $site, string $path = '/'): string
+    {
+        $domain = preg_replace('#^https?://#i', '', trim($site->domain));
+        $domain = preg_replace('/^www\./i', '', rtrim($domain, '/'));
+        $normalizedPath = '/'.ltrim($path, '/');
+
+        return 'https://'.$domain.($normalizedPath === '/' ? '' : $normalizedPath);
     }
 
     /**

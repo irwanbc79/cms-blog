@@ -91,7 +91,7 @@
     "dateModified": "{{ $seo['modified_time'] }}",
     "mainEntityOfPage": {
         "@@type": "WebPage",
-        "@@id": "{{ url('/blog/' . $article->slug) }}"
+        "@@id": "{{ $seo['canonical'] }}"
     }
     @if(!empty($article->tags))
     ,"keywords": {{ json_encode(is_array($article->tags) ? implode(', ', $article->tags) : $article->tags) }}

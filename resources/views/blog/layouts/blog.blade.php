@@ -73,7 +73,7 @@
     <meta property="og:site_name" content="{{ $companyName }}">
     <meta property="og:title" content="@yield('og_title', $seo['title'] ?? $companyName . ' - Blog')">
     <meta property="og:description" content="@yield('og_description', $seo['description'] ?? '')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ $seo['canonical'] ?? url()->current() }}">
     <meta property="og:locale" content="id_ID">
     @if($seo['image'] ?? false)
     <meta property="og:image" content="{{ $seo['image'] }}">
