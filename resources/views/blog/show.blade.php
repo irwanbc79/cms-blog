@@ -326,9 +326,9 @@ document.addEventListener('scroll',function(){
         <a href="{{ url('/blog/' . $nextArticle->slug) }}"
            class="group p-5 rounded-2xl border border-teal/10 hover:border-teal/20 hover:bg-teal-pale/20 transition-all text-right md:col-start-2">
             <span class="text-xs text-teal/65 font-bold uppercase tracking-wider">Artikel Selanjutnya →</span>
-            <p class="mt-1 font-bold text-teal-deep group-hover:text-teal transition-colors font-serif">{{ $nextArticle->title }}</p>
         </a>
-        </nav>
+        @endif
+    </nav>
     </article>
 
     {{-- Desktop Sticky Sidebar (300px) --}}
