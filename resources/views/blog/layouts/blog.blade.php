@@ -28,11 +28,14 @@
     <meta name="author" content="{{ $seo['author'] }}">
     @endif
 
-    {{-- Google AdSense Auto Ads (per-site or global fallback) --}}
+    {{-- Google AdSense Auto Ads & Preconnect (per-site or global fallback) --}}
     @php
-        $adsensePublisherId = $site->getAdsensePublisher() ?? config('services.google.adsense_publisher_id');
+        $adService = new \App\Services\Ads\AdService($site);
+        $adsensePublisherId = $adService->publisherId();
     @endphp
     @if($adsensePublisherId)
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+    <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsensePublisherId }}"
             crossorigin="anonymous"></script>
     @endif
@@ -101,9 +104,6 @@
     {{-- Preconnect to external origins --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    @if(config('services.google.adsense_publisher_id'))
-    <link rel="preconnect" href="https://pagead2.googlesyndication.com">
-    @endif
 
     {{-- Fonts (non-render-blocking) --}}
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
@@ -214,6 +214,18 @@
         .article-body th{background:var(--color-teal-pale,#e6f4f1);font-weight:700;color:var(--color-teal-deep,#083d33)}
         .article-body code{background:var(--color-teal-pale,#e6f4f1);color:var(--color-teal-dark,#0d5546);padding:.15em .4em;border-radius:.3em;font-size:.9em}
         .article-body h1:first-child{display:none}
+
+        /* Zero-CLS Ad Containers */
+        .ad-container {
+            display: block;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            contain: layout style;
+        }
+        .ad-container ins {
+            display: block;
+        }
     </style>
 
     {{-- Additional head --}}
@@ -501,5 +513,49 @@
             btn.addEventListener('mouseleave', function(){ this.style.transform='translateY(0)'; });
         })();
     </script>
+
+    {{-- AdSense Lazy Loading via IntersectionObserver --}}
+    @if($adService->enabled())
+    <script>
+        (function() {
+            function initLazyAds() {
+                var lazyAds = document.querySelectorAll('ins[data-ad-lazy="true"]');
+                if (!lazyAds.length) return;
+
+                if ('IntersectionObserver' in window) {
+                    var observer = new IntersectionObserver(function(entries, obs) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting) {
+                                var ins = entry.target;
+                                ins.removeAttribute('data-ad-lazy');
+                                try {
+                                    (adsbygoogle = window.adsbygoogle || []).push({});
+                                } catch(e) {}
+                                obs.unobserve(ins);
+                            }
+                        });
+                    }, { rootMargin: '250px 0px' });
+
+                    lazyAds.forEach(function(ad) {
+                        observer.observe(ad);
+                    });
+                } else {
+                    lazyAds.forEach(function(ad) {
+                        ad.removeAttribute('data-ad-lazy');
+                        try {
+                            (adsbygoogle = window.adsbygoogle || []).push({});
+                        } catch(e) {}
+                    });
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initLazyAds);
+            } else {
+                initLazyAds();
+            }
+        })();
+    </script>
+    @endif
 </body>
 </html>

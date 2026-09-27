@@ -62,7 +62,9 @@ class BlogController extends Controller
             'canonical'   => url('/blog'),
         ];
 
-        return response()->view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo'))
+        $adService = new \App\Services\Ads\AdService($site);
+
+        return response()->view('blog.index', compact('site', 'articles', 'pillar', 'search', 'pillarCounts', 'seo', 'adService'))
             ->header('Cache-Control', 'public, max-age=300, s-maxage=600');
     }
 
@@ -149,9 +151,14 @@ class BlogController extends Controller
             'focus_keyword'  => $article->focus_keyword,
         ];
 
+        $adService = new \App\Services\Ads\AdService($site);
+        $adInjector = new \App\Services\Ads\AdInjector();
+        $articleBodyHtml = $adInjector->injectArticleAds($article->content_html, $adService);
+
         return response()->view('blog.show', compact(
             'site', 'article', 'toc', 'relatedArticles',
-            'prevArticle', 'nextArticle', 'breadcrumbs', 'seo'
+            'prevArticle', 'nextArticle', 'breadcrumbs', 'seo',
+            'adService', 'articleBodyHtml'
         ))->header('Cache-Control', 'public, max-age=300, s-maxage=600');
     }
 

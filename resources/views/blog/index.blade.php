@@ -162,15 +162,19 @@
                 <x-article-card :article="$article" />
 
                 {{-- In-Feed Ad every 4 articles --}}
-                @if(($index + 1) % 4 === 0 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed') && !$loop->last)
-                <div class="flex justify-center py-2" style="grid-column:1/-1">
+                @php
+                    $adSvc = $adService ?? new \App\Services\Ads\AdService($site);
+                @endphp
+                @if(($index + 1) % 4 === 0 && $adSvc->hasSlot('in_feed') && !$loop->last)
+                <div class="flex flex-col items-center justify-center py-4 my-2 ad-container" style="grid-column:1/-1; min-height: 140px;">
+                    <div class="text-[10px] text-gray-400/80 uppercase tracking-widest text-center mb-1 font-mono">Iklan</div>
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"
                          data-ad-layout-key="-6t+ed+2i-1n-4w"
-                         data-ad-client="{{ $site->getAdsensePublisher() }}"
-                         data-ad-slot="{{ $site->getAdSlot('in_feed') }}"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                         data-ad-client="{{ $adSvc->publisherId() }}"
+                         data-ad-slot="{{ $adSvc->slot('in_feed') }}"
+                         data-ad-lazy="true"></ins>
                 </div>
                 @endif
             @endforeach

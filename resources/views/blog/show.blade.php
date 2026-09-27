@@ -139,20 +139,22 @@ document.addEventListener('scroll',function(){
 </nav>
 
 {{-- Display Ad — Above Article --}}
-@if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="{{ $site->getAdsensePublisher() }}"
-         data-ad-slot="{{ $site->getAdSlot('display_top') }}"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
-@endif
+@php
+    $adSvc = $adService ?? new \App\Services\Ads\AdService($site);
+@endphp
+@include('blog.partials.ads.display', [
+    'publisherId' => $adSvc->publisherId(),
+    'slot'        => $adSvc->slot('display_top'),
+    'class'       => 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6',
+    'lazy'        => false,
+    'minHeight'   => '280px'
+])
 
-{{-- Article Header --}}
-<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+{{-- Main Article & Desktop Sidebar Layout --}}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+        {{-- Main Article Content Column --}}
+        <article class="w-full lg:flex-1 lg:min-w-0 max-w-4xl">
     {{-- Pillar & Tags --}}
     <div class="flex flex-wrap items-center gap-3 mb-4">
         @if($article->pillar)
@@ -226,70 +228,43 @@ document.addEventListener('scroll',function(){
     </div>
     @endif
 
-    {{-- Article + optional sticky ad (TOC dihapus utk tampilan bersih) --}}
-    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
-        {{-- Article Content --}}
-        <div class="w-full lg:flex-1 lg:min-w-0">
-            {{-- Article body (typography via .article-body di layout) --}}
-            <div class="article-body">
-                <!-- google_ad_section_start -->
-                {!! $article->content_html !!}
-                <!-- google_ad_section_end -->
-            </div>
+    {{-- Article body (typography via .article-body di layout) with In-Article Ads --}}
+    <div class="article-body">
+        <!-- google_ad_section_start -->
+        {!! $articleBodyHtml ?? $article->content_html !!}
+        <!-- google_ad_section_end -->
+    </div>
 
-            {{-- In-Article Ad (after content) --}}
-            @if($site->getAdsensePublisher() && $site->getAdSlot('in_article'))
-            <div class="my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
-                <ins class="adsbygoogle"
-                     style="display:block; text-align:center;"
-                     data-ad-layout="in-article"
-                     data-ad-format="fluid"
-                     data-ad-client="{{ $site->getAdsensePublisher() }}"
-                     data-ad-slot="{{ $site->getAdSlot('in_article') }}"></ins>
-                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            </div>
-            @endif
-
-            {{-- Tags Section --}}
-            @if(!empty($article->tags))
-            <div class="mt-8 pt-6 border-t border-gray-100">
-                <h4 class="text-sm font-semibold text-gray-500 mb-3">Tags:</h4>
-                <div class="flex flex-wrap gap-2">
-                    @foreach($article->tags as $tag)
-                    <span class="px-3 py-1.5 bg-teal-pale text-teal-dark text-xs font-bold rounded-lg hover:bg-teal/10 transition-colors cursor-default border border-teal/5">{{ $tag }}</span>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            {{-- Below Article Display Ad --}}
-            @if($site->getAdsensePublisher() && $site->getAdSlot('display_bottom'))
-            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-center">
-                <ins class="adsbygoogle"
-                     style="display:block"
-                     data-ad-client="{{ $site->getAdsensePublisher() }}"
-                     data-ad-slot="{{ $site->getAdSlot('display_bottom') }}"
-                     data-ad-format="auto"
-                     data-full-width-responsive="true"></ins>
-                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-            </div>
-            @endif
-
-            {{-- Comments: dipindah ke section standalone di bawah artikel (lihat di luar grid) untuk hindari duplikasi --}}
+    {{-- Tags Section --}}
+    @if(!empty($article->tags))
+    <div class="mt-8 pt-6 border-t border-gray-100">
+        <h4 class="text-sm font-semibold text-gray-500 mb-3">Tags:</h4>
+        <div class="flex flex-wrap gap-2">
+            @foreach($article->tags as $tag)
+            <span class="px-3 py-1.5 bg-teal-pale text-teal-dark text-xs font-bold rounded-lg hover:bg-teal/10 transition-colors cursor-default border border-teal/5">{{ $tag }}</span>
+            @endforeach
         </div>
     </div>
+    @endif
+
+    {{-- Below Article Display Ad (only if multiplex is NOT active to eliminate ad stacking) --}}
+    @if($adSvc->shouldShowDisplayBottom())
+        @include('blog.partials.ads.display', [
+            'publisherId' => $adSvc->publisherId(),
+            'slot'        => $adSvc->slot('display_bottom'),
+            'class'       => 'mt-8 pt-6 border-t border-gray-100 flex justify-center',
+            'lazy'        => true,
+            'minHeight'   => '280px'
+        ])
+    @endif
 
     {{-- Multiplex Ad — Before FAQ --}}
-    @if($site->getAdsensePublisher() && $site->getAdSlot('multiplex'))
-    <div class="mt-12 pt-8">
-        <ins class="adsbygoogle"
-             style="display:block"
-             data-ad-format="autorelaxed"
-             data-ad-client="{{ $site->getAdsensePublisher() }}"
-             data-ad-slot="{{ $site->getAdSlot('multiplex') }}"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-    @endif
+    @include('blog.partials.ads.multiplex', [
+        'publisherId' => $adSvc->publisherId(),
+        'slot'        => $adSvc->slot('multiplex'),
+        'class'       => 'mt-12 pt-8',
+        'lazy'        => true
+    ])
 
     {{-- FAQ Section --}}
     @if($article->schema_faq && count($article->schema_faq) > 0)
@@ -342,9 +317,48 @@ document.addEventListener('scroll',function(){
             <span class="text-xs text-teal/65 font-bold uppercase tracking-wider">Artikel Selanjutnya →</span>
             <p class="mt-1 font-bold text-teal-deep group-hover:text-teal transition-colors font-serif">{{ $nextArticle->title }}</p>
         </a>
-        @endif
-    </nav>
-</article>
+        </nav>
+    </article>
+
+    {{-- Desktop Sticky Sidebar (300px) --}}
+    <aside class="hidden lg:block lg:w-[320px] shrink-0">
+        <div class="sticky top-24 space-y-6">
+            @if($adSvc->hasSlot('sidebar'))
+            <div class="p-3 bg-gray-50/80 rounded-2xl border border-gray-100 flex flex-col items-center">
+                @include('blog.partials.ads.sidebar', [
+                    'publisherId' => $adSvc->publisherId(),
+                    'slot'        => $adSvc->slot('sidebar'),
+                    'lazy'        => false
+                ])
+            </div>
+            @endif
+
+            @if(isset($relatedArticles) && $relatedArticles->isNotEmpty())
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2 font-mono">
+                    <svg class="w-4 h-4 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                    </svg>
+                    Artikel Terkait
+                </h3>
+                <div class="space-y-4">
+                    @foreach($relatedArticles as $related)
+                    <a href="{{ url('/blog/' . $related->slug) }}" class="group block">
+                        <h4 class="text-sm font-semibold text-gray-800 group-hover:text-teal transition-colors line-clamp-2 leading-snug">
+                            {{ $related->title }}
+                        </h4>
+                        <p class="text-xs text-gray-400 mt-1">
+                            {{ $related->published_at?->isoFormat('D MMM Y') }}
+                        </p>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+    </aside>
+</div>
+</div>
 
 {{-- Related Articles --}}
 {{-- Comments Section --}}
@@ -450,15 +464,16 @@ document.addEventListener('scroll',function(){
                 <x-article-card :article="$related" />
 
                 {{-- In-Feed Ad after 2nd related article --}}
-                @if($index === 1 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed'))
-                <div class="flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
+                @if($index === 1 && $adSvc->hasSlot('in_feed'))
+                <div class="flex flex-col items-center justify-center bg-white rounded-2xl border border-gray-100 p-4 ad-container" style="min-height: 250px;">
+                    <div class="text-[10px] text-gray-400/80 uppercase tracking-widest text-center mb-1 font-mono">Iklan</div>
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"
                          data-ad-layout-key="-6t+ed+2i-1n-4w"
-                         data-ad-client="{{ $site->getAdsensePublisher() }}"
-                         data-ad-slot="{{ $site->getAdSlot('in_feed') }}"></ins>
-                    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                         data-ad-client="{{ $adSvc->publisherId() }}"
+                         data-ad-slot="{{ $adSvc->slot('in_feed') }}"
+                         data-ad-lazy="true"></ins>
                 </div>
                 @endif
             @endforeach
