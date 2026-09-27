@@ -138,7 +138,6 @@ document.addEventListener('scroll',function(){
     </ol>
 </nav>
 
-<<<<<<< HEAD
 {{-- Display Ad — Above Article --}}
 @php
     $adSvc = $adService ?? new \App\Services\Ads\AdService($site);
@@ -476,14 +475,9 @@ document.addEventListener('scroll',function(){
                 <x-article-card :article="$related" />
 
                 {{-- In-Feed Ad after 2nd related article --}}
-<<<<<<< HEAD
                 @if($index === 1 && $adSvc->hasSlot('in_feed'))
                 <div class="flex flex-col items-center justify-center bg-white rounded-2xl border border-gray-100 p-4 ad-container" style="min-height: 250px;">
                     <div class="text-[10px] text-gray-400/80 uppercase tracking-widest text-center mb-1 font-mono">Iklan</div>
-=======
-                @if($index === 1 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed'))
-                <div class="adsense-slot flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
->>>>>>> prod-editorial-compliance-backup
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"
