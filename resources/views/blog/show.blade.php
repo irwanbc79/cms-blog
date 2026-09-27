@@ -91,7 +91,7 @@
     "dateModified": "{{ $seo['modified_time'] }}",
     "mainEntityOfPage": {
         "@@type": "WebPage",
-        "@@id": "{{ url('/blog/' . $article->slug) }}"
+        "@@id": "{{ $seo['canonical'] }}"
     }
     @if(!empty($article->tags))
     ,"keywords": {{ json_encode(is_array($article->tags) ? implode(', ', $article->tags) : $article->tags) }}
@@ -138,18 +138,7 @@ document.addEventListener('scroll',function(){
     </ol>
 </nav>
 
-{{-- Display Ad — Above Article --}}
-@if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="{{ $site->getAdsensePublisher() }}"
-         data-ad-slot="{{ $site->getAdSlot('display_top') }}"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
-@endif
+
 
 {{-- Article Header --}}
 <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -175,12 +164,23 @@ document.addEventListener('scroll',function(){
 
     {{-- Meta Info --}}
     <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
+        <a href="{{ route('blog.about') }}" rel="author" class="flex items-center gap-1.5 font-semibold text-teal-dark hover:text-teal transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            {{ $seo['author'] }}
+        </a>
         <span class="flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
-            {{ $article->published_at?->isoFormat('dddd, D MMMM YYYY') }}
+            {{ $article->published_at?->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
         </span>
+        @if($article->updated_at && $article->published_at && $article->updated_at->gt($article->published_at->copy()->addDay()))
+        <span class="flex items-center gap-1.5" title="Tanggal pembaruan isi atau metadata">
+            Diperbarui {{ $article->updated_at->locale('id')->isoFormat('D MMMM YYYY') }}
+        </span>
+        @endif
         @if($article->estimated_read_time)
         <span class="flex items-center gap-1.5">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,20 +226,60 @@ document.addEventListener('scroll',function(){
     </div>
     @endif
 
+    {{-- Display Ad — Below Featured Image / Header (clean above-the-fold) --}}
+    @if($site->getAdsensePublisher() && $site->getAdSlot('display_top'))
+    <div class="adsense-slot max-w-4xl mx-auto mb-8 text-center">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="{{$site->getAdsensePublisher()}}"
+             data-ad-slot="{{$site->getAdSlot('display_top')}}"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </div>
+    @endif
+
     {{-- Article + optional sticky ad (TOC dihapus utk tampilan bersih) --}}
     <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
         {{-- Article Content --}}
         <div class="w-full lg:flex-1 lg:min-w-0">
+            @php
+                $contentHtml = $article->content_html;
+                $hasInArticleAd = $site->getAdsensePublisher() && $site->getAdSlot('in_article');
+                $inArticleAdInjected = false;
+
+                if ($hasInArticleAd && $contentHtml) {
+                    $pCount = substr_count(strtolower($contentHtml), '</p>');
+                    if ($pCount >= 4) {
+                        $adSlotHtml = '<div class="adsense-slot my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">'
+                            . '<ins class="adsbygoogle" style="display:block; text-align:center;" data-ad-layout="in-article" data-ad-format="fluid" data-ad-client="' . e($site->getAdsensePublisher()) . '" data-ad-slot="' . e($site->getAdSlot('in_article')) . '"></ins>'
+                            . '<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>'
+                            . '</div>';
+
+                        $targetP = 3;
+                        $offset = 0;
+                        for ($i = 0; $i < $targetP; $i++) {
+                            $pPos = stripos($contentHtml, '</p>', $offset);
+                            if ($pPos === false) break;
+                            $offset = $pPos + 4;
+                        }
+                        if ($offset > 0) {
+                            $contentHtml = substr_replace($contentHtml, '</p>' . $adSlotHtml, $offset - 4, 4);
+                            $inArticleAdInjected = true;
+                        }
+                    }
+                }
+            @endphp
             {{-- Article body (typography via .article-body di layout) --}}
             <div class="article-body">
                 <!-- google_ad_section_start -->
-                {!! $article->content_html !!}
+                {!! $contentHtml !!}
                 <!-- google_ad_section_end -->
             </div>
 
-            {{-- In-Article Ad (after content) --}}
-            @if($site->getAdsensePublisher() && $site->getAdSlot('in_article'))
-            <div class="my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
+            {{-- Fallback In-Article Ad (if content has fewer than 4 paragraphs) --}}
+            @if($hasInArticleAd && !$inArticleAdInjected)
+            <div class="adsense-slot my-10 p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400 border border-gray-100">
                 <ins class="adsbygoogle"
                      style="display:block; text-align:center;"
                      data-ad-layout="in-article"
@@ -264,7 +304,7 @@ document.addEventListener('scroll',function(){
 
             {{-- Below Article Display Ad --}}
             @if($site->getAdsensePublisher() && $site->getAdSlot('display_bottom'))
-            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-center">
+            <div class="adsense-slot mt-8 pt-6 border-t border-gray-100 flex justify-center">
                 <ins class="adsbygoogle"
                      style="display:block"
                      data-ad-client="{{ $site->getAdsensePublisher() }}"
@@ -281,7 +321,7 @@ document.addEventListener('scroll',function(){
 
     {{-- Multiplex Ad — Before FAQ --}}
     @if($site->getAdsensePublisher() && $site->getAdSlot('multiplex'))
-    <div class="mt-12 pt-8">
+    <div class="adsense-slot mt-12 pt-8">
         <ins class="adsbygoogle"
              style="display:block"
              data-ad-format="autorelaxed"
@@ -397,7 +437,7 @@ document.addEventListener('scroll',function(){
             </svg>
             Tinggalkan Komentar
         </h2>
-        <p class="text-xs text-gray-400 mb-6">Komentar Anda akan ditampilkan setelah disetujui admin.</p>
+        <p class="text-xs text-gray-400 mb-6">Komentar Anda akan ditampilkan setelah ditinjau moderator.</p>
 
         <form action="{{ route('blog.comments.store', $article->slug) }}" method="POST" class="space-y-4" id="comment-form">
             @csrf
@@ -451,7 +491,7 @@ document.addEventListener('scroll',function(){
 
                 {{-- In-Feed Ad after 2nd related article --}}
                 @if($index === 1 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed'))
-                <div class="flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
+                <div class="adsense-slot flex items-center justify-center bg-white rounded-2xl border border-gray-100 p-4">
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"

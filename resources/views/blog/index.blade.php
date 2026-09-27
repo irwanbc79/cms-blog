@@ -163,7 +163,7 @@
 
                 {{-- In-Feed Ad every 4 articles --}}
                 @if(($index + 1) % 4 === 0 && $site->getAdsensePublisher() && $site->getAdSlot('in_feed') && !$loop->last)
-                <div class="flex justify-center py-2" style="grid-column:1/-1">
+                <div class="adsense-slot flex justify-center py-2" style="grid-column:1/-1">
                     <ins class="adsbygoogle"
                          style="display:block"
                          data-ad-format="fluid"

@@ -17,13 +17,13 @@ class Site extends Model
     ];
 
     protected $casts = [
-        'content_pillars'   => 'array',
-        'languages'         => 'array',
-        'is_active'         => 'boolean',
-        'wp_username'       => 'encrypted',
-        'wp_app_password'   => 'encrypted',
+        'content_pillars' => 'array',
+        'languages' => 'array',
+        'is_active' => 'boolean',
+        'wp_username' => 'encrypted',
+        'wp_app_password' => 'encrypted',
         'anthropic_api_key' => 'encrypted',
-        'adsense_ad_slots'  => 'array',
+        'adsense_ad_slots' => 'array',
     ];
 
     public function articles(): HasMany
@@ -50,8 +50,8 @@ class Site extends Model
         // Default pillars
         return [
             'regulasi' => 'Regulasi',
-            'umkm'     => 'UMKM Ekspor',
-            'news'     => 'News',
+            'umkm' => 'UMKM Ekspor',
+            'news' => 'News',
             'logistik' => 'Logistik',
         ];
     }
@@ -69,6 +69,7 @@ class Site extends Model
             foreach ($langs as $code) {
                 $result[$code] = $map[$code] ?? $code;
             }
+
             return $result;
         }
 
@@ -105,6 +106,18 @@ class Site extends Model
         if ($this->domain === 'morabangun.com') {
             return 'Mora Bangun Solutions';
         }
+
         return $this->name;
+    }
+
+    /**
+     * Public byline used for portfolio articles.
+     *
+     * CMS login names such as "admin" are operational identities, not
+     * editorial identities, and must never be exposed as article authors.
+     */
+    public function getEditorialAuthorNameAttribute(): string
+    {
+        return 'Tim Editorial '.$this->company_name;
     }
 }
