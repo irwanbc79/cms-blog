@@ -31,6 +31,7 @@ class BlogController extends Controller
 
         $query = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->latest('published_at');
 
         if ($pillar) {
@@ -41,8 +42,8 @@ class BlogController extends Controller
             $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
             $query->where(function ($q) use ($escaped) {
                 $q->where('title', 'like', "%{$escaped}%")
-                  ->orWhere('excerpt', 'like', "%{$escaped}%")
-                  ->orWhere('focus_keyword', 'like', "%{$escaped}%");
+                    ->orWhere('excerpt', 'like', "%{$escaped}%")
+                    ->orWhere('focus_keyword', 'like', "%{$escaped}%");
             });
         }
 
@@ -51,15 +52,16 @@ class BlogController extends Controller
         // Get pillar counts for filter sidebar (single query)
         $pillarCounts = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->selectRaw('pillar, count(*) as count')
             ->whereNotNull('pillar')
             ->groupBy('pillar')
             ->pluck('count', 'pillar');
 
         $seo = [
-            'title'       => $site->company_name . ' - Blog',
-            'description' => 'Blog dan artikel terbaru dari ' . $site->company_name . '. Temukan informasi menarik seputar bisnis dan industri kami.',
-            'canonical'   => url('/blog'),
+            'title' => $site->company_name.' - Blog',
+            'description' => 'Blog dan artikel terbaru dari '.$site->company_name.'. Temukan informasi menarik seputar bisnis dan industri kami.',
+            'canonical' => $this->canonicalUrl($site, '/blog'),
         ];
 
         $adService = new \App\Services\Ads\AdService($site);
@@ -82,9 +84,13 @@ class BlogController extends Controller
             ->where('slug', $slug)
             ->firstOrFail();
 
+        if ($redirect = $this->sameSiteCanonicalRedirect($article, $site)) {
+            return $redirect;
+        }
+
         // Auto-tag if tags are empty
         if (empty($article->tags)) {
-            $autoTag = new AutoTagService();
+            $autoTag = new AutoTagService;
             $tags = $autoTag->generateTags($article);
             $article->updateQuietly(['tags' => $tags]);
             $article->refresh();
@@ -96,8 +102,9 @@ class BlogController extends Controller
         // Get related articles with smart fallback (single query)
         $relatedArticles = Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->where('id', '!=', $article->id)
-            ->orderByRaw("CASE WHEN pillar = ? THEN 0 ELSE 1 END", [$article->pillar])
+            ->orderByRaw('CASE WHEN pillar = ? THEN 0 ELSE 1 END', [$article->pillar])
             ->latest('published_at')
             ->take(3)
             ->get(['id', 'title', 'slug', 'excerpt', 'content_html', 'pillar', 'featured_image_url', 'published_at', 'estimated_read_time', 'image_alt_texts']);
@@ -109,6 +116,7 @@ class BlogController extends Controller
         if ($article->published_at) {
             $navArticles = Article::forSite($site->id)
                 ->published()
+                ->indexable()
                 ->select(['id', 'title', 'slug', 'published_at'])
                 ->where('published_at', '<', $article->published_at)
                 ->latest('published_at')
@@ -116,6 +124,7 @@ class BlogController extends Controller
                 ->union(
                     Article::forSite($site->id)
                         ->published()
+                        ->indexable()
                         ->select(['id', 'title', 'slug', 'published_at'])
                         ->where('published_at', '>', $article->published_at)
                         ->oldest('published_at')
@@ -135,20 +144,20 @@ class BlogController extends Controller
         // Build breadcrumbs
         $breadcrumbs = [
             ['label' => 'Blog', 'url' => url('/blog')],
-            ['label' => $article->pillar ? ucfirst($article->pillar) : 'Artikel', 'url' => $article->pillar ? url('/blog?pillar=' . $article->pillar) : null],
+            ['label' => $article->pillar ? ucfirst($article->pillar) : 'Artikel', 'url' => $article->pillar ? url('/blog?pillar='.$article->pillar) : null],
             ['label' => $article->title, 'url' => null],
         ];
 
         $seo = [
-            'title'          => $article->og_title ?: $article->title,
-            'description'    => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
-            'image'          => $article->featured_image_url,
-            'canonical'      => $article->canonical_url ?: url('/blog/' . $article->slug),
+            'title' => $article->og_title ?: $article->title,
+            'description' => $article->meta_description ?: Str::limit(strip_tags($article->excerpt ?: $article->content_html), 160),
+            'image' => $article->featured_image_url,
+            'canonical' => $article->canonical_url ?: $this->canonicalUrl($site, '/blog/'.$article->slug),
             'published_time' => $article->published_at?->toIso8601String(),
-            'modified_time'  => $article->updated_at->toIso8601String(),
-            'author'         => $article->user?->name ?? $site->company_name,
-            'tags'           => $article->tags,
-            'focus_keyword'  => $article->focus_keyword,
+            'modified_time' => $article->updated_at->toIso8601String(),
+            'author' => $site->editorial_author_name,
+            'tags' => $article->tags,
+            'focus_keyword' => $article->focus_keyword,
         ];
 
         $adService = new \App\Services\Ads\AdService($site);
@@ -160,6 +169,34 @@ class BlogController extends Controller
             'prevArticle', 'nextArticle', 'breadcrumbs', 'seo',
             'adService', 'articleBodyHtml'
         ))->header('Cache-Control', 'public, max-age=300, s-maxage=600');
+    }
+
+    private function sameSiteCanonicalRedirect(Article $article, Site $site)
+    {
+        $canonical = trim((string) $article->canonical_url);
+        if ($canonical === '') {
+            return null;
+        }
+
+        $parts = parse_url($canonical);
+        if (! is_array($parts) || ! in_array($parts['scheme'] ?? null, ['http', 'https'], true)) {
+            return null;
+        }
+
+        if (mb_strtolower((string) ($parts['host'] ?? '')) !== mb_strtolower((string) $site->domain)) {
+            return null;
+        }
+
+        $canonicalPath = '/'.ltrim((string) ($parts['path'] ?? ''), '/');
+        $currentPath = '/blog/'.$article->slug;
+        if (
+            ! str_starts_with($canonicalPath, '/blog/')
+            || rtrim($canonicalPath, '/') === rtrim($currentPath, '/')
+        ) {
+            return null;
+        }
+
+        return redirect()->away($canonical, 301);
     }
 
     /**
@@ -177,8 +214,8 @@ class BlogController extends Controller
         preg_match_all('/<h([2-6])(\s+[^>]*)?>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $level    = (int) $match[1];
-            $attrs    = $match[2] ?? '';
+            $level = (int) $match[1];
+            $attrs = $match[2] ?? '';
             $innerHtml = $match[3];
 
             // Extract id attribute if present
@@ -192,7 +229,7 @@ class BlogController extends Controller
 
             $toc[] = [
                 'level' => $level,
-                'id'    => $id,
+                'id' => $id,
                 'title' => strip_tags($innerHtml),
             ];
         }
@@ -225,7 +262,7 @@ class BlogController extends Controller
             'is_approved' => false,
         ]);
 
-        return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu persetujuan admin.');
+        return redirect()->back()->with('comment_success', 'Komentar Anda telah dikirim dan menunggu moderasi.');
     }
 
     /**
@@ -234,14 +271,32 @@ class BlogController extends Controller
     public function privacyPolicy()
     {
         $site = $this->siteResolver->resolveOrFail();
-        
+
         $seo = [
-            'title'       => 'Kebijakan Privasi — ' . $site->company_name,
-            'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog ' . $site->company_name,
-            'canonical'   => url('/blog/privacy-policy'),
+            'title' => 'Kebijakan Privasi — '.$site->company_name,
+            'description' => 'Kebijakan Privasi untuk penggunaan layanan dan akses informasi di blog '.$site->company_name,
+            'canonical' => $this->canonicalUrl($site, '/blog/privacy-policy'),
         ];
 
         return response()->view('blog.privacy', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the editorial identity, sourcing, corrections, and advertising policy.
+     */
+    public function aboutEditorial()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Tentang Blog & Standar Editorial — '.$site->company_name,
+            'description' => 'Identitas penerbit, proses riset, penggunaan sumber, koreksi, dan kebijakan iklan blog '.$site->company_name.'.',
+            'canonical' => $this->canonicalUrl($site, '/blog/about'),
+            'author' => $site->editorial_author_name,
+        ];
+
+        return response()->view('blog.about', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
 
@@ -253,13 +308,107 @@ class BlogController extends Controller
         $site = $this->siteResolver->resolveOrFail();
 
         $seo = [
-            'title'       => 'Syarat & Ketentuan — ' . $site->company_name,
-            'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog ' . $site->company_name,
-            'canonical'   => url('/blog/terms-of-service'),
+            'title' => 'Syarat & Ketentuan — '.$site->company_name,
+            'description' => 'Syarat dan Ketentuan penggunaan serta hak kekayaan intelektual di blog '.$site->company_name,
+            'canonical' => $this->canonicalUrl($site, '/blog/terms-of-service'),
         ];
 
         return response()->view('blog.terms', compact('site', 'seo'))
             ->header('Cache-Control', 'public, max-age=3600');
     }
-}
 
+    /**
+     * Canonical URL for a shared interactive tool page.
+     *
+     * Every portfolio blog serves the same tool pages, so the non-owning
+     * domains canonicalise across to the one owner in config/adsense.php
+     * instead of self-canonicalising duplicate content.
+     */
+    protected function toolPageCanonical(string $slug): string
+    {
+        $owner = config('adsense.tool_page_owners.'.$slug);
+
+        return $owner ? $owner.'/blog/'.$slug : url('/blog/'.$slug);
+    }
+
+    /**
+     * Build a stable canonical URL from the configured site domain instead of
+     * the incoming Host header, so www aliases do not create duplicate owners.
+     */
+    private function canonicalUrl(Site $site, string $path = '/'): string
+    {
+        $domain = preg_replace('#^https?://#i', '', trim($site->domain));
+        $domain = preg_replace('/^www\./i', '', rtrim($domain, '/'));
+        $normalizedPath = '/'.ltrim($path, '/');
+
+        return 'https://'.$domain.($normalizedPath === '/' ? '' : $normalizedPath);
+    }
+
+    /**
+     * Display the interactive Customs Duty and Landed Cost calculator.
+     */
+    public function kalkulatorBeaMasuk()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Bea Masuk dan Simulasi Pajak Impor 2026 — '.$site->company_name,
+            'description' => 'Simulasi perhitungan bea masuk, PPN 11%, PPh 22, dan nilai pabean CIF secara online dan instan sesuai regulasi Kementerian Keuangan & CEISA 4.0.',
+            'canonical' => $this->toolPageCanonical('kalkulator-bea-masuk'),
+        ];
+
+        return response()->view('blog.kalkulator', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the interactive SME Export Readiness assessment tool.
+     */
+    public function kalkulatorEkspor()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Kesiapan Ekspor UMKM 2026 — '.$site->company_name,
+            'description' => 'Self-assessment kesiapan ekspor UMKM: periksa kelayakan legalitas (NIB RBA), sertifikasi mutu internasional, kapasitas pasokan, dan dokumen pabean secara instan.',
+            'canonical' => $this->toolPageCanonical('kalkulator-ekspor-umkm'),
+        ];
+
+        return response()->view('blog.kalkulator_ekspor', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the interactive ERP ROI and cost estimation calculator.
+     */
+    public function kalkulatorRoiErp()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator ROI & Biaya Implementasi ERP Bisnis 2026 — '.$site->company_name,
+            'description' => 'Simulasi perhitungan potensi penghematan biaya operasional, efisiensi jam kerja, titik impas payback period, dan ROI implementasi sistem ERP enterprise.',
+            'canonical' => $this->toolPageCanonical('kalkulator-roi-erp'),
+        ];
+
+        return response()->view('blog.kalkulator_roi_erp', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    /**
+     * Display the interactive international buyer risk & payment method assessment tool.
+     */
+    public function kalkulatorRisikoBuyer()
+    {
+        $site = $this->siteResolver->resolveOrFail();
+
+        $seo = [
+            'title' => 'Kalkulator Skor Risiko Buyer & Skema Pembayaran Ekspor 2026 — '.$site->company_name,
+            'description' => 'Evaluasi profil kredibilitas buyer internasional, analisa tingkat risiko wanprestasi pembayaran ekspor, dan panduan pemilihan metode pembayaran aman (L/C vs T/T).',
+            'canonical' => $this->toolPageCanonical('kalkulator-risiko-buyer'),
+        ];
+
+        return response()->view('blog.kalkulator_risiko_buyer', compact('site', 'seo'))
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+}

@@ -49,7 +49,7 @@ class ContentStudio extends Page implements HasForms, HasTable
     public string $mode         = 'autopilot';   // autopilot | manual
     public array  $siteIds      = [];            // selected blogs for autopilot
     public int    $perBlog      = 3;             // articles per blog
-    public string $publishMode  = 'published';   // published | draft
+    public string $publishMode  = 'draft';
     public string $categoryMode = 'auto';        // auto | manual (for manual tab pillar)
 
     public function getTitle(): string
@@ -99,7 +99,7 @@ class ContentStudio extends Page implements HasForms, HasTable
             'siteIds.*'   => 'exists:sites,id',
             'perBlog'     => 'required|integer|min:1|max:10',
             'language'    => 'required|string',
-            'publishMode' => 'required|in:published,draft',
+            'publishMode' => 'required|in:draft',
         ], [
             'siteIds.required' => 'Pilih minimal satu blog.',
         ]);
@@ -132,7 +132,7 @@ class ContentStudio extends Page implements HasForms, HasTable
             }
         }
 
-        $modeLabel = $this->publishMode === 'published' ? 'Langsung Tayang' : 'Draft';
+        $modeLabel = 'Draft — wajib review editorial';
         Notification::make()
             ->title("🪄 Autopilot: {$total} artikel diantrekan untuk " . count($this->siteIds) . " blog!")
             ->body("Mode: {$modeLabel}. Estimasi ~1-2 menit/artikel. Pantau progres di Queue bawah.")
@@ -235,6 +235,14 @@ class ContentStudio extends Page implements HasForms, HasTable
                         'scheduled' => 'warning',
                         default     => 'gray',
                     }),
+                TextColumn::make('editorial_status')
+                    ->label('Editorial')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        Article::EDITORIAL_APPROVED => 'success',
+                        Article::EDITORIAL_NEEDS_REVISION => 'danger',
+                        default => 'warning',
+                    }),
                 TextColumn::make('language')
                     ->badge()
                     ->color('gray'),
@@ -249,12 +257,28 @@ class ContentStudio extends Page implements HasForms, HasTable
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
+                Action::make('approve_editorial')
+                    ->label('Approve Editorial')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->form([
+                        Textarea::make('notes')
+                            ->label('Review Notes')
+                            ->required()
+                            ->maxLength(1000),
+                    ])
+                    ->visible(fn (Article $record) => ! $record->isEditoriallyApproved())
+                    ->action(function (Article $record, array $data) {
+                        $record->approveEditorially(auth()->id(), $data['notes']);
+                        Notification::make()->title('Editorial review approved')->success()->send();
+                    }),
                 Action::make('publish_now')
                     ->label('Publish Now')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
-                    ->visible(fn (Article $record) => $record->status !== 'published')
+                    ->visible(fn (Article $record) => $record->status !== 'published' && $record->isEditoriallyApproved())
                     ->action(function (Article $record) {
                         $record->update(['status' => 'published', 'published_at' => now()]);
                         Notification::make()
@@ -273,15 +297,18 @@ class ContentStudio extends Page implements HasForms, HasTable
                     ->requiresConfirmation()
                     ->action(function (Collection $records) {
                         $count = 0;
+                        $skipped = 0;
                         foreach ($records as $record) {
-                            if ($record->status !== 'published') {
+                            if ($record->status !== 'published' && $record->isEditoriallyApproved()) {
                                 $record->update(['status' => 'published', 'published_at' => now()]);
                                 $count++;
+                            } elseif ($record->status !== 'published') {
+                                $skipped++;
                             }
                         }
                         Notification::make()
-                            ->title("✅ {$count} article(s) published")
-                            ->success()
+                            ->title("{$count} published, {$skipped} skipped pending editorial review")
+                            ->color($skipped > 0 ? 'warning' : 'success')
                             ->send();
                     }),
             ]);

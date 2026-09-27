@@ -3,12 +3,12 @@
 @php
     use App\Models\Article;
 
-    $sidebarRecent = Article::forSite($site->id)->published()
+    $sidebarRecent = Article::forSite($site->id)->published()->indexable()
         ->latest('published_at')
         ->take(5)
         ->get(['id','title','slug','published_at','estimated_read_time']);
 
-    $sidebarPillars = Article::forSite($site->id)->published()
+    $sidebarPillars = Article::forSite($site->id)->published()->indexable()
         ->selectRaw('pillar, count(*) as count')
         ->whereNotNull('pillar')
         ->groupBy('pillar')
@@ -16,7 +16,7 @@
         ->pluck('count','pillar');
 
     $tagCounts = [];
-    foreach (Article::forSite($site->id)->published()->pluck('tags') as $t) {
+    foreach (Article::forSite($site->id)->published()->indexable()->pluck('tags') as $t) {
         $arr = is_array($t) ? $t : (json_decode($t ?? '[]', true) ?: []);
         foreach ($arr as $tag) {
             $tag = trim($tag);

@@ -26,6 +26,7 @@ class FeedController extends Controller
         $articles = Cache::remember("feed_{$site->slug}", 1800, function () use ($site) {
             return Article::where('site_id', $site->id)
                 ->where('status', 'published')
+                ->indexable()
                 ->whereNotNull('published_at')
                 ->latest('published_at')
                 ->take(20)

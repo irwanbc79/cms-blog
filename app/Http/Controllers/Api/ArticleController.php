@@ -13,6 +13,7 @@ class ArticleController extends Controller
 
         $query = \App\Models\Article::forSite($site->id)
             ->published()
+            ->indexable()
             ->latest('published_at');
 
         if ($request->filled('pillar')) {
